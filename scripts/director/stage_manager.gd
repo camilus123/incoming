@@ -52,6 +52,7 @@ func _ready() -> void:
 	EventBus.enemy_killed.connect(_on_enemy_killed)
 	EventBus.enemy_projectile_intercepted.connect(func(_id: StringName) -> void: stats.intercepts += 1)
 	EventBus.turret_destroyed.connect(_on_turret_destroyed)
+	EventBus.shield_broken.connect(func() -> void: stats.shield_broken = true)
 
 
 ## Number of waves in the current stage.

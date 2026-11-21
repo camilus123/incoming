@@ -58,6 +58,22 @@ func has_ammo() -> bool:
 	return ammo == UNLIMITED_AMMO or ammo > 0
 
 
+## Damage multiplier from the power split. Energy weapons put reactor power
+## into damage; everything else keeps its damage.
+func get_damage_scale() -> float:
+	if data.get("uses_power", true) and data.get("damage_type", "") == "energy":
+		return _context.power_output
+	return 1.0
+
+
+## Fire rate and cooling multiplier from the power split. Powered weapons
+## that are not energy weapons (kinetic) put reactor power into their rate.
+func get_rate_scale() -> float:
+	if data.get("uses_power", true) and data.get("damage_type", "") != "energy":
+		return _context.power_output
+	return 1.0
+
+
 ## 0 when ready, counting down from 1 while reloading. For the HUD.
 func get_reload_fraction() -> float:
 	return 0.0
@@ -74,9 +90,7 @@ func get_lock_progress() -> float:
 
 
 func _process(delta_s: float) -> void:
-	# Cooling scales with the power split only for weapons that use reactor power.
-	var cooling_multiplier: float = _context.power_output if data.get("uses_power", true) else 1.0
-	heat.tick(delta_s, cooling_multiplier)
+	heat.tick(delta_s, get_rate_scale())
 	_update_weapon(delta_s)
 	if _model != null and _kick_m > 0.0:
 		_kick_m = lerpf(_kick_m, 0.0, 1.0 - exp(-_kick_recover_per_s * delta_s))
