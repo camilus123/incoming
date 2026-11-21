@@ -126,7 +126,10 @@ static func _check_loadout(loader: DataLoader, report: DataReport) -> void:
 		return
 	var file: String = loader.source_of_config("turret")
 	var loadout: Dictionary = turret["default_loadout"]
-	for slot: String in loadout:
+	var shield_id: String = loadout.get("shield", "")
+	if not loader.has_entry("shields", shield_id):
+		report.add_error(file, "default_loadout.shield", "unknown shield \"%s\"" % shield_id)
+	for slot: String in ["primary", "alternate"]:
 		var weapon_id: String = loadout[slot]
 		if not loader.has_entry("weapons", weapon_id):
 			report.add_error(file, "default_loadout." + slot, "unknown weapon \"%s\"" % weapon_id)
