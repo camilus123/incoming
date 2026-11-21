@@ -94,3 +94,14 @@ Marko found M2 too hard and asked for bigger hitboxes, especially at range.
 
 - **Distance-assisted hitboxes** (`combat.json: hitbox_assist`): every enemy and bomb keeps a minimum apparent hit radius of 0.55° as seen from the turret (about 13 px at 1440p), capped at 8× its real radius. Close up the real hitbox applies. The HUD diamond on each threat is drawn at exactly this size, so it shows where a shot counts.
 - Also eased (Claude): drone weave 14 m to 9 m, interceptor burst cooldown 2.5 s to 3.5 s, bombers drop 2 bombs per pass instead of 3, and stage 3's third wave has one bomber instead of two.
+
+## 2026-11-21: M3 decisions (Claude)
+
+- **Power split effects by weapon type:** energy weapons scale damage (and bolt brightness); powered non-energy weapons (kinetic) scale fire rate and cooling; unpowered weapons (missiles) are unaffected. In M1/M2 the laser's cooling also followed the split; it no longer does, matching the spec.
+- **Shield recharge = base rate × split multiplier**, after the shield's own delay. At 0 % shield share the multiplier is 0: the shield keeps its charge but does not refill. `ShieldState.min_recharge_multiplier` is the hook for Bastion IV.
+- **Shield dome:** a hemisphere of 14 m radius around the turret, drawn additively and almost invisible at rest (the player looks through it all the time), with a hex lattice that ripples from the point of each hit and flashes when the shield breaks or returns. Its ripple loop only runs while hits are active, because a full-screen effect at 3440×1440 is not free.
+- **Hits carry their origin** (`Turret.take_damage(amount, from_position)`) so ripples appear on the side the damage came from.
+- **HUD:** shield bar above the hull bar, a vertical power gauge (weapons orange on top, shields blue below) that slides on each wheel step, "SHIELDS DOWN" message. The debug overlay shows the live recharge rate and weapon output.
+- **No audio tick yet** for the wheel step; it arrives with the M8 audio pass.
+- **Screen-space shield-impact distortion** (spec 3.2) is left for the M6 graphics pass; the dome ripple covers the feedback for now.
+- **Numpad Enter** also confirms (Marko's request).

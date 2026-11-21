@@ -32,3 +32,18 @@ Automated demo, 60 s of stage 3 (bombers, interceptors and drone swarms, up to a
 Notes:
 - Every enemy is still its own node with its own script; the MultiMesh swarm manager and pooling come in M7.
 - The 1 % low is again slightly under the 120 fps target while the worst frame is only 10 ms, so the lows are many mildly slow frames rather than hitches. Likely candidates: the group lookups per missile detonation and lock search, and per-frame HUD redraw. To be profiled in M7.
+
+## M3 (2026-11-21)
+
+Same run as M2 (stage 3, 45 to 60 s, fullscreen 3440×1440, V-Sync off, god mode), now with the shield dome.
+
+| Build | Average fps | 1 % low | Worst frame |
+|---|---|---|---|
+| M2 (no dome) | 255 | 113 | 10.2 ms |
+| M3, first dome shader | 160 | 112 | 11.4 ms |
+| M3, ripple loop skipped when idle | 206 | 113 | 10.1 ms |
+
+Notes:
+- The dome covers the whole screen, so every per-pixel instruction in its shader costs about 5 million evaluations per frame. Skipping the 8-impact ripple loop when no hit is active recovered most of the loss.
+- God mode is a worst case for the dome: drones ram the turret constantly, so ripples are active most of the time. In normal play the dome is idle more often.
+- Remaining cost to look at in M7: the hex lattice maths per pixel (could come from a small texture instead), and drawing the dome at reduced resolution.
