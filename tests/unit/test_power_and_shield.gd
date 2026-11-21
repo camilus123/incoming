@@ -157,3 +157,22 @@ func test_shipped_shield_matches_the_spec() -> void:
 	assert_eq(data["capacity"], 100.0)
 	assert_eq(data["recharge_per_s"], 12.0)
 	assert_eq(data["recharge_delay_s"], 3.0)
+
+
+func test_conformal_shell_grows_a_box_and_keeps_corners_joined() -> void:
+	var box: BoxMesh = BoxMesh.new()
+	box.size = Vector3(2.0, 1.0, 4.0)
+	var shell: ArrayMesh = ShieldSkin.build_shell_mesh(box, 0.1)
+	assert_eq(shell.get_surface_count(), 1)
+	var bounds: AABB = shell.get_aabb()
+	assert_almost_eq(bounds.size, Vector3(2.2, 1.2, 4.2), Vector3.ONE * 0.001, "every face moved out by the offset")
+	# All vertices that started at one corner must end at the same place.
+	var source: PackedVector3Array = box.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var grown: PackedVector3Array = shell.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var corner: Vector3 = Vector3(1.0, 0.5, 2.0)
+	var found: int = 0
+	for index: int in source.size():
+		if source[index].is_equal_approx(corner):
+			found += 1
+			assert_almost_eq(grown[index], Vector3(1.1, 0.6, 2.1), Vector3.ONE * 0.001)
+	assert_gte(found, 3, "a box corner belongs to three faces")

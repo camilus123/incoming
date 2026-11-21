@@ -348,6 +348,7 @@ One file per shield configuration. The turret's starting shield is `default_load
 | `recharge_delay_s` | Seconds after the last hit before recharging starts |
 | `visuals.style` | `dome`: a large bubble around the emplacement. `conformal`: an energy skin that hugs the turret and guns |
 | `visuals.dome_radius_m` | Size of the dome (dome style only) |
+| `visuals.conformal_offset_m` | How far the shell floats above the hull (conformal style only) |
 | `visuals.color` | Colour of the shield effect |
 
 ## Planned formats
