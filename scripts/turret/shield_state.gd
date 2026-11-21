@@ -12,6 +12,8 @@ var recharge_delay_s: float = 3.0
 ## Share of the base recharge that always applies, whatever the power split
 ## (Bastion IV: 0.25). 0 = none.
 var min_recharge_multiplier: float = 0.0
+## Temporary recharge boost from special effects (Reflex Field). 1 = none.
+var bonus_recharge_multiplier: float = 1.0
 
 var _time_since_hit_s: float = 0.0
 var _was_empty: bool = false
@@ -22,6 +24,7 @@ func configure(shield_data: Dictionary) -> void:
 	capacity = shield_data.get("capacity", 0.0)
 	recharge_per_s = shield_data.get("recharge_per_s", 0.0)
 	recharge_delay_s = shield_data.get("recharge_delay_s", 3.0)
+	min_recharge_multiplier = shield_data.get("min_recharge_multiplier", 0.0)
 	refill()
 
 
@@ -59,7 +62,7 @@ func tick(delta_s: float, recharge_multiplier: float) -> int:
 		_was_empty = true
 		event = -1
 	_time_since_hit_s += delta_s
-	var multiplier: float = maxf(recharge_multiplier, min_recharge_multiplier)
+	var multiplier: float = maxf(recharge_multiplier, min_recharge_multiplier) * bonus_recharge_multiplier
 	if charge < capacity and _time_since_hit_s >= recharge_delay_s and multiplier > 0.0:
 		charge = minf(capacity, charge + recharge_per_s * multiplier * delta_s)
 		if _was_empty and charge >= capacity:

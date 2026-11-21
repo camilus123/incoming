@@ -32,13 +32,18 @@ func _ready() -> void:
 			child.process_mode = Node.PROCESS_MODE_PAUSABLE
 
 
+## Scenes can forbid pausing in some states (the shop has nothing to pause).
+func _can_pause() -> bool:
+	return true
+
+
 ## Hook for scenes that need to prepare for the automated demo.
 func _on_demo_started() -> void:
 	pass
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(ACTION_PAUSE):
+	if event.is_action_pressed(ACTION_PAUSE) and (_can_pause() or get_tree().paused):
 		_set_paused(not get_tree().paused)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(ACTION_CAMERA_TOGGLE) and OS.is_debug_build():
@@ -47,10 +52,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _notification(what: int) -> void:
 	# Give the mouse back when the window loses focus.
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and _turret.player_input_enabled and not get_tree().paused:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and _turret.player_input_enabled and not get_tree().paused and _can_pause():
 		_set_paused(true)
 
 
 func _set_paused(paused: bool) -> void:
 	get_tree().paused = paused
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if paused else Input.MOUSE_MODE_CAPTURED
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if (paused or not _can_pause()) else Input.MOUSE_MODE_CAPTURED

@@ -155,6 +155,10 @@ func _on_stage_ended(stage: int, result: String) -> void:
 		roundi(stats.accuracy_percent()), roundi(turret.hull)])
 	if result == "COMPLETE" and _stop_after_stage > 0 and stage >= _stop_after_stage:
 		_finish()
+	elif not _screenshot_dir.is_empty():
+		# Capture the result screen once it has faded in.
+		await get_tree().create_timer(1.0, true, false, true).timeout
+		_save_screenshot("result_stage_%d" % stages.stage_number)
 
 func _save_screenshot(file_name: String) -> void:
 	if _screenshot_dir.is_empty() or DisplayServer.get_name() == "headless":

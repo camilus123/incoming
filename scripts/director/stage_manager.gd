@@ -1,14 +1,15 @@
 class_name StageManager
 extends Node
-## Runs the stages: intro, waves, completion and game over.
+## Runs the game loop: shop, stage intro, waves, rewards and game over.
 ##
+## shop -> intro -> running -> complete (rewards) -> shop -> ...
 ## Stage data comes from data/stages (authored) or from [WaveDirector]
-## (generated). Until the shop exists (M4) the turret is fully repaired and
-## re-armed at the start of every stage.
+## (generated). The run itself (credits, upgrades, hull) lives in [GameState];
+## it is saved every time the shop opens.
 
 signal state_changed(state: State)
 
-enum State { IDLE, INTRO, RUNNING, COMPLETE, GAME_OVER }
+enum State { IDLE, SHOP, INTRO, RUNNING, COMPLETE, GAME_OVER }
 
 const GROUP: StringName = &"stage_manager"
 const ACTION_CONFIRM: StringName = &"confirm"
@@ -19,10 +20,16 @@ var state: State = State.IDLE
 var stage_number: int = 1
 var stage_data: Dictionary = {}
 var stats: StageStats = StageStats.new()
+## Itemised reward of the stage just completed (see [RewardCalculator]).
+var reward_lines: Array[Dictionary] = []
 ## Index of the wave that is spawning or was spawned last (0-based).
 var wave_index: int = 0
-## Continue past result screens without input (automated demo).
+## Continue past result screens and the shop without input (automated demo).
 var auto_advance: bool = false
+## With auto_advance: buy every affordable upgrade in the shop first.
+var auto_buy: bool = false
+## With auto_advance: how long the shop stays open.
+var auto_shop_s: float = 1.5
 
 var _turret: Turret
 var _enemies: EnemyManager
@@ -37,6 +44,7 @@ var _since_wave_spawned_s: float = 0.0
 var _spawn_queue: Array[Dictionary] = []
 var _spawn_clock_s: float = 0.0
 var _stage_budget: float = 0.0
+var _auto_bought: bool = false
 
 
 func _enter_tree() -> void:
@@ -65,24 +73,50 @@ func get_state_time() -> float:
 	return _state_time_s
 
 
+## Data of a stage: the authored file, or a generated stage beyond those.
+func get_stage_data(number: int) -> Dictionary:
+	var data: Dictionary = GameData.loader.get_entry("stages", "stage_%02d" % number)
+	if data.is_empty():
+		data = WaveDirector.procedural_stage(number, GameData.loader.get_config("director"), GameData.loader.get_category("enemies"))
+	return data
+
+
+## Opens the shop before the run's next stage and autosaves.
+func open_shop() -> void:
+	_enemies.clear_all()
+	GameState.save_run()
+	stage_number = GameState.stage
+	stage_data = get_stage_data(stage_number)
+	_turret.apply_player_state()
+	_turret.restore_for_stage()
+	_auto_bought = false
+	_set_state(State.SHOP)
+
+
+## Leaves the shop and starts the run's next stage.
+func continue_from_shop() -> void:
+	if state == State.SHOP:
+		start_stage(GameState.stage)
+
+
 ## Starts (or restarts) a stage from a clean field.
 func start_stage(number: int) -> void:
 	stage_number = maxi(1, number)
 	_director = GameData.loader.get_config("director")
 	var difficulty_config: Dictionary = GameData.loader.get_config("difficulty")
 	_difficulty = (difficulty_config.get("levels", {}) as Dictionary).get(difficulty_config.get("default", "normal"), {})
-	stage_data = GameData.loader.get_entry("stages", "stage_%02d" % stage_number)
-	if stage_data.is_empty():
-		stage_data = WaveDirector.procedural_stage(stage_number, _director, GameData.loader.get_category("enemies"))
+	stage_data = get_stage_data(stage_number)
 	_stage_budget = WaveDirector.threat_budget(stage_number, _director, _difficulty.get("threat_budget_mult", 1.0))
 
 	_enemies.clear_all()
 	_enemies.difficulty = _difficulty
+	_turret.apply_player_state()
 	_turret.restore_for_stage()
 	stats = StageStats.new()
 	stats.stage = stage_number
 	stats.hull_max = _turret.max_hull
 	stats.hull_end = _turret.hull
+	reward_lines = []
 	wave_index = 0
 	_wave_started = false
 	_spawn_queue.clear()
@@ -94,6 +128,12 @@ func start_stage(number: int) -> void:
 func _process(delta_s: float) -> void:
 	_state_time_s += delta_s
 	match state:
+		State.SHOP:
+			if auto_advance and auto_buy and not _auto_bought:
+				_auto_bought = true
+				_buy_everything_affordable()
+			if auto_advance and _state_time_s >= auto_shop_s:
+				continue_from_shop()
 		State.INTRO:
 			if _state_time_s >= float(_director.get("intro_s", 3.0)):
 				_set_state(State.RUNNING)
@@ -102,20 +142,39 @@ func _process(delta_s: float) -> void:
 			_update_waves(delta_s)
 		State.COMPLETE:
 			if auto_advance and _state_time_s >= AUTO_ADVANCE_S:
-				start_stage(stage_number + 1)
+				open_shop()
 		State.GAME_OVER:
 			if auto_advance and _state_time_s >= AUTO_ADVANCE_S:
-				start_stage(stage_number)
+				_retry_from_save()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if state == State.COMPLETE and event.is_action_pressed(ACTION_CONFIRM):
-		start_stage(stage_number + 1)
+		open_shop()
 	elif state == State.GAME_OVER:
 		if event.is_action_pressed(ACTION_RETRY):
-			start_stage(stage_number)
+			_retry_from_save()
 		elif event.is_action_pressed(ACTION_CONFIRM):
-			start_stage(1)
+			GameState.new_run()
+			open_shop()
+
+
+## Back to the last autosave: the shop before the stage that was lost.
+func _retry_from_save() -> void:
+	if not GameState.load_run():
+		# No save (non-persistent run): keep the upgrades, repair, try again.
+		GameState.hull = -1.0
+	open_shop()
+
+
+func _buy_everything_affordable() -> void:
+	var bought: bool = true
+	while bought:
+		bought = false
+		for id: String in GameState.tree.get_node_ids():
+			if GameState.buy(id):
+				bought = true
+	GameState.repair_hull()
 
 
 func _update_waves(delta_s: float) -> void:
@@ -174,8 +233,15 @@ func _begin_wave() -> void:
 	EventBus.wave_started.emit(stage_number, wave_index + 1)
 
 
+## The stage is won: work out the reward and advance the run.
 func _complete_stage() -> void:
 	stats.hull_end = _turret.hull
+	reward_lines = RewardCalculator.calculate(stats, stage_data, GameData.loader.get_config("economy"), _difficulty.get("reward_mult", 1.0))
+	GameState.hull = _turret.hull
+	GameState.stage = stage_number + 1
+	GameState.statistics["stages_cleared"] = int(GameState.statistics.get("stages_cleared", 0)) + 1
+	GameState.statistics["kills"] = int(GameState.statistics.get("kills", 0)) + stats.kills
+	GameState.add_credits(RewardCalculator.total(reward_lines))
 	_set_state(State.COMPLETE)
 	EventBus.stage_completed.emit(stage_number)
 

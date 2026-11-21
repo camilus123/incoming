@@ -27,6 +27,7 @@ var _cooldowns: PackedFloat32Array = []
 var _sequence_attack: Dictionary = {}
 var _sequence_left: int = 0
 var _sequence_timer_s: float = 0.0
+var _stagger_left_s: float = 0.0
 
 
 ## Builds the enemy from its data. Called once, before it enters the tree.
@@ -72,6 +73,12 @@ func _process(delta_s: float) -> void:
 		return
 	for index: int in _cooldowns.size():
 		_cooldowns[index] = maxf(0.0, _cooldowns[index] - delta_s)
+	if _stagger_left_s > 0.0:
+		# Staggered: drifts and cannot act until it recovers.
+		_stagger_left_s -= delta_s
+		velocity = velocity.lerp(Vector3.ZERO, 1.0 - exp(-3.0 * delta_s))
+		global_position += velocity * delta_s
+		return
 	for behaviour: EnemyBehaviour in _behaviours:
 		behaviour.tick(delta_s)
 		if not is_inside_tree() or is_queued_for_deletion():
@@ -148,6 +155,12 @@ func get_attack_range(attack_type: String) -> float:
 	return 0.0
 
 
+## Knocks the enemy out of control for a while (Phase Pulse, later EMP).
+func stagger(seconds: float) -> void:
+	_stagger_left_s = maxf(_stagger_left_s, seconds)
+	_sequence_left = 0
+
+
 ## Takes the enemy out of the fight (hidden, cannot be hit) or brings it back.
 func set_away(is_away: bool) -> void:
 	away = is_away
@@ -193,9 +206,9 @@ func _perform(attack: Dictionary) -> void:
 	var origin: Vector3 = _hardpoint.global_position if _hardpoint != null else global_position
 	match attack["type"]:
 		"collision":
-			_turret.take_damage(damage, global_position)
+			_turret.take_damage(damage, global_position, attack.get("damage_type", "kinetic"))
 		"hitscan_burst":
-			_turret.take_damage(damage, origin)
+			_turret.take_damage(damage, origin, attack.get("damage_type", "energy"))
 			var fx: CombatFx = _manager.get_fx()
 			if fx != null:
 				var color_values: Array = attack.get("color", [1.0, 0.3, 0.2])
