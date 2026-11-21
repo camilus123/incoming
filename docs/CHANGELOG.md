@@ -2,6 +2,16 @@
 
 Updated at every merge to `main`.
 
+## M3: Shields and power (2026-11-21)
+
+- Shield system: capacity, recharge rate and delay from `data/shields/`; shields absorb damage before the hull.
+- Power split on the mouse wheel (middle click resets): shield recharge 0× to 2×, weapon output 0.5× to 1.5×, all from `power.json`.
+- Energy weapons scale damage with power; kinetic weapons scale fire rate and cooling; missiles are unaffected.
+- Shield dome effect with hex lattice, impact ripples and break/restore flashes.
+- HUD: shield bar, power gauge, "SHIELDS DOWN" message, live power numbers in the debug overlay.
+- Distance-assisted hitboxes and easier M2 enemy values (from M2 feedback); numpad Enter confirms.
+- 72 unit tests.
+
 ## M2: Enemies and stages (2026-11-21)
 
 - Enemy framework: `Enemy` on top of `CombatTarget`, data-driven stats, behaviours and attacks, `EnemyManager`.

@@ -193,9 +193,9 @@ func _perform(attack: Dictionary) -> void:
 	var origin: Vector3 = _hardpoint.global_position if _hardpoint != null else global_position
 	match attack["type"]:
 		"collision":
-			_turret.take_damage(damage)
+			_turret.take_damage(damage, global_position)
 		"hitscan_burst":
-			_turret.take_damage(damage)
+			_turret.take_damage(damage, origin)
 			var fx: CombatFx = _manager.get_fx()
 			if fx != null:
 				var color_values: Array = attack.get("color", [1.0, 0.3, 0.2])

@@ -2,7 +2,7 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M2 (enemies and stages)**. The game starts at stage 1; stages 1 to 3 are authored and later ones are generated. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **M3 (shields and power)**. The game starts at stage 1; stages 1 to 3 are authored and later ones are generated. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
 
@@ -11,6 +11,8 @@ Status: **M2 (enemies and stages)**. The game starts at stage 1; stages 1 to 3 a
 | Mouse | Aim |
 | Left mouse button (hold) | Fire the Pulse Laser |
 | Right mouse button (hold, then release) | Lock targets near the crosshair, release to launch missiles |
+| Mouse wheel up / down | Shift power towards weapons / shields |
+| Middle mouse click | Reset the power split to 50/50 |
 | Esc | Pause and release the mouse |
 | Enter or Space | Continue after a stage, or restart from stage 1 after game over |
 | R | Retry the stage after game over |

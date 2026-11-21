@@ -132,7 +132,7 @@ Power split between shields and weapons. `weapon_share = 1 − shield_share`.
 | `aim.smoothing_default_s` | Default turret weight (time constant in seconds, 0 = none) |
 | `aim.degrees_per_mouse_count` | Degrees turned per mouse count at sensitivity 1.0 |
 | `model` | Asset ID of the turret model |
-| `default_loadout.primary / alternate` | Weapon ids equipped at the start |
+| `default_loadout.primary / alternate / shield` | Weapon ids and shield id equipped at the start |
 | `camera.screen_shake_max_deg` | Largest screen shake angle |
 | `hull.max` | Base hull points |
 | `camera.fov_horizontal_deg_at_16_9` | Default horizontal FOV at 16:9; wider screens see more |
@@ -326,10 +326,33 @@ Authored stages, numbered from 1 without gaps (`stage_01.json`, ...). Later stag
 | `default_spawn` | Spawn ranges used when neither the group, the stage nor the enemy sets them |
 | `procedural.*` | Rules for generated stages: number of waves, delay, how the yaw arc widens, par time |
 
+## shields/*.json
+
+One file per shield configuration. The turret's starting shield is `default_loadout.shield` in `turret.json`.
+
+```json
+{
+  "id": "basic_deflector",
+  "display_name": "Basic Deflector",
+  "capacity": 100.0,
+  "recharge_per_s": 12.0,
+  "recharge_delay_s": 3.0,
+  "visuals": { "style": "dome", "dome_radius_m": 14.0, "color": [0.3, 0.8, 1.0] }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `capacity` | Damage the shield absorbs before the hull is hit |
+| `recharge_per_s` | Refill rate at the neutral power split; multiplied by the split's shield recharge multiplier |
+| `recharge_delay_s` | Seconds after the last hit before recharging starts |
+| `visuals.style` | `dome`: a large bubble around the emplacement. `conformal`: an energy skin that hugs the turret and guns |
+| `visuals.dome_radius_m` | Size of the dome (dome style only) |
+| `visuals.conformal_offset_m` | How far the shell floats above the hull (conformal style only) |
+| `visuals.color` | Colour of the shield effect |
+
 ## Planned formats
 
 Added in the milestone that first uses them:
-
-- `shields/*.json` (M3)
 - `enemies/*.json`, `behaviours/*.json`, `stages/stage_NN.json`, `stages/director.json` (M2)
 - `techtree/tree.json` with generic modifiers and the effect registry (M4)

@@ -24,6 +24,8 @@ signal enemy_projectile_intercepted(projectile_id: StringName)
 signal shield_broken()
 signal shield_restored()
 signal hull_damaged(amount: float, remaining: float)
+## The shield absorbed (part of) a hit.
+signal shield_hit(amount: float, remaining: float)
 signal turret_destroyed()
 signal power_split_changed(shield_share: float)
 

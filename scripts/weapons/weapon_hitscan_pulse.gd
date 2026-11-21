@@ -20,8 +20,8 @@ func _update_weapon(delta_s: float) -> void:
 	if not (trigger_held and heat.can_fire() and has_ammo()):
 		_cooldown_s = maxf(_cooldown_s, 0.0)
 		return
-	# Energy weapons keep their fire rate; power changes their damage instead.
-	var interval_s: float = 1.0 / float(data.get("fire_rate", 1.0))
+	# Energy weapons keep their fire rate (scale 1); power changes their damage instead.
+	var interval_s: float = 1.0 / (float(data.get("fire_rate", 1.0)) * get_rate_scale())
 	var shots: int = 0
 	while _cooldown_s <= 0.0 and shots < MAX_SHOTS_PER_FRAME and heat.can_fire() and has_ammo():
 		_fire()
@@ -43,7 +43,7 @@ func _fire() -> void:
 		end = hit["position"]
 		var hurtbox: Hurtbox = hit["collider"] as Hurtbox
 		if hurtbox != null:
-			_damage_info.amount = float(data.get("damage", 0.0)) * (_context.power_output if data.get("uses_power", true) else 1.0)
+			_damage_info.amount = float(data.get("damage", 0.0)) * get_damage_scale()
 			_damage_info.hit_position = end
 			hurtbox.apply_hit(_damage_info)
 
@@ -51,7 +51,9 @@ func _fire() -> void:
 		ammo -= 1
 	var muzzle: Vector3 = _muzzle_position(_take_muzzle())
 	if _context.fx != null:
-		_context.fx.tracer(muzzle, end, _tracer_color, _visual("tracer_width_m", 0.1), _visual("tracer_life_s", 0.07))
+		# More power makes the bolt visibly brighter and thicker.
+		var power: float = get_damage_scale()
+		_context.fx.tracer(muzzle, end, _tracer_color, float(_visual("tracer_width_m", 0.1)) * (0.6 + 0.4 * power), _visual("tracer_life_s", 0.07), 4.0 * power)
 		_context.fx.flash(muzzle, 0.05, 0.22, _tracer_color, 0.05, 6.0)
 		if not hit.is_empty():
 			_context.fx.flash(end, 0.3, _visual("impact_radius_m", 2.0), _tracer_color, 0.12, 5.0)

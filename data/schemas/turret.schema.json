@@ -37,7 +37,8 @@
       "required": true,
       "fields": {
         "primary": { "type": "string", "default": "pulse_laser" },
-        "alternate": { "type": "string", "default": "micro_missile_pod" }
+        "alternate": { "type": "string", "default": "micro_missile_pod" },
+        "shield": { "type": "string", "default": "basic_deflector" }
       }
     }
   }

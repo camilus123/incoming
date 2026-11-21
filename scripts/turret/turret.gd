@@ -13,7 +13,13 @@ const SLOTS: Array[StringName] = [SLOT_PRIMARY, SLOT_ALTERNATE]
 const FIRE_ACTIONS: Dictionary = {SLOT_PRIMARY: &"fire_primary", SLOT_ALTERNATE: &"fire_alternate"}
 const MOUNT_SOCKETS: Dictionary = {SLOT_PRIMARY: "Mount_Primary", SLOT_ALTERNATE: "Mount_Alternate"}
 
+const ACTION_POWER_TO_WEAPONS: StringName = &"power_to_weapons"
+const ACTION_POWER_TO_SHIELDS: StringName = &"power_to_shields"
+const ACTION_POWER_RESET: StringName = &"power_reset"
+
 var aim: TurretAim = TurretAim.new()
+var power: PowerSystem = PowerSystem.new()
+var shield: ShieldState = ShieldState.new()
 var rig: CameraRig
 var hull: float = 0.0
 var max_hull: float = 0.0
@@ -40,6 +46,8 @@ var _pitch_in_yaw: Transform3D
 var _anchor_in_pitch: Transform3D
 var _degrees_per_count: float = 0.04
 var _smoothing_default_s: float = 0.03
+var _shield_visual: ShieldVisual
+var _shield_id: String = ""
 
 
 func _enter_tree() -> void:
@@ -63,7 +71,9 @@ func _ready() -> void:
 	_context.fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
 	_context.missiles = get_tree().get_first_node_in_group(MissileSystem.GROUP) as MissileSystem
 
+	power.configure(GameData.loader.get_config("power"))
 	var loadout: Dictionary = _block("default_loadout")
+	equip_shield(loadout.get("shield", ""))
 	for slot: StringName in SLOTS:
 		equip(slot, loadout.get(String(slot), ""))
 	EventBus.data_reloaded.connect(_on_data_reloaded)
@@ -89,7 +99,47 @@ func equip(slot: StringName, weapon_id: String) -> bool:
 	(_mounts[slot] as Node3D).add_child(weapon)
 	_weapons[slot] = weapon
 	_equipped_ids[slot] = weapon_id
+	if _shield_visual != null:
+		_shield_visual.attach.call_deferred(_model)
 	return true
+
+
+## Installs the shield with the given data id (fully charged).
+func equip_shield(shield_id: String) -> bool:
+	var shield_data: Dictionary = GameData.loader.get_entry("shields", shield_id)
+	if shield_data.is_empty():
+		push_warning("Turret: unknown shield \"%s\"" % shield_id)
+		return false
+	_shield_id = shield_id
+	shield.configure(shield_data)
+	# The look of the shield (dome or conformal skin) is part of its data.
+	var visuals: Dictionary = shield_data.get("visuals", {})
+	var style: String = visuals.get("style", "dome")
+	if _shield_visual == null or _shield_visual.get_style() != style:
+		if _shield_visual != null:
+			_shield_visual.detach()
+			_shield_visual.queue_free()
+		_shield_visual = ShieldVisual.create(style)
+		_shield_visual.name = "ShieldVisual"
+		add_child(_shield_visual)
+	_shield_visual.configure(visuals)
+	_shield_visual.attach(_model)
+	return true
+
+
+## Moves the power split one step: +1 towards weapons, -1 towards shields,
+## 0 resets it. Returns true if it changed.
+func shift_power(direction: int) -> bool:
+	var changed: bool = false
+	if direction > 0:
+		changed = power.shift_to_weapons()
+	elif direction < 0:
+		changed = power.shift_to_shields()
+	else:
+		changed = power.reset()
+	if changed:
+		EventBus.power_split_changed.emit(power.shield_share)
+	return changed
 
 
 ## The point enemies fly at and shoot at (roughly the gun cradle).
@@ -97,13 +147,25 @@ func get_hit_point() -> Vector3:
 	return global_transform * _yaw_in_turret.origin + Vector3.UP * 0.8
 
 
-## Damages the turret. Until shields exist (M3) everything hits the hull.
-func take_damage(amount: float) -> void:
+## Damages the turret. The shield absorbs what it can; the rest hits the hull.
+## `from_position` is where the hit came from (for the shield ripple).
+func take_damage(amount: float, from_position: Vector3 = Vector3.INF) -> void:
 	if destroyed or invulnerable or amount <= 0.0:
 		return
-	hull = maxf(0.0, hull - amount)
-	rig.add_shake(clampf(amount / 40.0, 0.15, 0.8))
-	EventBus.hull_damaged.emit(amount, hull)
+	var through: float = amount
+	if shield.is_up():
+		through = shield.absorb(amount)
+		_shield_visual.add_impact(from_position if from_position.is_finite() else get_hit_point() + Vector3.UP)
+		rig.add_shake(clampf(amount / 120.0, 0.05, 0.3))
+		EventBus.shield_hit.emit(amount - through, shield.charge)
+		if not shield.is_up():
+			_shield_visual.flash(1.0)
+			EventBus.shield_broken.emit()
+	if through <= 0.0:
+		return
+	hull = maxf(0.0, hull - through)
+	rig.add_shake(clampf(through / 40.0, 0.15, 0.8))
+	EventBus.hull_damaged.emit(through, hull)
 	if hull <= 0.0:
 		destroyed = true
 		EventBus.turret_destroyed.emit()
@@ -114,6 +176,7 @@ func take_damage(amount: float) -> void:
 func restore_for_stage() -> void:
 	destroyed = false
 	hull = max_hull
+	shield.refill()
 	for slot: StringName in SLOTS:
 		var weapon: Weapon = _weapons.get(slot)
 		if weapon != null:
@@ -159,7 +222,23 @@ func _input(event: InputEvent) -> void:
 	aim.apply_input(motion.screen_relative.x * sensitivity, -motion.screen_relative.y * sensitivity * pitch_scale)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not player_input_enabled or destroyed or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		return
+	if event.is_action_pressed(ACTION_POWER_TO_WEAPONS):
+		shift_power(1)
+	elif event.is_action_pressed(ACTION_POWER_TO_SHIELDS):
+		shift_power(-1)
+	elif event.is_action_pressed(ACTION_POWER_RESET):
+		shift_power(0)
+
+
 func _process(delta_s: float) -> void:
+	_context.power_output = power.weapon_output_multiplier()
+	if not destroyed and shield.tick(delta_s, power.shield_recharge_multiplier()) > 0:
+		_shield_visual.flash(0.6)
+		EventBus.shield_restored.emit()
+	_shield_visual.set_charge(shield.get_fraction())
 	if player_input_enabled:
 		var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		for slot: StringName in SLOTS:
@@ -232,6 +311,11 @@ func _on_data_reloaded(_report: DataReport) -> void:
 	_config = GameData.loader.get_config("turret")
 	_read_config()
 	rig.configure(_block("camera"))
+	power.configure(GameData.loader.get_config("power"), false)
+	if not _shield_id.is_empty():
+		var charge_fraction: float = shield.get_fraction()
+		equip_shield(_shield_id)
+		shield.charge = shield.capacity * charge_fraction
 	for slot: StringName in SLOTS:
 		if _equipped_ids.has(slot):
 			equip(slot, _equipped_ids[slot])

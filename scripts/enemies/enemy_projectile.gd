@@ -65,7 +65,7 @@ func get_hit_radius() -> float:
 func _impact(distance_to_turret: float) -> void:
 	var blast_radius_m: float = _projectile.get("blast_radius_m", 10.0)
 	if distance_to_turret <= blast_radius_m:
-		_turret.take_damage(damage)
+		_turret.take_damage(damage, global_position)
 	_explode(blast_radius_m)
 	_manager.notify_projectile_gone(self)
 	queue_free()

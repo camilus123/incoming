@@ -14,6 +14,7 @@
   ],
   "collections": [
     { "category": "weapons", "directory": "weapons", "schema": "schemas/weapon.schema.json" },
+    { "category": "shields", "directory": "shields", "schema": "schemas/shield.schema.json" },
     { "category": "behaviours", "directory": "behaviours", "schema": "schemas/behaviour.schema.json" },
     { "category": "enemies", "directory": "enemies", "schema": "schemas/enemy.schema.json" },
     { "category": "stages", "directory": "stages", "schema": "schemas/stage.schema.json", "file_pattern": "stage_*.json" }

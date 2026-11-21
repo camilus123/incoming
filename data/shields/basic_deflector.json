@@ -1,0 +1,13 @@
+{
+  "id": "basic_deflector",
+  "display_name": "Basic Deflector",
+  "capacity": 100.0,
+  "recharge_per_s": 12.0,
+  "recharge_delay_s": 3.0,
+  "visuals": {
+    "style": "dome",
+    "dome_radius_m": 14.0,
+    "conformal_offset_m": 0.06,
+    "color": [0.3, 0.8, 1.0]
+  }
+}

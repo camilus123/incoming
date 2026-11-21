@@ -11,6 +11,7 @@ extends Node
 ##   --screenshot-dir=PATH   save PNG screenshots there
 ##   --demo-stages=N         also stop once stage N is completed
 ##   --demo-speed=X          run the game X times faster (for quick checks, not for fps)
+##   --demo-power            step the power split every 2 s and print its effects
 
 const WARMUP_S: float = 2.0
 const AIM_SPEED_DEG_S: float = 160.0
@@ -29,6 +30,9 @@ var _frame_times_ms: PackedFloat32Array = []
 var _last_tick_usec: int = 0
 var _finished: bool = false
 var _stop_after_stage: int = 0
+var _cycle_power: bool = false
+var _power_timer_s: float = 0.0
+var _power_direction: int = 1
 
 
 func _ready() -> void:
@@ -46,6 +50,7 @@ func _ready() -> void:
 	Engine.max_fps = 0
 	_last_tick_usec = Time.get_ticks_usec()
 	EventBus.stage_completed.connect(_on_stage_ended.bind("COMPLETE"))
+	_cycle_power = OS.get_cmdline_user_args().has("--demo-power")
 	if OS.get_cmdline_user_args().has("--demo-log-damage"):
 		EventBus.hull_damaged.connect(func(amount: float, remaining: float) -> void: print("DAMAGE t=%.1f amount=%.1f hull=%.0f" % [_time_s, amount, remaining]))
 	EventBus.turret_destroyed.connect(_on_stage_ended.bind(0, "GAME_OVER"))
@@ -60,10 +65,12 @@ func _process(delta_s: float) -> void:
 	_last_tick_usec = now_usec
 	_time_s += delta_s
 
+	if _cycle_power:
+		_update_power_cycle(delta_s)
 	var edge_phase: bool = _time_s > _duration_s - 3.0
 	if edge_phase:
-		# Push into the right-hand yaw limit to exercise the arc clamp.
-		turret.aim.apply_input(AIM_SPEED_DEG_S * delta_s, 0.0)
+		# Push into the right-hand yaw limit and the lower pitch limit to exercise the arc clamp.
+		turret.aim.apply_input(AIM_SPEED_DEG_S * delta_s, -AIM_SPEED_DEG_S * delta_s)
 		turret.set_trigger(Turret.SLOT_PRIMARY, false)
 	else:
 		_track_targets(delta_s)
@@ -118,6 +125,24 @@ func _pick_target() -> CombatTarget:
 			best_distance = distance
 			best = target
 	return best
+
+
+## Walks the power split up and down and prints what each step does.
+func _update_power_cycle(delta_s: float) -> void:
+	_power_timer_s += delta_s
+	if _power_timer_s < 2.0:
+		return
+	_power_timer_s = 0.0
+	if not turret.shift_power(_power_direction):
+		_power_direction = -_power_direction
+		turret.shift_power(_power_direction)
+	var weapon: Weapon = turret.get_weapon(Turret.SLOT_PRIMARY)
+	print("POWER shield_share=%.1f recharge_per_s=%.1f weapon_output=%.2f primary_damage=%.2f shield=%.0f" % [
+		turret.power.shield_share,
+		turret.shield.recharge_per_s * turret.power.shield_recharge_multiplier(),
+		turret.power.weapon_output_multiplier(),
+		float(weapon.data.get("damage", 0.0)) * turret.power.weapon_output_multiplier(),
+		turret.shield.charge])
 
 
 func _on_stage_ended(stage: int, result: String) -> void:

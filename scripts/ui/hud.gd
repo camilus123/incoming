@@ -11,6 +11,8 @@ const COLOR_DIM: Color = Color(0.6, 0.95, 1.0, 0.35)
 const COLOR_WARN: Color = Color(1.0, 0.7, 0.2, 0.95)
 const COLOR_ALERT: Color = Color(1.0, 0.25, 0.2, 0.95)
 const COLOR_LOCK: Color = Color(1.0, 0.3, 0.25, 0.95)
+const COLOR_SHIELD: Color = Color(0.35, 0.75, 1.0, 0.95)
+const COLOR_WEAPON: Color = Color(1.0, 0.6, 0.2, 0.95)
 const HEAT_RADIUS: float = 52.0
 const HIT_MARKER_S: float = 0.14
 const KILL_MARKER_S: float = 0.35
@@ -22,6 +24,9 @@ var _turret: Turret
 var _stages: StageManager
 var _enemies: EnemyManager
 var _damage_flash: float = 0.0
+var _shown_share: float = 0.5
+var _power_pulse: float = 0.0
+var _shield_flash: float = 0.0
 var _font: Font
 var _hit_left_s: float = 0.0
 var _kill_left_s: float = 0.0
@@ -37,6 +42,9 @@ func _ready() -> void:
 	EventBus.target_hit.connect(_on_target_hit)
 	EventBus.ui_message.connect(_on_ui_message)
 	EventBus.hull_damaged.connect(func(_amount: float, _remaining: float) -> void: _damage_flash = 1.0)
+	EventBus.shield_hit.connect(func(_amount: float, _remaining: float) -> void: _shield_flash = 1.0)
+	EventBus.power_split_changed.connect(func(_share: float) -> void: _power_pulse = 1.0)
+	EventBus.shield_broken.connect(_on_ui_message.bind("SHIELDS DOWN"))
 
 
 func _process(delta_s: float) -> void:
@@ -45,6 +53,10 @@ func _process(delta_s: float) -> void:
 		_stages = get_tree().get_first_node_in_group(StageManager.GROUP) as StageManager
 		_enemies = get_tree().get_first_node_in_group(EnemyManager.GROUP) as EnemyManager
 	_damage_flash = maxf(0.0, _damage_flash - delta_s * 2.5)
+	_shield_flash = maxf(0.0, _shield_flash - delta_s * 4.0)
+	_power_pulse = maxf(0.0, _power_pulse - delta_s * 3.0)
+	if _turret != null:
+		_shown_share = lerpf(_shown_share, _turret.power.shield_share, 1.0 - exp(-14.0 * delta_s))
 	_time_s += delta_s
 	_hit_left_s = maxf(0.0, _hit_left_s - delta_s)
 	_kill_left_s = maxf(0.0, _kill_left_s - delta_s)
@@ -75,6 +87,7 @@ func _draw() -> void:
 	_draw_arc_indicator(centre)
 	_draw_edge_warnings(centre)
 	_draw_hull()
+	_draw_power_gauge(centre)
 	_draw_messages(centre)
 	if OS.is_debug_build():
 		_draw_debug()
@@ -232,6 +245,13 @@ func _draw_edge_warnings(centre: Vector2) -> void:
 func _draw_hull() -> void:
 	var origin: Vector2 = Vector2(48.0, size.y - 64.0)
 	var bar: Vector2 = Vector2(260.0, 12.0)
+	# Shield bar above the hull bar.
+	var shield: ShieldState = _turret.shield
+	var shield_origin: Vector2 = origin + Vector2(0.0, -44.0)
+	var shield_color: Color = COLOR_SHIELD.lerp(Color.WHITE, _shield_flash * 0.7) if shield.is_up() else COLOR_ALERT
+	_text(shield_origin + Vector2(0.0, -8.0), "SHIELD  %d / %d" % [ceili(shield.charge), ceili(shield.capacity)], 14, shield_color, HORIZONTAL_ALIGNMENT_LEFT)
+	draw_rect(Rect2(shield_origin, bar), COLOR_DIM)
+	draw_rect(Rect2(shield_origin, Vector2(bar.x * shield.get_fraction(), bar.y)), shield_color)
 	var fraction: float = _turret.hull / _turret.max_hull if _turret.max_hull > 0.0 else 0.0
 	_text(origin + Vector2(0.0, -8.0), "HULL  %d / %d" % [ceili(_turret.hull), ceili(_turret.max_hull)], 14, COLOR_MAIN, HORIZONTAL_ALIGNMENT_LEFT)
 	draw_rect(Rect2(origin, bar), COLOR_DIM)
@@ -254,7 +274,9 @@ func _draw_debug() -> void:
 		"%d fps" % Engine.get_frames_per_second(),
 		"aim  yaw %+.1f°  pitch %+.1f°" % [aim.yaw_deg, aim.pitch_deg],
 		"data: " + GameData.last_report.summary(),
-		"F5 reload data   Esc pause",
+		_power_debug_line(),
+		_weapon_debug_line(),
+		"F5 reload data   Esc pause   wheel: power   middle click: reset",
 	]
 	for index: int in lines.size():
 		_text(Vector2(48.0, 48.0 + index * 18.0), lines[index], 13, COLOR_DIM.lightened(0.4), HORIZONTAL_ALIGNMENT_LEFT)
@@ -350,3 +372,44 @@ func _draw_threat(camera: Camera3D, view: Transform3D, screen: Rect2, centre: Ve
 	var base: Vector2 = tip - direction * 20.0
 	draw_colored_polygon(PackedVector2Array([tip, base + side, base - side]), color)
 	return 1
+
+## The always-visible power split: weapons on top, shields below. The divider
+## slides on every wheel step and the gauge brightens briefly.
+func _draw_power_gauge(centre: Vector2) -> void:
+	var height: float = 120.0
+	var width: float = 16.0
+	var top_left: Vector2 = Vector2(centre.x - 250.0, size.y - 40.0 - height)
+	var weapon_height: float = height * (1.0 - _shown_share)
+	var glow: float = 0.75 + 0.25 * _power_pulse
+	draw_rect(Rect2(top_left, Vector2(width, weapon_height)), Color(COLOR_WEAPON, glow))
+	draw_rect(Rect2(top_left + Vector2(0.0, weapon_height), Vector2(width, height - weapon_height)), Color(COLOR_SHIELD, glow))
+	draw_rect(Rect2(top_left, Vector2(width, height)), COLOR_MAIN, false, 1.0 + 2.0 * _power_pulse)
+	# Step marks and the default position.
+	var power: PowerSystem = _turret.power
+	var steps: int = roundi((power.max_share - power.min_share) / maxf(power.step, 0.01))
+	for index: int in range(1, steps):
+		var y: float = top_left.y + height * index / steps
+		draw_line(Vector2(top_left.x + width, y), Vector2(top_left.x + width + 4.0, y), COLOR_DIM, 1.0)
+	var divider_y: float = top_left.y + weapon_height
+	draw_line(Vector2(top_left.x - 6.0, divider_y), Vector2(top_left.x + width + 8.0, divider_y), Color.WHITE, 2.0)
+	_text(top_left + Vector2(-10.0, 12.0), "WPN %d%%" % roundi(power.get_weapon_share() * 100.0), 13, COLOR_WEAPON, HORIZONTAL_ALIGNMENT_RIGHT)
+	_text(top_left + Vector2(-10.0, height), "SHD %d%%" % roundi(power.shield_share * 100.0), 13, COLOR_SHIELD, HORIZONTAL_ALIGNMENT_RIGHT)
+
+
+## Debug overlay: what the power split does to the shield right now.
+func _power_debug_line() -> String:
+	var power: PowerSystem = _turret.power
+	var shield: ShieldState = _turret.shield
+	var multiplier: float = maxf(power.shield_recharge_multiplier(), shield.min_recharge_multiplier)
+	return "power: shield share %.1f   recharge x%.2f = %.1f/s   weapon output x%.2f" % [
+		power.shield_share, multiplier, shield.recharge_per_s * multiplier, power.weapon_output_multiplier()]
+
+
+## Debug overlay: what the power split does to the primary weapon right now.
+func _weapon_debug_line() -> String:
+	var weapon: Weapon = _turret.get_weapon(Turret.SLOT_PRIMARY)
+	if weapon == null:
+		return "primary: none"
+	var damage: float = float(weapon.data.get("damage", 0.0)) * weapon.get_damage_scale()
+	var rate: float = float(weapon.data.get("fire_rate", 0.0)) * weapon.get_rate_scale()
+	return "primary: %.1f dmg x %.1f /s = %.0f dps   cooling x%.2f" % [damage, rate, damage * rate, weapon.get_rate_scale()]

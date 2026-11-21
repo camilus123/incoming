@@ -21,6 +21,7 @@
   },
   "default_loadout": {
     "primary": "pulse_laser",
-    "alternate": "micro_missile_pod"
+    "alternate": "micro_missile_pod",
+    "shield": "basic_deflector"
   }
 }
