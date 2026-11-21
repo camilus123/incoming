@@ -1,0 +1,7 @@
+{
+  "type": "object",
+  "fields": {
+    "speed": { "type": "number", "min": 0, "default": 10 },
+    "name": { "type": "string", "default": "fallback" }
+  }
+}

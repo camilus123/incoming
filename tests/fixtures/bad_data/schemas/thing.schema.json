@@ -1,0 +1,7 @@
+{
+  "type": "object",
+  "fields": {
+    "id": { "type": "string", "required": true, "non_empty": true },
+    "hp": { "type": "number", "required": true, "min": 1 }
+  }
+}

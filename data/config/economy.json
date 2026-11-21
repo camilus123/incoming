@@ -1,0 +1,22 @@
+{
+  "_comment": "Credits and rewards (spec 3.10). respec_refund_ratio is 1.0 for now to make testing easier; the design value is 0.75.",
+  "starting_credits": 1500,
+  "stage_base": {
+    "base": 200,
+    "per_stage": 50
+  },
+  "accuracy_bonus_per_percent": 3,
+  "hull_bonus_per_percent": 4,
+  "no_shield_break_bonus": 250,
+  "speed_bonus": {
+    "_comment": "Full bonus when clear time <= par * full_bonus_ratio, none when >= par * zero_bonus_ratio, linear in between.",
+    "max": 300,
+    "full_bonus_ratio": 0.6,
+    "zero_bonus_ratio": 1.2
+  },
+  "intercept_bonus": 15,
+  "respec_refund_ratio": 1.0,
+  "hull_repair": {
+    "cost_per_point": 2.0
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "fields": {
+    "default": { "type": "string", "default": "normal", "non_empty": true },
+    "levels": {
+      "type": "dict",
+      "default": {
+        "normal": {
+          "display_name": "Normal",
+          "enemy_hp_mult": 1.0,
+          "enemy_damage_mult": 1.0,
+          "spawn_rate_mult": 1.0,
+          "threat_budget_mult": 1.0,
+          "reward_mult": 1.0
+        }
+      },
+      "values": {
+        "type": "object",
+        "fields": {
+          "display_name": { "type": "string", "required": true, "non_empty": true },
+          "enemy_hp_mult": { "type": "number", "min": 0.01, "default": 1.0 },
+          "enemy_damage_mult": { "type": "number", "min": 0.0, "default": 1.0 },
+          "spawn_rate_mult": { "type": "number", "min": 0.01, "default": 1.0 },
+          "threat_budget_mult": { "type": "number", "min": 0.01, "default": 1.0 },
+          "reward_mult": { "type": "number", "min": 0.0, "default": 1.0 }
+        }
+      }
+    }
+  }
+}

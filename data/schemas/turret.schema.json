@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "fields": {
+    "aim": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "yaw_min_deg": { "type": "number", "min": -180.0, "max": 0.0, "default": -80.0 },
+        "yaw_max_deg": { "type": "number", "min": 0.0, "max": 180.0, "default": 80.0 },
+        "pitch_min_deg": { "type": "number", "min": -90.0, "max": 90.0, "default": -5.0 },
+        "pitch_max_deg": { "type": "number", "min": -90.0, "max": 90.0, "default": 85.0 },
+        "edge_soft_zone_deg": { "type": "number", "min": 0.0, "max": 45.0, "default": 4.0 },
+        "smoothing_default_s": { "type": "number", "min": 0.0, "max": 0.5, "default": 0.03 }
+      }
+    },
+    "hull": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "max": { "type": "number", "min": 1.0, "default": 200.0 }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "fov_horizontal_deg_at_16_9": { "type": "number", "min": 50.0, "max": 130.0, "default": 90.0 },
+        "viewmodel_fov_deg": { "type": "number", "min": 20.0, "max": 120.0, "default": 55.0 }
+      }
+    }
+  }
+}

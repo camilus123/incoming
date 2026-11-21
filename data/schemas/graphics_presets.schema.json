@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "fields": {
+    "default": { "type": "string", "default": "high", "non_empty": true },
+    "presets": {
+      "type": "dict",
+      "required": true,
+      "values": {
+        "type": "object",
+        "fields": {
+          "display_name": { "type": "string", "required": true, "non_empty": true },
+          "render_scale": { "type": "number", "min": 0.25, "max": 2.0, "default": 1.0 },
+          "upscaler": { "type": "string", "enum": ["none", "fsr1", "fsr2"], "default": "none" },
+          "antialiasing": { "type": "string", "enum": ["none", "fxaa", "taa"], "default": "taa" },
+          "shadows": { "type": "string", "enum": ["off", "low", "medium", "high", "ultra"], "default": "high" },
+          "gi": { "type": "string", "enum": ["off", "ssil", "sdfgi"], "default": "off" },
+          "ssao": { "type": "bool", "default": true },
+          "ssr": { "type": "bool", "default": false },
+          "volumetric_fog": { "type": "bool", "default": false },
+          "glow": { "type": "bool", "default": true },
+          "particle_density": { "type": "number", "min": 0.1, "max": 3.0, "default": 1.0 },
+          "effect_view_distance_m": { "type": "number", "min": 100.0, "default": 4000.0 },
+          "max_active_particle_systems": { "type": "int", "min": 1, "default": 160 },
+          "max_decals": { "type": "int", "min": 0, "default": 64 }
+        }
+      }
+    }
+  }
+}
