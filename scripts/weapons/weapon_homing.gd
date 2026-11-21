@@ -100,7 +100,9 @@ func _update_launching(delta_s: float) -> void:
 		return
 	_launch_timer_s -= delta_s
 	while _launch_timer_s <= 0.0 and not _launch_queue.is_empty():
-		_launch(_launch_queue.pop_front())
+		var queued: Variant = _launch_queue.pop_front()
+		# The target may have been destroyed and freed while the missile waited.
+		_launch(queued as CombatTarget if is_instance_valid(queued) else null)
 		_launch_timer_s += maxf(_homing("launch_interval_s", 0.1), 0.001)
 
 

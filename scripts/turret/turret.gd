@@ -19,6 +19,9 @@ var hull: float = 0.0
 var max_hull: float = 0.0
 ## Set to false to drive the turret from code (automated demo, cutscenes).
 var player_input_enabled: bool = true
+## Debug: the turret takes no damage.
+var invulnerable: bool = false
+var destroyed: bool = false
 
 var _config: Dictionary = {}
 var _context: WeaponContext = WeaponContext.new()
@@ -89,6 +92,36 @@ func equip(slot: StringName, weapon_id: String) -> bool:
 	return true
 
 
+## The point enemies fly at and shoot at (roughly the gun cradle).
+func get_hit_point() -> Vector3:
+	return global_transform * _yaw_in_turret.origin + Vector3.UP * 0.8
+
+
+## Damages the turret. Until shields exist (M3) everything hits the hull.
+func take_damage(amount: float) -> void:
+	if destroyed or invulnerable or amount <= 0.0:
+		return
+	hull = maxf(0.0, hull - amount)
+	rig.add_shake(clampf(amount / 40.0, 0.15, 0.8))
+	EventBus.hull_damaged.emit(amount, hull)
+	if hull <= 0.0:
+		destroyed = true
+		EventBus.turret_destroyed.emit()
+
+
+## Repairs the hull and refills ammo for a new stage. Temporary until the
+## shop (M4) sells repairs.
+func restore_for_stage() -> void:
+	destroyed = false
+	hull = max_hull
+	for slot: StringName in SLOTS:
+		var weapon: Weapon = _weapons.get(slot)
+		if weapon != null:
+			weapon.refill_ammo()
+			weapon.heat.heat = 0.0
+			weapon.heat.overheated = false
+
+
 ## The weapon in a slot, or null.
 func get_weapon(slot: StringName) -> Weapon:
 	return _weapons.get(slot)
@@ -134,7 +167,7 @@ func _process(delta_s: float) -> void:
 	for slot: StringName in SLOTS:
 		var weapon: Weapon = _weapons.get(slot)
 		if weapon != null:
-			weapon.set_trigger(_triggers[slot])
+			weapon.set_trigger(_triggers[slot] and not destroyed)
 	_update_aim_outputs(delta_s)
 
 

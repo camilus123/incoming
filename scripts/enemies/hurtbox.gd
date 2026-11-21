@@ -7,6 +7,8 @@ extends Area3D
 var target: CombatTarget
 ## Multiplier for hits on this shape (weak points use more than 1).
 var damage_multiplier: float = 1.0
+## Physics layer the shape sits on while enabled.
+var layer_bits: int = Layers.PHYSICS_ENEMY
 
 
 func _init() -> void:
@@ -17,9 +19,11 @@ func _init() -> void:
 
 
 ## Creates a spherical hurtbox for `owner_target`.
-static func create_sphere(owner_target: CombatTarget, radius_m: float) -> Hurtbox:
+static func create_sphere(owner_target: CombatTarget, radius_m: float, layer: int = Layers.PHYSICS_ENEMY) -> Hurtbox:
 	var hurtbox: Hurtbox = Hurtbox.new()
 	hurtbox.target = owner_target
+	hurtbox.layer_bits = layer
+	hurtbox.collision_layer = layer
 	var shape: SphereShape3D = SphereShape3D.new()
 	shape.radius = radius_m
 	var collision: CollisionShape3D = CollisionShape3D.new()
@@ -43,4 +47,4 @@ func apply_hit(info: DamageInfo) -> DamageResult:
 
 ## Turns the shape on or off (off while its target is dead or hidden).
 func set_enabled(enabled: bool) -> void:
-	collision_layer = Layers.PHYSICS_ENEMY if enabled else 0
+	collision_layer = layer_bits if enabled else 0
