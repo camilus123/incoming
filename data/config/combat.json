@@ -1,0 +1,10 @@
+{
+  "_comment": "Global damage rules (docs/DECISIONS.md 12 and 13). A target's shield absorbs damage first, then armour and resistances reduce what reaches its hull.",
+  "shield_damage_multipliers": {
+    "energy": 2.0,
+    "kinetic": 0.5,
+    "explosive": 1.0
+  },
+  "armour_min_damage_fraction": 0.1,
+  "splash_edge_damage_fraction": 0.4
+}

@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "fields": {
+    "model": { "type": "string", "default": "model.target.dummy" },
+    "respawn_s": { "type": "number", "min": 0.1, "default": 3.0 },
+    "dummies": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "fields": {
+          "yaw_deg": { "type": "number", "required": true, "min": -180.0, "max": 180.0 },
+          "pitch_deg": { "type": "number", "required": true, "min": -10.0, "max": 90.0 },
+          "distance_m": { "type": "number", "required": true, "min": 10.0 },
+          "radius_m": { "type": "number", "min": 0.5, "default": 6.0 },
+          "hp": { "type": "number", "min": 1.0, "default": 100.0 },
+          "armour": { "type": "number", "min": 0.0, "default": 0.0 },
+          "shield": { "type": "number", "min": 0.0, "default": 0.0 },
+          "shield_regen_per_s": { "type": "number", "min": 0.0, "default": 0.0 },
+          "shield_regen_delay_s": { "type": "number", "min": 0.0, "default": 3.0 }
+        }
+      }
+    }
+  }
+}

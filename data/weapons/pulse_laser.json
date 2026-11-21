@@ -1,0 +1,33 @@
+{
+  "id": "pulse_laser",
+  "display_name": "Pulse Laser Mk I",
+  "archetype": "hitscan_pulse",
+  "damage_type": "energy",
+  "allowed_slots": ["primary"],
+  "uses_power": true,
+  "damage": 9.0,
+  "fire_rate": 8.0,
+  "range_m": 6000.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.04,
+  "heat": {
+    "per_shot": 0.028,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.1,
+    "recoil_kick_m": 0.05,
+    "recoil_recover_per_s": 16.0,
+    "shake": 0.05
+  },
+  "visuals": {
+    "model": "model.weapon.pulse_laser",
+    "crosshair": "cross",
+    "tracer_color": [0.35, 0.9, 1.0],
+    "tracer_width_m": 0.12,
+    "tracer_life_s": 0.07,
+    "impact_radius_m": 2.5
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "fields": {
+    "actions": {
+      "type": "dict",
+      "required": true,
+      "values": {
+        "type": "object",
+        "fields": {
+          "display_name": { "type": "string", "required": true, "non_empty": true },
+          "events": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "object",
+              "fields": {
+                "key": { "type": "string", "non_empty": true },
+                "mouse_button": {
+                  "type": "string",
+                  "enum": ["left", "right", "middle", "wheel_up", "wheel_down", "extra1", "extra2"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

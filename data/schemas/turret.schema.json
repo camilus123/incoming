@@ -1,6 +1,7 @@
 {
   "type": "object",
   "fields": {
+    "model": { "type": "string", "default": "model.turret.base", "non_empty": true },
     "aim": {
       "type": "object",
       "required": true,
@@ -10,7 +11,9 @@
         "pitch_min_deg": { "type": "number", "min": -90.0, "max": 90.0, "default": -5.0 },
         "pitch_max_deg": { "type": "number", "min": -90.0, "max": 90.0, "default": 85.0 },
         "edge_soft_zone_deg": { "type": "number", "min": 0.0, "max": 45.0, "default": 4.0 },
-        "smoothing_default_s": { "type": "number", "min": 0.0, "max": 0.5, "default": 0.03 }
+        "edge_min_input_scale": { "type": "number", "min": 0.05, "max": 1.0, "default": 0.35 },
+        "smoothing_default_s": { "type": "number", "min": 0.0, "max": 0.5, "default": 0.03 },
+        "degrees_per_mouse_count": { "type": "number", "min": 0.001, "max": 1.0, "default": 0.04 }
       }
     },
     "hull": {
@@ -25,7 +28,16 @@
       "required": true,
       "fields": {
         "fov_horizontal_deg_at_16_9": { "type": "number", "min": 50.0, "max": 130.0, "default": 90.0 },
-        "viewmodel_fov_deg": { "type": "number", "min": 20.0, "max": 120.0, "default": 55.0 }
+        "viewmodel_fov_deg": { "type": "number", "min": 20.0, "max": 120.0, "default": 55.0 },
+        "screen_shake_max_deg": { "type": "number", "min": 0.0, "max": 10.0, "default": 1.2 }
+      }
+    },
+    "default_loadout": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "primary": { "type": "string", "default": "pulse_laser" },
+        "alternate": { "type": "string", "default": "micro_missile_pod" }
       }
     }
   }
