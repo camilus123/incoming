@@ -1,0 +1,12 @@
+{
+  "_comment": "Lists every data file the game loads and the schema that checks it. Paths are relative to the data folder. See docs/DATA_FORMAT.md.",
+  "configs": [
+    { "name": "power", "file": "config/power.json", "schema": "schemas/power.schema.json" },
+    { "name": "economy", "file": "config/economy.json", "schema": "schemas/economy.schema.json" },
+    { "name": "difficulty", "file": "config/difficulty.json", "schema": "schemas/difficulty.schema.json" },
+    { "name": "turret", "file": "config/turret.json", "schema": "schemas/turret.schema.json" },
+    { "name": "graphics_presets", "file": "config/graphics_presets.json", "schema": "schemas/graphics_presets.schema.json" },
+    { "name": "asset_manifest", "file": "assets/asset_manifest.json", "schema": "schemas/asset_manifest.schema.json" }
+  ],
+  "collections": []
+}

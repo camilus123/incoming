@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "fields": {
+    "assets": {
+      "type": "dict",
+      "default": {},
+      "values": {
+        "type": "object",
+        "fields": {
+          "path": { "type": "string", "required": true, "non_empty": true },
+          "type": {
+            "type": "string",
+            "required": true,
+            "enum": ["model", "scene", "texture", "material", "audio", "font", "vfx"]
+          },
+          "fallback": { "type": "string" }
+        }
+      }
+    }
+  }
+}

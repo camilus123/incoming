@@ -1,0 +1,70 @@
+{
+  "_comment": "Graphics presets (spec 8). First guesses; tuned with measurements in M6 and M7. 'custom' is built in the settings menu from these fields.",
+  "default": "high",
+  "presets": {
+    "low": {
+      "display_name": "Low",
+      "render_scale": 0.67,
+      "upscaler": "fsr2",
+      "antialiasing": "none",
+      "shadows": "low",
+      "gi": "off",
+      "ssao": false,
+      "ssr": false,
+      "volumetric_fog": false,
+      "glow": true,
+      "particle_density": 0.4,
+      "effect_view_distance_m": 1500.0,
+      "max_active_particle_systems": 48,
+      "max_decals": 16
+    },
+    "medium": {
+      "display_name": "Medium",
+      "render_scale": 0.77,
+      "upscaler": "fsr2",
+      "antialiasing": "none",
+      "shadows": "medium",
+      "gi": "off",
+      "ssao": true,
+      "ssr": false,
+      "volumetric_fog": false,
+      "glow": true,
+      "particle_density": 0.7,
+      "effect_view_distance_m": 2500.0,
+      "max_active_particle_systems": 96,
+      "max_decals": 32
+    },
+    "high": {
+      "display_name": "High",
+      "render_scale": 1.0,
+      "upscaler": "none",
+      "antialiasing": "taa",
+      "shadows": "high",
+      "gi": "ssil",
+      "ssao": true,
+      "ssr": true,
+      "volumetric_fog": true,
+      "glow": true,
+      "particle_density": 1.0,
+      "effect_view_distance_m": 4000.0,
+      "max_active_particle_systems": 160,
+      "max_decals": 64
+    },
+    "ultra": {
+      "display_name": "Ultra",
+      "render_scale": 1.0,
+      "upscaler": "none",
+      "antialiasing": "taa",
+      "shadows": "ultra",
+      "gi": "sdfgi",
+      "ssao": true,
+      "ssr": true,
+      "volumetric_fog": true,
+      "glow": true,
+      "particle_density": 1.5,
+      "effect_view_distance_m": 6000.0,
+      "max_active_particle_systems": 256,
+      "max_decals": 128
+    }
+  }
+}

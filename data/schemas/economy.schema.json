@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "fields": {
+    "starting_credits": { "type": "int", "min": 0, "default": 1500 },
+    "stage_base": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "base": { "type": "number", "min": 0, "default": 200 },
+        "per_stage": { "type": "number", "min": 0, "default": 50 }
+      }
+    },
+    "accuracy_bonus_per_percent": { "type": "number", "min": 0, "default": 3 },
+    "hull_bonus_per_percent": { "type": "number", "min": 0, "default": 4 },
+    "no_shield_break_bonus": { "type": "number", "min": 0, "default": 250 },
+    "speed_bonus": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "max": { "type": "number", "min": 0, "default": 300 },
+        "full_bonus_ratio": { "type": "number", "min": 0, "default": 0.6 },
+        "zero_bonus_ratio": { "type": "number", "min": 0, "default": 1.2 }
+      }
+    },
+    "intercept_bonus": { "type": "number", "min": 0, "default": 15 },
+    "respec_refund_ratio": { "type": "number", "min": 0.0, "max": 1.0, "default": 1.0 },
+    "hull_repair": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "cost_per_point": { "type": "number", "min": 0, "default": 2.0 }
+      }
+    }
+  }
+}

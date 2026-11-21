@@ -1,0 +1,17 @@
+{
+  "_comment": "Power split between shields and weapons (spec 3.4). weapon_share = 1 - shield_share.",
+  "shield_share": {
+    "default": 0.5,
+    "step": 0.1,
+    "min": 0.0,
+    "max": 1.0
+  },
+  "shield_recharge_multiplier": {
+    "at_zero_share": 0.0,
+    "at_full_share": 2.0
+  },
+  "weapon_output_multiplier": {
+    "at_zero_share": 0.5,
+    "at_full_share": 1.5
+  }
+}

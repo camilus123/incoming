@@ -1,0 +1,4 @@
+{
+  "_comment": "Maps asset IDs to files. Game code only uses the IDs. To swap an asset, change its path here. See docs/ASSETS.md.",
+  "assets": {}
+}
