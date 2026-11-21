@@ -20,3 +20,15 @@ Notes:
 - The scene is almost empty, so this mainly shows the fixed cost of the two-camera setup.
 - Saving a screenshot stalls a frame for 200 to 600 ms (GPU read-back), so fps is measured in runs without screenshots.
 - The 1 % low sits just under the 120 fps target while the average is far above it. To investigate in M7: first-use shader/pipeline compilation of effects, and per-frame spikes from GDScript.
+
+## M2 (2026-11-21)
+
+Automated demo, 60 s of stage 3 (bombers, interceptors and drone swarms, up to about 40 enemies), fullscreen 3440×1440, V-Sync off, god mode so the run is not cut short.
+
+| Resolution | Average fps | 1 % low | Worst frame |
+|---|---|---|---|
+| 3440×1440 | 255 | 113 | 10.2 ms |
+
+Notes:
+- Every enemy is still its own node with its own script; the MultiMesh swarm manager and pooling come in M7.
+- The 1 % low is again slightly under the 120 fps target while the worst frame is only 10 ms, so the lows are many mildly slow frames rather than hitches. Likely candidates: the group lookups per missile detonation and lock search, and per-frame HUD redraw. To be profiled in M7.

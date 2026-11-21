@@ -2,6 +2,19 @@
 
 Updated at every merge to `main`.
 
+## M2: Enemies and stages (2026-11-21)
+
+- Enemy framework: `Enemy` on top of `CombatTarget`, data-driven stats, behaviours and attacks, `EnemyManager`.
+- Behaviour modules `approach_kamikaze`, `strafe` and `level_pass`.
+- Swarm Drone, Interceptor and Bomber with shootable guided bombs.
+- `WaveDirector` with the threat budget formula, budget-share and explicit-group waves, generated stages after the authored ones.
+- `StageManager`: intro, waves, stage complete summary, game over with retry. Stages 1 to 3 authored in data.
+- Turret hull damage and destruction; difficulty multipliers applied to enemies.
+- HUD: stage, wave and hostile count, threat diamonds and off-screen arrows, damage flash.
+- Shared environment scene; the test range is now a separate debug scene.
+- Fixes: pause now really pauses; explosions near the camera no longer white out the screen.
+- 54 unit tests.
+
 ## M1: Core turret and shooting (2026-11-21)
 
 - First-person turret with a limited aim arc (yaw ±80°, pitch −5° to +85°), soft resistance and HUD markers at the limits.

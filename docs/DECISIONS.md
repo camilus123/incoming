@@ -71,3 +71,19 @@ The Micro-Missile Pod keeps its 6 s reload between salvos; the ammo stock limits
 - **Test range:** the M1 scene is `scenes/main/test_range.tscn` with dummies from `config/test_range.json`. It stays as a debug scene after M2 adds real stages.
 - **Automated demo** (`tools/run_demo.ps1`): drives the turret without a player, prints fps and saves screenshots. It is a stop-gap for the M7 benchmark mode.
 - **No audio yet.** Weapon files have an `audio` block, but sounds arrive with the M8 audio pass.
+
+## 2026-11-21: M2 decisions (Claude)
+
+- **Armour floor raised to 30 %** (`combat.json: armour_min_damage_fraction`, was 10 %). With the flat-armour rule the starting Pulse Laser (9 damage) did under 1 damage per shot to a Bomber (armour 8), which made stage 3 a four-minute grind with the starting loadout. Now armour never blocks more than 70 % of a hit. Kinetic weapons with armour pierce are still clearly better against armour.
+- **Hitboxes are larger than the models** for small enemies (drone 3 m, bomb 2.5 m radius) and every threat gets a small HUD diamond, because a 4 m drone at 1 km is only a few pixels at 1440p.
+- **Drones spawn at 900 to 1,500 m**, inside the spec's 300 to 4,000 m range, so the swarm is visible and reaches the turret in 13 to 21 s.
+- **Bombs are guided**, not ballistic: they keep the bomber's velocity at release, then accelerate straight at the turret. A true ballistic drop from 600 m would take 11 s and miss a point target. They are shootable (25 hp).
+- **Bombers and passes:** after flying over the turret a bomber leaves the fight for a few seconds and starts a new pass from the front, so it never attacks from outside the aim arc. It still has to be destroyed to finish the stage.
+- **Interceptor lasers always hit** when fired (in range and pointing at the turret). The counter-play is killing or out-lasting them; this will be revisited when shields arrive in M3.
+- **Enemy behaviours are data + modules:** `behaviours/*.json` picks a module and its parameters; attacks are data on the enemy. Modules so far: `approach_kamikaze`, `strafe`, `level_pass`.
+- **Waves:** a wave is explicit groups and/or a share of the stage budget. The next wave starts when 25 % or less of the current one is left, or after 28 s.
+- **Stages after the authored ones** are already generated from `director.json`, so play continues past stage 3. Proper endless tuning and bosses are M5.
+- **Until the shop exists (M4)** the turret is fully repaired and re-armed at the start of every stage. Stage complete and game over screens use Enter and R; real menus come in M8.
+- **Explosions that engulf the camera are not drawn** (back-face culling on the glow shader). Otherwise a drone ramming the turret whites out the whole screen. The red damage frame and shake carry that feedback instead.
+- **Pause bug fixed:** in M1 the pause key showed "PAUSED" but nothing actually stopped.
+- **Balance was checked with an aim-bot** (`tools/run_demo.ps1`), which finishes stages 1 to 3 with 140 to 185 of 200 hull. A human will lose more; numbers will be retuned once shields exist.

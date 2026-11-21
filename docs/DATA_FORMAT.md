@@ -32,7 +32,7 @@ Check your edits with `.\tools\validate_data.ps1`. In a debug build, press **F5*
 ```
 
 - `configs`: single files holding one object. Code reads them with `GameData.loader.get_config("power")`.
-- `collections`: a directory with one JSON file per entry. Every entry needs a unique id (`id_field`, default `"id"`), which should match the file name. Code reads them with `GameData.loader.get_entry("weapons", "pulse_laser")`.
+- `collections`: a directory with one JSON file per entry. An optional `file_pattern` (default `*.json`) limits which files belong to it, e.g. `stage_*.json`. Every entry needs a unique id (`id_field`, default `"id"`), which should match the file name. Code reads them with `GameData.loader.get_entry("weapons", "pulse_laser")`.
 
 Paths are relative to `data/`.
 
@@ -242,6 +242,87 @@ Homing weapons add a `homing` block:
 | `launch_speed_mps`, `speed_mps`, `acceleration_mps2` | Speed leaving the pod, top speed, acceleration |
 | `turn_rate_deg_s`, `arm_delay_s` | Steering limit, and the delay before steering starts |
 | `lifetime_s`, `proximity_fuse_m`, `splash_radius_m` | Self-destruct time, detonation distance from the target's surface, blast radius |
+
+## enemies/*.json
+
+One file per enemy type. A new enemy that combines existing behaviour modules and attack types needs only a file here, a model in the asset manifest, and a mention in a stage.
+
+| Field | Meaning |
+|---|---|
+| `id`, `display_name` | Identifier (matches the file name) and name shown to the player |
+| `model`, `model_scale` | Asset ID of the model and an optional scale |
+| `hitbox_radius_m` | Radius of the spherical hit shape (deliberately larger than small models) |
+| `hp`, `armour`, `shield`, `shield_regen_per_s`, `shield_regen_delay_s` | Health values, see config/combat.json for how hits are resolved |
+| `resistances.energy / kinetic / explosive` | Share of hull damage of that type that is ignored (0 to 1) |
+| `speed_mps`, `turn_rate_deg_s` | Flight speed and how fast it can change direction |
+| `behaviours` | List of behaviour ids from `behaviours/` |
+| `attacks` | List of attacks, see below |
+| `credit_bounty` | Credits for destroying it |
+| `threat_cost` | What it costs the wave director. 0 = never bought automatically (bosses) |
+| `first_stage` | First stage the director may use it in |
+| `group_size` | `[min, max]` members when the director buys a group |
+| `spawn.pitch_deg`, `spawn.distance_m` | Optional `[min, max]` spawn elevation and distance for this type |
+| `death_effect.radius_m`, `death_effect.color` | Size and colour of its explosion |
+
+Attack fields: `id`, `type`, `damage`, `count` (shots or bombs per attack), `interval_s` (between them), `cooldown_s`, `range_m`, `color`. Types:
+
+- `collision`: damage on ramming (used by `approach_kamikaze`).
+- `hitscan_burst`: instant shots at the turret (used by `strafe`).
+- `guided_bomb`: releases shootable projectiles (used by `level_pass`). Needs a `projectile` block: `model`, `hp`, `hitbox_radius_m`, `speed_mps`, `max_speed_mps`, `acceleration_mps2`, `blast_radius_m`.
+
+## behaviours/*.json
+
+A behaviour is a module plus its parameters, so the same module can be tuned differently for different enemies.
+
+```json
+{ "id": "swarm_weave", "module": "approach_kamikaze", "params": { "weave_amplitude_m": 14.0, "weave_period_s": 2.4, "weave_fade_distance_m": 220.0, "impact_distance_m": 7.0 } }
+```
+
+| Module | What it does | Parameters |
+|---|---|---|
+| `approach_kamikaze` | Flies at the turret while weaving, then rams it | `weave_amplitude_m`, `weave_period_s`, `weave_fade_distance_m`, `impact_distance_m` |
+| `strafe` | Attack runs: dive, fire, bank away to a point in the forward arc, return | `break_distance_m`, `retreat_yaw_deg`, `retreat_pitch_deg`, `retreat_distance_m` (each `[min, max]`), `retreat_reached_m`, `retreat_timeout_s` |
+| `level_pass` | Level flight over the turret, releases bombs in range, then circles round for a new pass | `exit_distance_m`, `repass_delay_s` |
+
+## stages/stage_NN.json
+
+Authored stages, numbered from 1 without gaps (`stage_01.json`, ...). Later stages are generated from `director.json`.
+
+```json
+{
+  "id": "stage_03",
+  "stage": 3,
+  "display_name": "Bomb Run",
+  "briefing": "Bombers at high altitude. Shoot the bombs down before they land.",
+  "time_of_day": "dusk",
+  "par_time_s": 120.0,
+  "spawn_yaw_deg": [-70.0, 70.0],
+  "waves": [
+    { "delay_s": 1.0, "groups": [ { "enemy": "bomber", "count": 1, "spawn": { "yaw_deg": [-10.0, 10.0] } } ] },
+    { "delay_s": 5.0, "budget_share": 0.4, "enemies": ["drone_swarmer", "interceptor"] }
+  ]
+}
+```
+
+- `spawn_yaw_deg`: the part of the arc enemies come from in this stage.
+- A wave may have explicit `groups` (`enemy`, `count`, optional `spawn` with `yaw_deg`, `pitch_deg`, `distance_m` ranges), a `budget_share`, or both.
+- `budget_share` is a share of the stage's threat budget, which the director spends on the types in `enemies` (or on every type unlocked at that stage if the list is empty).
+- `delay_s`: pause before the wave starts. The next wave starts when most of the current one is destroyed or after a timeout (see director).
+- `display_name` and `briefing` are the stage's text; story can be added here later.
+
+## stages/director.json
+
+| Field | Meaning |
+|---|---|
+| `base_budget`, `growth` | `threat_budget(stage) = base_budget × growth^(stage − 1)`, times the difficulty's `threat_budget_mult` |
+| `intro_s` | Length of the stage intro banner |
+| `spawn_interval_s` | Time between two spawns of a wave |
+| `group_spread_m` | How far group members are scattered around the group's centre |
+| `min_spawn_altitude_m` | Nothing spawns below this height |
+| `wave_clear_fraction` | The next wave starts when this share (or less) of the current wave is left |
+| `wave_timeout_s` | ...or this long after the wave finished spawning |
+| `default_spawn` | Spawn ranges used when neither the group, the stage nor the enemy sets them |
+| `procedural.*` | Rules for generated stages: number of waves, delay, how the yaw arc widens, par time |
 
 ## Planned formats
 
