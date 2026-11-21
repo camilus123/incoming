@@ -6,7 +6,7 @@
 |---|---|---|
 | M0 Setup | Repo structure, Godot project, data loader and validator, tests | Done |
 | M1 Core turret and shooting | Camera rig, turret arc, Pulse Laser + Micro-Missiles, heat, HUD, target dummies | Done |
-| M2 Enemies and stages | Enemy base, 3 behaviours, drones/interceptors/bombers, wave director, stages 1 to 3, hull and game over | Done, awaiting approval |
+| M2 Enemies and stages | Enemy base, 3 behaviours, drones/interceptors/bombers, wave director, stages 1 to 3, hull and game over | Done |
 | M3 Shields and power | Shield system and dome VFX, power split | Next |
 | M4 Economy, shop and tech tree | Rewards, shop UI, tech tree, loadout, saving | |
 | M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | |
