@@ -1,0 +1,20 @@
+# Godot 4: the import cache is regenerated on first open.
+# The *.import files next to assets ARE committed (they hold import settings).
+.godot/
+/android/
+
+# Export builds and benchmark output
+/build/
+/export/
+/benchmark_results/
+
+# Godot-specific leftovers
+*.translation
+export_credentials.cfg
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.tmp
+Thumbs.db
+.DS_Store
