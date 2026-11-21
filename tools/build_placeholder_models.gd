@@ -19,6 +19,9 @@ var _lens: StandardMaterial3D
 var _target_white: StandardMaterial3D
 var _target_orange: StandardMaterial3D
 var _engine_glow: StandardMaterial3D
+var _enemy_hull: StandardMaterial3D
+var _enemy_panel: StandardMaterial3D
+var _enemy_eye: StandardMaterial3D
 
 
 func _init() -> void:
@@ -29,6 +32,10 @@ func _init() -> void:
 	failed += _export(_build_missile_pod(), "weapons/missile_pod.glb")
 	failed += _export(_build_micro_missile(), "projectiles/micro_missile.glb")
 	failed += _export(_build_target_dummy(), "targets/target_dummy.glb")
+	failed += _export(_build_drone(), "enemies/drone_swarmer.glb")
+	failed += _export(_build_interceptor(), "enemies/interceptor.glb")
+	failed += _export(_build_bomber(), "enemies/bomber.glb")
+	failed += _export(_build_enemy_bomb(), "projectiles/enemy_bomb.glb")
 	print("Placeholder models built, %d failed." % failed)
 	quit(1 if failed > 0 else 0)
 
@@ -123,6 +130,74 @@ func _build_target_dummy() -> Node3D:
 	return root
 
 
+func _build_drone() -> Node3D:
+	# About 4 m long: a dart with one red sensor eye and one engine.
+	var root: Node3D = _node(null, "DroneSwarmer", Vector3.ZERO)
+	_box(root, "Body", Vector3(1.0, 0.6, 3.2), Vector3(0, 0, 0), _enemy_hull)
+	var nose: MeshInstance3D = _cylinder(root, "Nose", 0.45, 1.2, Vector3(0, 0, -2.2), Vector3(-90, 0, 0), _enemy_panel)
+	(nose.mesh as CylinderMesh).top_radius = 0.0
+	_box(root, "WingLeft", Vector3(1.6, 0.1, 1.2), Vector3(-1.2, 0, 0.6), _enemy_hull)
+	_box(root, "WingRight", Vector3(1.6, 0.1, 1.2), Vector3(1.2, 0, 0.6), _enemy_hull)
+	_cylinder(root, "Eye", 0.28, 0.2, Vector3(0, 0.25, -1.5), Vector3(0, 0, 0), _enemy_eye)
+	_cylinder(root, "Engine", 0.35, 0.3, Vector3(0, 0, 1.7), Vector3(90, 0, 0), _enemy_eye)
+	_node(root, "Hitbox_0", Vector3.ZERO)
+	_node(root, "Engine_0", Vector3(0, 0, 1.9))
+	_node(root, "Hardpoint_0", Vector3(0, 0, -2.6))
+	return root
+
+
+func _build_interceptor() -> Node3D:
+	# About 10 m long: a fighter with swept wings, twin engines and a chin laser.
+	var root: Node3D = _node(null, "Interceptor", Vector3.ZERO)
+	_box(root, "Fuselage", Vector3(1.6, 1.2, 8.0), Vector3(0, 0, 0), _enemy_hull)
+	var nose: MeshInstance3D = _cylinder(root, "Nose", 0.8, 3.0, Vector3(0, 0, -5.4), Vector3(-90, 0, 0), _enemy_panel)
+	(nose.mesh as CylinderMesh).top_radius = 0.0
+	_box(root, "Canopy", Vector3(0.9, 0.5, 2.0), Vector3(0, 0.75, -1.8), _enemy_eye)
+	for side: int in [-1, 1]:
+		var suffix: String = "Left" if side < 0 else "Right"
+		var wing: MeshInstance3D = _box(root, "Wing" + suffix, Vector3(5.5, 0.18, 2.6), Vector3(3.3 * side, 0, 1.6), _enemy_hull)
+		wing.rotation_degrees = Vector3(0, -22.0 * side, 0)
+		_box(root, "Tail" + suffix, Vector3(0.14, 1.8, 1.6), Vector3(0.9 * side, 1.1, 3.2), _enemy_panel)
+		_cylinder(root, "Engine" + suffix, 0.5, 0.5, Vector3(0.6 * side, 0, 4.1), Vector3(90, 0, 0), _enemy_eye)
+		_node(root, "Engine_%d" % (0 if side < 0 else 1), Vector3(0.6 * side, 0, 4.4))
+	_cylinder(root, "ChinGun", 0.14, 2.2, Vector3(0, -0.75, -3.4), Vector3(90, 0, 0), _dark)
+	_node(root, "Hardpoint_0", Vector3(0, -0.75, -4.6))
+	_node(root, "Hitbox_0", Vector3.ZERO)
+	return root
+
+
+func _build_bomber() -> Node3D:
+	# About 24 m wingspan: a flying wing with a belly bomb bay and four engines.
+	var root: Node3D = _node(null, "Bomber", Vector3.ZERO)
+	_box(root, "Wing", Vector3(24.0, 0.9, 7.0), Vector3(0, 0, 0.5), _enemy_hull)
+	_box(root, "Centre", Vector3(5.0, 2.2, 11.0), Vector3(0, 0, -0.5), _enemy_hull)
+	_box(root, "Belly", Vector3(3.4, 1.2, 6.0), Vector3(0, -1.5, 0), _enemy_panel)
+	_box(root, "Cockpit", Vector3(2.4, 0.5, 1.6), Vector3(0, 0.9, -5.2), _enemy_eye)
+	var index: int = 0
+	for x: float in [-8.0, -4.0, 4.0, 8.0]:
+		_cylinder(root, "Nacelle_%d" % index, 0.9, 5.0, Vector3(x, -0.3, 1.5), Vector3(90, 0, 0), _enemy_panel)
+		_cylinder(root, "EngineGlow_%d" % index, 0.75, 0.4, Vector3(x, -0.3, 4.1), Vector3(90, 0, 0), _enemy_eye)
+		_node(root, "Engine_%d" % index, Vector3(x, -0.3, 4.4))
+		index += 1
+	_node(root, "Hardpoint_0", Vector3(0, -2.4, 0))
+	_node(root, "Hitbox_0", Vector3.ZERO)
+	return root
+
+
+func _build_enemy_bomb() -> Node3D:
+	# About 2.4 m long, with a glowing red band so it can be seen falling.
+	var root: Node3D = _node(null, "EnemyBomb", Vector3.ZERO)
+	_cylinder(root, "Body", 0.45, 1.8, Vector3(0, 0, 0), Vector3(90, 0, 0), _enemy_hull)
+	var nose: MeshInstance3D = _cylinder(root, "Nose", 0.45, 0.7, Vector3(0, 0, -1.25), Vector3(-90, 0, 0), _enemy_panel)
+	(nose.mesh as CylinderMesh).top_radius = 0.0
+	_cylinder(root, "Band", 0.5, 0.35, Vector3(0, 0, -0.3), Vector3(90, 0, 0), _enemy_eye)
+	_box(root, "FinHorizontal", Vector3(1.6, 0.06, 0.6), Vector3(0, 0, 0.9), _enemy_panel)
+	_box(root, "FinVertical", Vector3(0.06, 1.6, 0.6), Vector3(0, 0, 0.9), _enemy_panel)
+	_node(root, "Hitbox_0", Vector3.ZERO)
+	_node(root, "Engine_0", Vector3(0, 0, 1.0))
+	return root
+
+
 # --- Helpers ----------------------------------------------------------------
 
 func _make_materials() -> void:
@@ -135,6 +210,10 @@ func _make_materials() -> void:
 	_target_white = _material("TargetWhite", Color(0.85, 0.85, 0.82), 0.3, 0.5)
 	_target_orange = _material("TargetOrange", Color(1.0, 0.4, 0.05), 0.2, 0.5, Color(1.0, 0.35, 0.05))
 	_engine_glow = _material("EngineGlow", Color(1.0, 0.7, 0.3), 0.0, 0.4, Color(1.0, 0.6, 0.2))
+	_enemy_hull = _material("EnemyHull", Color(0.1, 0.12, 0.2), 0.5, 0.45)
+	_enemy_panel = _material("EnemyPanel", Color(0.5, 0.55, 0.65), 0.4, 0.5)
+	_enemy_eye = _material("EnemyEye", Color(1.0, 0.15, 0.1), 0.0, 0.3, Color(1.0, 0.1, 0.05))
+	_enemy_eye.emission_energy_multiplier = 4.0
 
 
 func _material(material_name: String, albedo: Color, metallic: float, roughness: float, emission: Color = Color.BLACK) -> StandardMaterial3D:
