@@ -1,0 +1,11 @@
+{
+  "_comment": "Deliberately broken data used by tests/unit/test_data_loader.gd.",
+  "configs": [
+    { "name": "broken", "file": "config/broken.json", "schema": "schemas/simple.schema.json" },
+    { "name": "wrong_types", "file": "config/wrong_types.json", "schema": "schemas/simple.schema.json" },
+    { "name": "missing", "file": "config/missing.json", "schema": "schemas/simple.schema.json" }
+  ],
+  "collections": [
+    { "category": "things", "directory": "things", "schema": "schemas/thing.schema.json" }
+  ]
+}
