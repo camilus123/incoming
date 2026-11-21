@@ -61,7 +61,7 @@ func _draw_intro(centre: Vector2) -> void:
 
 func _draw_summary(centre: Vector2, title: String, title_color: Color, prompt: String) -> void:
 	var stats: StageStats = _stages.stats
-	var panel: Rect2 = Rect2(centre - Vector2(300.0, 190.0), Vector2(600.0, 330.0))
+	var panel: Rect2 = Rect2(centre - Vector2(300.0, 200.0), Vector2(600.0, 360.0))
 	draw_rect(panel, COLOR_PANEL)
 	draw_rect(panel, title_color, false, 2.0)
 	_text(Vector2(centre.x, panel.position.y + 56.0), title, 34, title_color)
@@ -72,6 +72,7 @@ func _draw_summary(centre: Vector2, title: String, title_color: Color, prompt: S
 		["Bombs shot down", str(stats.intercepts)],
 		["Accuracy", "%d %%" % roundi(stats.accuracy_percent())],
 		["Hull remaining", "%d %%" % roundi(stats.hull_percent())],
+		["Shields", "broken" if stats.shield_broken else "held"],
 		["Bounties", "%d cr" % stats.bounty],
 	]
 	var y: float = panel.position.y + 108.0
