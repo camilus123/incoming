@@ -9,9 +9,11 @@ extends Node
 ## Options (after `++`):
 ##   --demo-seconds=N        run time (default 16)
 ##   --screenshot-dir=PATH   save PNG screenshots there
+##   --demo-stages=N         also stop once stage N is completed
+##   --demo-speed=X          run the game X times faster (for quick checks, not for fps)
 
 const WARMUP_S: float = 2.0
-const AIM_SPEED_DEG_S: float = 110.0
+const AIM_SPEED_DEG_S: float = 160.0
 const DWELL_S: float = 1.3
 const SCREENSHOT_TIMES_S: PackedFloat32Array = [3.0, 6.5, 10.0]
 
@@ -26,18 +28,27 @@ var _next_screenshot: int = 0
 var _frame_times_ms: PackedFloat32Array = []
 var _last_tick_usec: int = 0
 var _finished: bool = false
+var _stop_after_stage: int = 0
 
 
 func _ready() -> void:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--demo-seconds="):
 			_duration_s = argument.trim_prefix("--demo-seconds=").to_float()
+		elif argument.begins_with("--demo-speed="):
+			Engine.time_scale = maxf(0.1, argument.trim_prefix("--demo-speed=").to_float())
+		elif argument.begins_with("--demo-stages="):
+			_stop_after_stage = argument.trim_prefix("--demo-stages=").to_int()
 		elif argument.begins_with("--screenshot-dir="):
 			_screenshot_dir = argument.trim_prefix("--screenshot-dir=")
 	turret.player_input_enabled = false
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
 	_last_tick_usec = Time.get_ticks_usec()
+	EventBus.stage_completed.connect(_on_stage_ended.bind("COMPLETE"))
+	if OS.get_cmdline_user_args().has("--demo-log-damage"):
+		EventBus.hull_damaged.connect(func(amount: float, remaining: float) -> void: print("DAMAGE t=%.1f amount=%.1f hull=%.0f" % [_time_s, amount, remaining]))
+	EventBus.turret_destroyed.connect(_on_stage_ended.bind(0, "GAME_OVER"))
 
 
 func _process(delta_s: float) -> void:
@@ -67,23 +78,58 @@ func _process(delta_s: float) -> void:
 
 
 func _track_targets(delta_s: float) -> void:
-	var targets: Array[Node] = get_tree().get_nodes_in_group(CombatTarget.GROUP)
-	if targets.is_empty():
+	var target: CombatTarget = _pick_target()
+	if target == null:
+		turret.set_trigger(Turret.SLOT_PRIMARY, false)
 		return
-	var target: CombatTarget = targets[_target_index % targets.size()] as CombatTarget
 	var wanted: Vector2 = turret.get_aim_angles_to(target.get_aim_point())
 	var step: float = AIM_SPEED_DEG_S * delta_s
 	var yaw_error: float = wanted.x - turret.aim.yaw_deg
 	var pitch_error: float = wanted.y - turret.aim.pitch_deg
 	turret.aim.apply_input(clampf(yaw_error, -step, step), clampf(pitch_error, -step, step))
-	var on_target: bool = absf(yaw_error) < 0.3 and absf(pitch_error) < 0.3
-	turret.set_trigger(Turret.SLOT_PRIMARY, on_target)
-	if on_target:
-		_dwell_left_s -= delta_s
-	if _dwell_left_s <= 0.0 or not target.is_alive():
-		_target_index += 1
-		_dwell_left_s = DWELL_S
+	turret.set_trigger(Turret.SLOT_PRIMARY, absf(yaw_error) < 0.3 and absf(pitch_error) < 0.3)
 
+
+## In a stage: the closest live threat inside the aim arc. On the test range
+## (static dummies): each dummy in turn.
+func _pick_target() -> CombatTarget:
+	var targets: Array[Node] = get_tree().get_nodes_in_group(CombatTarget.GROUP)
+	if targets.is_empty():
+		return null
+	if targets[0] is TargetDummy:
+		_dwell_left_s -= get_process_delta_time()
+		var dummy: CombatTarget = targets[_target_index % targets.size()] as CombatTarget
+		if _dwell_left_s <= 0.0 or not dummy.is_alive():
+			_target_index += 1
+			_dwell_left_s = DWELL_S + 1.0
+		return dummy
+	var origin: Vector3 = turret.get_aim_transform().origin
+	var best: CombatTarget = null
+	var best_distance: float = INF
+	for node: Node in targets:
+		var target: CombatTarget = node as CombatTarget
+		if target == null or not target.is_alive():
+			continue
+		var angles: Vector2 = turret.get_aim_angles_to(target.get_aim_point())
+		if angles.x < turret.aim.yaw_min_deg or angles.x > turret.aim.yaw_max_deg or angles.y < turret.aim.pitch_min_deg or angles.y > turret.aim.pitch_max_deg:
+			continue
+		var distance: float = origin.distance_squared_to(target.get_aim_point())
+		if distance < best_distance:
+			best_distance = distance
+			best = target
+	return best
+
+
+func _on_stage_ended(stage: int, result: String) -> void:
+	var stages: StageManager = get_tree().get_first_node_in_group(StageManager.GROUP) as StageManager
+	if stages == null:
+		return
+	var stats: StageStats = stages.stats
+	print("STAGE_RESULT stage=%d result=%s time_s=%.1f kills=%d intercepts=%d accuracy=%d hull=%d" % [
+		stages.stage_number, result, stats.time_s, stats.kills, stats.intercepts,
+		roundi(stats.accuracy_percent()), roundi(turret.hull)])
+	if result == "COMPLETE" and _stop_after_stage > 0 and stage >= _stop_after_stage:
+		_finish()
 
 func _save_screenshot(file_name: String) -> void:
 	if _screenshot_dir.is_empty() or DisplayServer.get_name() == "headless":
