@@ -1,7 +1,7 @@
 class_name ShieldDome
-extends Node3D
-## The visible shield: a dome around the turret that ripples where it is hit.
-## Presentation only; the shield's numbers live in [ShieldState].
+extends ShieldVisual
+## Shield style "dome": a bubble around the emplacement that ripples where
+## it is hit.
 
 const SHADER_ASSET: String = "vfx.shader.shield_dome"
 const MAX_IMPACTS: int = 8
@@ -16,7 +16,7 @@ var _flash: float = 0.0
 var _radius_m: float = 14.0
 
 
-func _ready() -> void:
+func _init() -> void:
 	_material = ShaderMaterial.new()
 	_material.shader = GameData.assets.load_asset(SHADER_ASSET) as Shader
 	_material.set_shader_parameter(&"ripple_life", RIPPLE_LIFE_S)
@@ -33,10 +33,12 @@ func _ready() -> void:
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_mesh.layers = Layers.RENDER_WORLD
 	add_child(_mesh)
-	configure({})
 
 
-## Applies the "visuals" block of a shield data file.
+func get_style() -> String:
+	return "dome"
+
+
 func configure(visuals: Dictionary) -> void:
 	_radius_m = visuals.get("dome_radius_m", 14.0)
 	var sphere: SphereMesh = _mesh.mesh as SphereMesh
@@ -46,7 +48,6 @@ func configure(visuals: Dictionary) -> void:
 	_material.set_shader_parameter(&"shield_color", Color(color[0], color[1], color[2]))
 
 
-## Shows how full the shield is (0 = invisible).
 func set_charge(fraction: float) -> void:
 	_material.set_shader_parameter(&"charge", clampf(fraction, 0.0, 1.0))
 
@@ -57,7 +58,7 @@ func add_impact(from_position: Vector3) -> void:
 	if direction.length_squared() < 0.0001:
 		direction = Vector3.UP
 	direction = direction.normalized()
-	direction.y = maxf(direction.y, 0.02)
+	direction.y = maxf(direction.y, 0.05)
 	direction = direction.normalized()
 	# Live ripples are packed at the front; when all slots are busy the oldest (first) is replaced.
 	var slot: int = _active_count if _active_count < MAX_IMPACTS else 0
@@ -65,7 +66,6 @@ func add_impact(from_position: Vector3) -> void:
 	_active_count = mini(_active_count + 1, MAX_IMPACTS)
 
 
-## Lights up the whole dome briefly (shield broke or came back).
 func flash(strength: float = 1.0) -> void:
 	_flash = maxf(_flash, strength)
 

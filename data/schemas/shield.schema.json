@@ -8,8 +8,9 @@
     "recharge_delay_s": { "type": "number", "min": 0.0, "default": 3.0 },
     "visuals": {
       "type": "object",
-      "default": { "dome_radius_m": 14.0, "color": [0.3, 0.8, 1.0] },
+      "default": { "style": "dome", "dome_radius_m": 14.0, "color": [0.3, 0.8, 1.0] },
       "fields": {
+        "style": { "type": "string", "enum": ["dome", "conformal"], "default": "dome" },
         "dome_radius_m": { "type": "number", "min": 3.0, "max": 200.0, "default": 14.0 },
         "color": { "type": "array", "default": [0.3, 0.8, 1.0], "min_items": 3, "items": { "type": "number", "min": 0.0 } }
       }

@@ -105,3 +105,12 @@ Marko found M2 too hard and asked for bigger hitboxes, especially at range.
 - **No audio tick yet** for the wheel step; it arrives with the M8 audio pass.
 - **Screen-space shield-impact distortion** (spec 3.2) is left for the M6 graphics pass; the dome ripple covers the feedback for now.
 - **Numpad Enter** also confirms (Marko's request).
+
+## 2026-11-21: shield styles (Marko)
+
+Marko asked for two looks: one shield type as the dome, the other as a conformal shield just around the turret.
+
+- **`visuals.style` in each shield file** picks the look: `dome` or `conformal`. Both implement `ShieldVisual`, so more styles can be added.
+- **Conformal** is a material overlay on every mesh of the turret and guns (hex lattice, edge glow, a wave that runs round the turret from the side that was hit). Because it uses the real meshes it automatically fits any replacement model.
+- **Proposed mapping for M4 (to confirm):** Basic Deflector and the Bastion branch use the dome (big, heavy shield); the Flicker branch uses the conformal skin (tight, fast shield).
+- **Dome bug fixed:** the lattice was drawn on the ground when looking down, because the hemisphere mesh has a flat base and the wall reached the terrain. The base is now discarded and the dome fades out near the ground.

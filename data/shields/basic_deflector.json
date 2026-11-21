@@ -5,6 +5,7 @@
   "recharge_per_s": 12.0,
   "recharge_delay_s": 3.0,
   "visuals": {
+    "style": "dome",
     "dome_radius_m": 14.0,
     "color": [0.3, 0.8, 1.0]
   }

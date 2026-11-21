@@ -11,6 +11,7 @@
     "model.enemy.bomber": { "path": "res://assets/models/enemies/bomber.glb", "type": "model" },
     "model.projectile.enemy_bomb": { "path": "res://assets/models/projectiles/enemy_bomb.glb", "type": "model" },
     "vfx.shader.shield_dome": { "path": "res://assets/vfx/shield_dome.gdshader", "type": "vfx" },
+    "vfx.shader.shield_skin": { "path": "res://assets/vfx/shield_skin.gdshader", "type": "vfx" },
     "vfx.shader.glow_unlit": { "path": "res://assets/vfx/glow_unlit.gdshader", "type": "vfx" }
   }
 }

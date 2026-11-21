@@ -39,6 +39,12 @@ float hex_distance(vec2 uv) {
 
 void fragment() {
 	vec3 direction = normalize(local_direction);
+	// The dome ends at the ground: drop the mesh's flat base and fade the lowest part,
+	// so the lattice never lies on the terrain when looking down.
+	if (direction.y < 0.01) {
+		discard;
+	}
+	float ground_fade = smoothstep(0.01, 0.12, direction.y);
 	vec2 uv = vec2(atan(direction.x, direction.z), asin(clamp(direction.y, -1.0, 1.0))) * hex_scale / PI;
 	float lattice = smoothstep(0.46, 0.5, hex_distance(uv));
 
@@ -57,5 +63,5 @@ void fragment() {
 	alpha += glow * (0.12 + 0.88 * lattice) * 0.4;
 	alpha += flash * (0.02 + 0.3 * lattice);
 	ALBEDO = shield_color.rgb * 2.2;
-	ALPHA = clamp(alpha, 0.0, 1.0);
+	ALPHA = clamp(alpha * ground_fade, 0.0, 1.0);
 }

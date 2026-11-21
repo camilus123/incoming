@@ -69,8 +69,8 @@ func _process(delta_s: float) -> void:
 		_update_power_cycle(delta_s)
 	var edge_phase: bool = _time_s > _duration_s - 3.0
 	if edge_phase:
-		# Push into the right-hand yaw limit to exercise the arc clamp.
-		turret.aim.apply_input(AIM_SPEED_DEG_S * delta_s, 0.0)
+		# Push into the right-hand yaw limit and the lower pitch limit to exercise the arc clamp.
+		turret.aim.apply_input(AIM_SPEED_DEG_S * delta_s, -AIM_SPEED_DEG_S * delta_s)
 		turret.set_trigger(Turret.SLOT_PRIMARY, false)
 	else:
 		_track_targets(delta_s)

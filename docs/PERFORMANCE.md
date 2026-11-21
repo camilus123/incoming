@@ -47,3 +47,15 @@ Notes:
 - The dome covers the whole screen, so every per-pixel instruction in its shader costs about 5 million evaluations per frame. Skipping the 8-impact ripple loop when no hit is active recovered most of the loss.
 - God mode is a worst case for the dome: drones ram the turret constantly, so ripples are active most of the time. In normal play the dome is idle more often.
 - Remaining cost to look at in M7: the hex lattice maths per pixel (could come from a small texture instead), and drawing the dome at reduced resolution.
+
+### Shield styles (2026-11-21)
+
+Stage 3, fullscreen 3440×1440, god mode (drones ram the turret constantly, so the shield effect is active most of the time):
+
+| Shield style | Average fps | 1 % low |
+|---|---|---|
+| none (overlay disabled, experiment) | 279 | 113 |
+| dome | 198 | 112 |
+| conformal | 144 | 111 |
+
+Idle on the test range both styles are equal (218 and 226 fps). Under fire the conformal skin is unexpectedly expensive. Experiments ruled out the per-frame uniform updates (158 fps without them) and viewmodel MSAA (160 fps with it off); the cost comes from having the overlay on the roughly 40 turret meshes at all during the stage. **To investigate in M7** (candidates: overlay draw calls interacting with the explosion lights on the viewmodel layer, merging the placeholder model into fewer meshes).

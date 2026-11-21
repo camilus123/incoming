@@ -46,7 +46,7 @@ var _pitch_in_yaw: Transform3D
 var _anchor_in_pitch: Transform3D
 var _degrees_per_count: float = 0.04
 var _smoothing_default_s: float = 0.03
-var _dome: ShieldDome
+var _shield_visual: ShieldVisual
 var _shield_id: String = ""
 
 
@@ -71,9 +71,6 @@ func _ready() -> void:
 	_context.fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
 	_context.missiles = get_tree().get_first_node_in_group(MissileSystem.GROUP) as MissileSystem
 
-	_dome = ShieldDome.new()
-	_dome.name = "ShieldDome"
-	add_child(_dome)
 	power.configure(GameData.loader.get_config("power"))
 	var loadout: Dictionary = _block("default_loadout")
 	equip_shield(loadout.get("shield", ""))
@@ -102,6 +99,8 @@ func equip(slot: StringName, weapon_id: String) -> bool:
 	(_mounts[slot] as Node3D).add_child(weapon)
 	_weapons[slot] = weapon
 	_equipped_ids[slot] = weapon_id
+	if _shield_visual != null:
+		_shield_visual.attach.call_deferred(_model)
 	return true
 
 
@@ -113,7 +112,18 @@ func equip_shield(shield_id: String) -> bool:
 		return false
 	_shield_id = shield_id
 	shield.configure(shield_data)
-	_dome.configure(shield_data.get("visuals", {}))
+	# The look of the shield (dome or conformal skin) is part of its data.
+	var visuals: Dictionary = shield_data.get("visuals", {})
+	var style: String = visuals.get("style", "dome")
+	if _shield_visual == null or _shield_visual.get_style() != style:
+		if _shield_visual != null:
+			_shield_visual.detach()
+			_shield_visual.queue_free()
+		_shield_visual = ShieldVisual.create(style)
+		_shield_visual.name = "ShieldVisual"
+		add_child(_shield_visual)
+	_shield_visual.configure(visuals)
+	_shield_visual.attach(_model)
 	return true
 
 
@@ -145,11 +155,11 @@ func take_damage(amount: float, from_position: Vector3 = Vector3.INF) -> void:
 	var through: float = amount
 	if shield.is_up():
 		through = shield.absorb(amount)
-		_dome.add_impact(from_position if from_position.is_finite() else get_hit_point() + Vector3.UP)
+		_shield_visual.add_impact(from_position if from_position.is_finite() else get_hit_point() + Vector3.UP)
 		rig.add_shake(clampf(amount / 120.0, 0.05, 0.3))
 		EventBus.shield_hit.emit(amount - through, shield.charge)
 		if not shield.is_up():
-			_dome.flash(1.0)
+			_shield_visual.flash(1.0)
 			EventBus.shield_broken.emit()
 	if through <= 0.0:
 		return
@@ -226,9 +236,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta_s: float) -> void:
 	_context.power_output = power.weapon_output_multiplier()
 	if not destroyed and shield.tick(delta_s, power.shield_recharge_multiplier()) > 0:
-		_dome.flash(0.6)
+		_shield_visual.flash(0.6)
 		EventBus.shield_restored.emit()
-	_dome.set_charge(shield.get_fraction())
+	_shield_visual.set_charge(shield.get_fraction())
 	if player_input_enabled:
 		var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 		for slot: StringName in SLOTS:

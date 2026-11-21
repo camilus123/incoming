@@ -337,7 +337,7 @@ One file per shield configuration. The turret's starting shield is `default_load
   "capacity": 100.0,
   "recharge_per_s": 12.0,
   "recharge_delay_s": 3.0,
-  "visuals": { "dome_radius_m": 14.0, "color": [0.3, 0.8, 1.0] }
+  "visuals": { "style": "dome", "dome_radius_m": 14.0, "color": [0.3, 0.8, 1.0] }
 }
 ```
 
@@ -346,7 +346,9 @@ One file per shield configuration. The turret's starting shield is `default_load
 | `capacity` | Damage the shield absorbs before the hull is hit |
 | `recharge_per_s` | Refill rate at the neutral power split; multiplied by the split's shield recharge multiplier |
 | `recharge_delay_s` | Seconds after the last hit before recharging starts |
-| `visuals.dome_radius_m`, `visuals.color` | Size and colour of the dome effect |
+| `visuals.style` | `dome`: a large bubble around the emplacement. `conformal`: an energy skin that hugs the turret and guns |
+| `visuals.dome_radius_m` | Size of the dome (dome style only) |
+| `visuals.color` | Colour of the shield effect |
 
 ## Planned formats
 
