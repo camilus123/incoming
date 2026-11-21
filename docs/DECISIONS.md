@@ -114,3 +114,23 @@ Marko asked for two looks: one shield type as the dome, the other as a conformal
 - **Conformal** is a generated shell around every mesh of the turret and guns (hex lattice, edge glow, a wave that runs round the turret from the side that was hit). Each mesh is grown outwards by `conformal_offset_m` (6 cm by default); vertices sharing a corner move together, so the shell floats off the hull without opening at hard edges. Because it is built from the real meshes it automatically fits any replacement model.
 - **Proposed mapping for M4 (to confirm):** Basic Deflector and the Bastion branch use the dome (big, heavy shield); the Flicker branch uses the conformal skin (tight, fast shield).
 - **Dome bug fixed:** the lattice was drawn on the ground when looking down, because the hemisphere mesh has a flat base and the wall reached the terrain. The base is now discarded and the dome fades out near the ground.
+
+## 2026-11-21: shield style mapping (Marko, by go-ahead)
+
+Basic Deflector and Bastion use the dome; Flicker uses the conformal shell (`flicker_1` sets `shield.visuals.style`).
+
+## 2026-11-22: M4 decisions (Claude)
+
+- **The shop is an overlay, not a separate scene.** The turret stays visible behind it and changes as you buy (new shield look at once). Loop: armoury, stage, rewards, armoury.
+- **Run state lives in the `GameState` autoload**: credits, stage, purchased nodes, loadout, hull. It computes every upgraded stat on demand from base data plus the purchased modifiers; nothing stores upgraded numbers, so respec and hot reload cannot go out of sync.
+- **Modifier stacking:** last `set` (or base) + all `add`s, × all `mul`s. Order-independent apart from which `set` is last.
+- **Armoured Hull** is additive: each level adds 25 % of the base hull (`turret.hull.max_bonus`), so two levels give 300, not 312.5.
+- **Shield Harmonics / Kinetic Dampers** reduce all incoming damage of that type before the shield takes it. Enemy attacks now carry a `damage_type` (interceptor laser: energy, drone ram: kinetic, bombs: explosive).
+- **Weapons of later milestones:** the tree contains all of Section 4. Nodes whose weapon has no data yet are listed under `planned_weapons`, shown as "LATER BUILD" and cannot be bought. They become live automatically when M5 adds the weapon files.
+- **Mk II / Mk III for weapons the spec does not detail:** Mk II = damage ×1.2, heat ×0.9; Mk III = damage ×1.2, fire rate ×1.1, heat ×0.9 (first guesses; archetype-specific bonuses come in M5). Pulse Laser and Micro-Missile have their own values.
+- **Targeting Computer** currently gives enemy health bars; lead indicators arrive with projectile weapons in M5. **Threat Radar** gives off-screen arrows for bombs and an "INCOMING ORDNANCE" warning; without it bombs are only marked while on screen.
+- **Hull repair:** 2 credits per point; if you cannot afford a full repair the button repairs what you can pay for.
+- **Autosave** when the armoury opens. Game over, R: back to that save (the armoury before the lost stage). Enter: new run. The shop has a two-click "Start a new run".
+- **Hull now carries over between stages** and is repaired only in the armoury. The shield and ammo are refilled each stage; the power split resets to 50/50.
+- **Debug:** F2 in the armoury adds 1,000 credits (debug builds only). The rest of the debug menu from spec 14 is still to do.
+- **Demo and debug starts never touch the save** (`--auto-demo`, `--stage=N`, the test range).

@@ -2,7 +2,7 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M3 (shields and power)**. The game starts at stage 1; stages 1 to 3 are authored and later ones are generated. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **M4 (economy, shop and tech tree)**. The game starts in the armoury before stage 1; stages 1 to 3 are authored and later ones are generated. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
 
@@ -14,8 +14,10 @@ Status: **M3 (shields and power)**. The game starts at stage 1; stages 1 to 3 ar
 | Mouse wheel up / down | Shift power towards weapons / shields |
 | Middle mouse click | Reset the power split to 50/50 |
 | Esc | Pause and release the mouse |
-| Enter or Space | Continue after a stage, or restart from stage 1 after game over |
-| R | Retry the stage after game over |
+| Enter or Space | Continue to the armoury after a stage, or start a new run after game over |
+| R | After game over: back to the armoury before the lost stage |
+
+In the armoury: left click buys an upgrade, right click refunds it, drag pans the tree and the wheel zooms. F2 adds 1,000 credits in debug builds.
 | F5 (debug builds) | Reload all data files |
 
 Sensitivity, invert Y, turret weight, FOV and screen shake are stored in `user://settings.cfg` (settings menu comes in M8).
@@ -40,7 +42,8 @@ $env:GODOT_BIN = 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe'
 Useful variants:
 
 ```powershell
-.\tools\godot.ps1 ++ --stage=3          # start at stage 3
+.\tools\godot.ps1 ++ --stage=3          # jump straight into stage 3 (nothing is saved)
+.\tools\godot.ps1 ++ --new-run          # discard the saved run
 .\tools\godot.ps1 ++ --god              # the turret takes no damage
 .\tools\godot.ps1 res://scenes/main/test_range.tscn   # practice targets
 ```

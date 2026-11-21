@@ -2,6 +2,19 @@
 
 Updated at every merge to `main`.
 
+## M4: Economy, shop and tech tree (2026-11-22)
+
+- Full loop: armoury, stage, itemised rewards, armoury.
+- Tech tree with all 79 nodes of Section 4 in `data/techtree/tree.json`: prerequisites (`all_of`, `any_of`), the Bastion/Flicker exclusive group, positions and colours.
+- Generic modifiers (`set`, `add`, `mul` on shield, weapon, turret, power and HUD stats) and a special-effect registry: Hardened Matrix, Aegis Bulwark, Reflex Field, Phase Pulse.
+- Armoury screen: zoomable, pannable node graph, tooltips with before/after values, buy and refund (respec), loadout pickers, hull repair, next-stage preview.
+- Reward calculator with the spec's formulas and a breakdown screen.
+- Run state (`GameState`) with autosave to `user://saves/run.json`, save versioning and a migration hook; retry from the last save after game over.
+- Shields: Bastion keeps the dome, Flicker switches to the conformal shell. Conformal shell floats off the hull.
+- Upgrade-driven HUD features: enemy health bars, ordnance warnings.
+- Enemy attacks have damage types; turret resistances; enemies can be staggered.
+- 101 unit tests, including one that adds a new upgrade from JSON alone.
+
 ## M3: Shields and power (2026-11-21)
 
 - Shield system: capacity, recharge rate and delay from `data/shields/`; shields absorb damage before the hull.
