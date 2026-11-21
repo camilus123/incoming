@@ -128,10 +128,15 @@ Power split between shields and weapons. `weapon_share = 1 − shield_share`.
 | `aim.yaw_min_deg`, `aim.yaw_max_deg` | Yaw limits in degrees, 0 = straight ahead |
 | `aim.pitch_min_deg`, `aim.pitch_max_deg` | Pitch limits in degrees, 0 = horizon |
 | `aim.edge_soft_zone_deg` | Width of the soft-resistance zone before each limit |
+| `aim.edge_min_input_scale` | Input scale right at a limit (1 = no resistance) |
 | `aim.smoothing_default_s` | Default turret weight (time constant in seconds, 0 = none) |
+| `aim.degrees_per_mouse_count` | Degrees turned per mouse count at sensitivity 1.0 |
+| `model` | Asset ID of the turret model |
+| `default_loadout.primary / alternate` | Weapon ids equipped at the start |
+| `camera.screen_shake_max_deg` | Largest screen shake angle |
 | `hull.max` | Base hull points |
 | `camera.fov_horizontal_deg_at_16_9` | Default horizontal FOV at 16:9; wider screens see more |
-| `camera.viewmodel_fov_deg` | FOV used to draw the first-person gun model |
+| `camera.viewmodel_fov_deg` | Vertical FOV used to draw the first-person turret and guns |
 
 ## config/graphics_presets.json
 
@@ -167,10 +172,81 @@ Maps asset IDs to files. See `ASSETS.md`.
 - `type`: `model`, `scene`, `texture`, `material`, `audio`, `font` or `vfx`.
 - `fallback` (optional): another asset ID used if this one cannot be loaded.
 
+## config/combat.json
+
+Global damage rules.
+
+| Field | Meaning |
+|---|---|
+| `shield_damage_multipliers.energy / kinetic / explosive` | Damage multiplier of each type against a target's shield |
+| `armour_min_damage_fraction` | Share of a hit that always gets through armour |
+| `splash_edge_damage_fraction` | Splash damage at the edge of an explosion (1.0 at the centre) |
+
+How a hit is resolved: the shield absorbs first (with the multiplier; if it breaks, the unused share continues). Then the target's `armour` minus the weapon's `armour_pierce` is subtracted as a flat amount. Then the target's resistance to that damage type is applied.
+
+## config/input.json
+
+Default bindings. Each action has a `display_name` and a list of `events`; an event is either `{ "key": "Escape" }` (Godot key name) or `{ "mouse_button": "left" }` (`left`, `right`, `middle`, `wheel_up`, `wheel_down`, `extra1`, `extra2`). An empty list means unbound.
+
+## config/test_range.json
+
+The practice targets of the test range. `model` is an asset ID, `respawn_s` the respawn time. Each entry of `dummies` has `yaw_deg`, `pitch_deg`, `distance_m` (position as seen from the turret), `radius_m`, `hp`, and optionally `armour`, `shield`, `shield_regen_per_s`, `shield_regen_delay_s`.
+
+## weapons/*.json
+
+One file per weapon. To add a weapon that uses an existing archetype, add a file here (and a model entry in the asset manifest); no code is needed.
+
+```json
+{
+  "id": "pulse_laser",
+  "display_name": "Pulse Laser Mk I",
+  "archetype": "hitscan_pulse",
+  "damage_type": "energy",
+  "allowed_slots": ["primary"],
+  "uses_power": true,
+  "ammo_per_stage": 0,
+  "damage": 9.0,
+  "fire_rate": 8.0,
+  "range_m": 6000.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.04,
+  "heat": { "per_shot": 0.028, "cooling_per_s": 0.3, "cooling_delay_s": 0.3, "overheat_unlock": 0.35 },
+  "feel": { "recoil_pitch_deg": 0.1, "recoil_kick_m": 0.05, "recoil_recover_per_s": 16.0, "shake": 0.05 },
+  "visuals": { "model": "model.weapon.pulse_laser", "crosshair": "cross", "tracer_color": [0.35, 0.9, 1.0], "tracer_width_m": 0.12, "tracer_life_s": 0.07, "impact_radius_m": 2.5 }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `archetype` | `hitscan_pulse`, `beam`, `projectile`, `airburst`, `charge_pierce`, `spinup`, `homing`, `area_pulse`. Implemented so far: `hitscan_pulse`, `homing` (the validator warns about the others) |
+| `damage_type` | `energy`, `kinetic` or `explosive` |
+| `allowed_slots` | `primary`, `alternate` or both |
+| `uses_power` | Whether the power split scales this weapon. Missiles use `false` |
+| `ammo_per_stage` | Rounds per stage, refilled between stages. 0 = unlimited |
+| `damage`, `fire_rate`, `range_m`, `armour_pierce`, `spread_deg` | Per shot damage, shots per second, maximum range, armour ignored, random cone half-angle |
+| `heat.per_shot` | Heat added per shot (the meter runs 0 to 1; 1 = overheat) |
+| `heat.cooling_per_s`, `heat.cooling_delay_s` | Cooling rate, and how long after the last shot cooling starts |
+| `heat.overheat_unlock` | An overheated weapon works again once heat falls to this |
+| `feel.recoil_pitch_deg`, `feel.recoil_kick_m`, `feel.recoil_recover_per_s`, `feel.shake` | View kick, gun model kick-back, recovery speed, screen shake (0 to 1) per shot |
+| `visuals.model`, `visuals.projectile_model` | Asset IDs |
+| `visuals.crosshair` | `cross`, `dot` or `circle` |
+| `visuals.tracer_color`, `tracer_width_m`, `tracer_life_s`, `impact_radius_m` | Look of the shot and its impact |
+| `audio.fire` | Asset ID of the firing sound (optional) |
+
+Homing weapons add a `homing` block:
+
+| Field | Meaning |
+|---|---|
+| `salvo_size`, `reload_s`, `launch_interval_s` | Missiles per salvo, reload time after a salvo, delay between missiles |
+| `lock_time_s`, `lock_cone_deg` | Time to gain each lock, and how close to the crosshair a target must be |
+| `launch_speed_mps`, `speed_mps`, `acceleration_mps2` | Speed leaving the pod, top speed, acceleration |
+| `turn_rate_deg_s`, `arm_delay_s` | Steering limit, and the delay before steering starts |
+| `lifetime_s`, `proximity_fuse_m`, `splash_radius_m` | Self-destruct time, detonation distance from the target's surface, blast radius |
+
 ## Planned formats
 
 Added in the milestone that first uses them:
 
-- `weapons/*.json`, `shields/*.json` (M1, M3)
+- `shields/*.json` (M3)
 - `enemies/*.json`, `behaviours/*.json`, `stages/stage_NN.json`, `stages/director.json` (M2)
 - `techtree/tree.json` with generic modifiers and the effect registry (M4)
