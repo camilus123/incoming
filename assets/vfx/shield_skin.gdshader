@@ -13,8 +13,6 @@ uniform float rest_alpha = 0.018;
 uniform float rim_alpha = 0.09;
 // Hexagons per metre of surface.
 uniform float hex_scale = 9.0;
-// How far the skin floats above the surface, in metres.
-uniform float offset_m = 0.012;
 // Whole-skin flash when the shield breaks or comes back.
 uniform float flash = 0.0;
 // World position the wave directions are measured from (the turret).
@@ -30,8 +28,9 @@ varying vec3 local_normal;
 varying vec3 world_position;
 
 void vertex() {
+	// The skin is drawn exactly on the surface. Pushing it out along the normals would
+	// pull the faces of hard-edged meshes apart and leave the edges uncovered.
 	local_normal = NORMAL;
-	VERTEX += NORMAL * offset_m;
 	local_position = VERTEX;
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
