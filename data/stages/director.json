@@ -1,0 +1,27 @@
+{
+  "_comment": "Wave director rules (spec 3.9). threat_budget(stage) = base_budget * growth^(stage - 1). 'procedural' describes the stages after the authored ones.",
+  "base_budget": 100.0,
+  "growth": 1.18,
+  "intro_s": 3.0,
+  "spawn_interval_s": 0.12,
+  "group_spread_m": 70.0,
+  "min_spawn_altitude_m": 40.0,
+  "wave_clear_fraction": 0.25,
+  "wave_timeout_s": 28.0,
+  "default_spawn": {
+    "yaw_deg": [-60.0, 60.0],
+    "pitch_deg": [8.0, 40.0],
+    "distance_m": [1200.0, 2000.0]
+  },
+  "procedural": {
+    "waves_base": 3,
+    "waves_per_stage": 0.3,
+    "waves_max": 8,
+    "wave_delay_s": 4.0,
+    "yaw_half_arc_base_deg": 30.0,
+    "yaw_half_arc_per_stage_deg": 7.0,
+    "yaw_half_arc_max_deg": 75.0,
+    "par_time_base_s": 70.0,
+    "par_time_per_stage_s": 12.0
+  }
+}

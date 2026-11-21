@@ -1,0 +1,15 @@
+{
+  "id": "stage_03",
+  "stage": 3,
+  "display_name": "Bomb Run",
+  "briefing": "Bombers at high altitude. Shoot the bombs down before they land.",
+  "time_of_day": "dusk",
+  "par_time_s": 120.0,
+  "spawn_yaw_deg": [-70.0, 70.0],
+  "waves": [
+    { "delay_s": 1.0, "groups": [ { "enemy": "bomber", "count": 1, "spawn": { "yaw_deg": [-10.0, 10.0] } }, { "enemy": "drone_swarmer", "count": 10 } ] },
+    { "delay_s": 5.0, "budget_share": 0.4, "enemies": ["drone_swarmer", "interceptor"] },
+    { "delay_s": 5.0, "groups": [ { "enemy": "bomber", "count": 2 } ], "budget_share": 0.3, "enemies": ["interceptor"] },
+    { "delay_s": 5.0, "budget_share": 0.3, "enemies": ["drone_swarmer", "interceptor", "bomber"] }
+  ]
+}

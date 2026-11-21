@@ -1,0 +1,37 @@
+{
+  "id": "bomber",
+  "display_name": "Bomber",
+  "model": "model.enemy.bomber",
+  "hitbox_radius_m": 11.0,
+  "hp": 260.0,
+  "armour": 8.0,
+  "shield": 0.0,
+  "speed_mps": 45.0,
+  "turn_rate_deg_s": 20.0,
+  "behaviours": ["bombing_pass"],
+  "attacks": [
+    {
+      "id": "bombs",
+      "type": "guided_bomb",
+      "damage": 40.0,
+      "count": 3,
+      "interval_s": 0.8,
+      "range_m": 1100.0,
+      "projectile": {
+        "model": "model.projectile.enemy_bomb",
+        "hp": 25.0,
+        "hitbox_radius_m": 2.5,
+        "speed_mps": 60.0,
+        "max_speed_mps": 160.0,
+        "acceleration_mps2": 25.0,
+        "blast_radius_m": 12.0
+      }
+    }
+  ],
+  "credit_bounty": 45,
+  "threat_cost": 20,
+  "first_stage": 3,
+  "group_size": [1, 2],
+  "spawn": { "pitch_deg": [16.0, 24.0], "distance_m": [1900.0, 2400.0] },
+  "death_effect": { "radius_m": 28.0, "color": [1.0, 0.55, 0.2] }
+}

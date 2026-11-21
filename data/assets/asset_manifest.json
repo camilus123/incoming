@@ -6,6 +6,10 @@
     "model.weapon.missile_pod": { "path": "res://assets/models/weapons/missile_pod.glb", "type": "model" },
     "model.projectile.micro_missile": { "path": "res://assets/models/projectiles/micro_missile.glb", "type": "model" },
     "model.target.dummy": { "path": "res://assets/models/targets/target_dummy.glb", "type": "model" },
+    "model.enemy.drone_swarmer": { "path": "res://assets/models/enemies/drone_swarmer.glb", "type": "model" },
+    "model.enemy.interceptor": { "path": "res://assets/models/enemies/interceptor.glb", "type": "model" },
+    "model.enemy.bomber": { "path": "res://assets/models/enemies/bomber.glb", "type": "model" },
+    "model.projectile.enemy_bomb": { "path": "res://assets/models/projectiles/enemy_bomb.glb", "type": "model" },
     "vfx.shader.glow_unlit": { "path": "res://assets/vfx/glow_unlit.gdshader", "type": "vfx" }
   }
 }
