@@ -20,7 +20,8 @@
       "type": "object",
       "required": true,
       "fields": {
-        "max": { "type": "number", "min": 1.0, "default": 200.0 }
+        "max": { "type": "number", "min": 1.0, "default": 200.0 },
+        "max_bonus": { "type": "number", "min": 0.0, "default": 0.0 }
       }
     },
     "camera": {

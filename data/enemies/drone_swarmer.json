@@ -10,7 +10,7 @@
   "turn_rate_deg_s": 180.0,
   "behaviours": ["swarm_weave"],
   "attacks": [
-    { "id": "ram", "type": "collision", "damage": 15.0 }
+    { "id": "ram", "type": "collision", "damage_type": "kinetic", "damage": 15.0 }
   ],
   "credit_bounty": 5,
   "threat_cost": 2,

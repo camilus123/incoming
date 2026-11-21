@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "fields": {
+    "planned_weapons": { "type": "array", "default": [], "items": { "type": "string", "non_empty": true } },
+    "branches": {
+      "type": "dict",
+      "required": true,
+      "values": {
+        "type": "object",
+        "fields": {
+          "display_name": { "type": "string", "required": true, "non_empty": true },
+          "color": { "type": "array", "default": [0.6, 0.9, 1.0], "min_items": 3, "items": { "type": "number", "min": 0.0 } }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "required": true,
+      "min_items": 1,
+      "items": {
+        "type": "object",
+        "fields": {
+          "id": { "type": "string", "required": true, "non_empty": true },
+          "name": { "type": "string", "required": true, "non_empty": true },
+          "branch": { "type": "string", "required": true, "non_empty": true },
+          "cost": { "type": "int", "required": true, "min": 0 },
+          "owned_at_start": { "type": "bool", "default": false },
+          "description": { "type": "string", "default": "" },
+          "requires": {
+            "type": "object",
+            "default": {},
+            "fields": {
+              "all_of": { "type": "array", "default": [], "items": { "type": "string", "non_empty": true } },
+              "any_of": { "type": "array", "default": [], "items": { "type": "string", "non_empty": true } }
+            }
+          },
+          "exclusive_group": { "type": "string", "default": "" },
+          "effects": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "object",
+              "fields": {
+                "target": { "type": "string", "non_empty": true },
+                "op": { "type": "string", "enum": ["set", "add", "mul"] },
+                "value": { "type": "any" },
+                "unlock": { "type": "string", "non_empty": true },
+                "effect": { "type": "string", "non_empty": true },
+                "params": { "type": "dict", "values": { "type": "any" } }
+              }
+            }
+          },
+          "ui": {
+            "type": "object",
+            "required": true,
+            "fields": {
+              "x": { "type": "number", "required": true },
+              "y": { "type": "number", "required": true }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -13,6 +13,7 @@
     {
       "id": "bombs",
       "type": "guided_bomb",
+      "damage_type": "explosive",
       "damage": 40.0,
       "count": 2,
       "interval_s": 0.8,

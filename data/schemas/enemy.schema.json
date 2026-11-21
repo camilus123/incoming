@@ -32,6 +32,7 @@
           "id": { "type": "string", "required": true, "non_empty": true },
           "type": { "type": "string", "required": true, "enum": ["collision", "hitscan_burst", "guided_bomb"] },
           "damage": { "type": "number", "required": true, "min": 0.0 },
+          "damage_type": { "type": "string", "enum": ["energy", "kinetic", "explosive"], "default": "kinetic" },
           "count": { "type": "int", "min": 1, "default": 1 },
           "interval_s": { "type": "number", "min": 0.0, "default": 0.1 },
           "cooldown_s": { "type": "number", "min": 0.0, "default": 1.0 },
