@@ -11,6 +11,14 @@
       }
     },
     "armour_min_damage_fraction": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.1 },
-    "splash_edge_damage_fraction": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.4 }
+    "splash_edge_damage_fraction": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.4 },
+    "hitbox_assist": {
+      "type": "object",
+      "required": true,
+      "fields": {
+        "min_angular_radius_deg": { "type": "number", "min": 0.0, "max": 10.0, "default": 0.55 },
+        "max_scale": { "type": "number", "min": 1.0, "max": 100.0, "default": 8.0 }
+      }
+    }
   }
 }

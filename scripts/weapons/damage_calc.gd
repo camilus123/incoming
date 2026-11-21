@@ -55,3 +55,13 @@ static func splash_falloff(distance_m: float, radius_m: float, edge_fraction: fl
 	if radius_m <= 0.0 or distance_m > radius_m:
 		return 0.0
 	return lerpf(1.0, edge_fraction, clampf(distance_m / radius_m, 0.0, 1.0))
+
+
+## Hit radius of a target seen from `distance_m`, with the distance assist:
+## far targets never look smaller than `min_angular_radius_deg`, but the
+## radius grows to at most `max_scale` times the real one.
+## `assist` is the "hitbox_assist" block of the combat config.
+static func assisted_radius(base_radius_m: float, distance_m: float, assist: Dictionary) -> float:
+	var min_angle: float = deg_to_rad(assist.get("min_angular_radius_deg", 0.0))
+	var wanted: float = distance_m * tan(min_angle)
+	return clampf(wanted, base_radius_m, base_radius_m * float(assist.get("max_scale", 1.0)))

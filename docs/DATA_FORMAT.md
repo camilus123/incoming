@@ -181,6 +181,8 @@ Global damage rules.
 | `shield_damage_multipliers.energy / kinetic / explosive` | Damage multiplier of each type against a target's shield |
 | `armour_min_damage_fraction` | Share of a hit that always gets through armour |
 | `splash_edge_damage_fraction` | Splash damage at the edge of an explosion (1.0 at the centre) |
+| `hitbox_assist.min_angular_radius_deg` | Far targets never look smaller than this to the guns (degrees, seen from the turret). 0 turns the assist off |
+| `hitbox_assist.max_scale` | The assist never grows a hitbox beyond this many times its real radius |
 
 How a hit is resolved: the shield absorbs first (with the multiplier; if it breaks, the unused share continues). Then the target's `armour` minus the weapon's `armour_pierce` is subtracted as a flat amount. Then the target's resistance to that damage type is applied.
 

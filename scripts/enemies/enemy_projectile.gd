@@ -44,6 +44,7 @@ func _process(delta_s: float) -> void:
 		return
 	var to_turret: Vector3 = _turret.get_hit_point() - global_position
 	var distance: float = to_turret.length()
+	_hurtbox.apply_distance_assist(distance)
 	if distance <= IMPACT_DISTANCE_M or global_position.y <= 0.5:
 		_impact(distance)
 		return
@@ -55,6 +56,10 @@ func _process(delta_s: float) -> void:
 	var direction: Vector3 = velocity.normalized()
 	var up: Vector3 = Vector3.UP if absf(direction.y) < 0.99 else Vector3.RIGHT
 	global_transform = Transform3D(Basis.looking_at(direction, up), global_position)
+
+
+func get_hit_radius() -> float:
+	return _hurtbox.radius_m
 
 
 func _impact(distance_to_turret: float) -> void:

@@ -3,7 +3,7 @@
   "id": "swarm_weave",
   "module": "approach_kamikaze",
   "params": {
-    "weave_amplitude_m": 14.0,
+    "weave_amplitude_m": 9.0,
     "weave_period_s": 2.4,
     "weave_fade_distance_m": 220.0,
     "impact_distance_m": 7.0

@@ -87,3 +87,10 @@ The Micro-Missile Pod keeps its 6 s reload between salvos; the ammo stock limits
 - **Explosions that engulf the camera are not drawn** (back-face culling on the glow shader). Otherwise a drone ramming the turret whites out the whole screen. The red damage frame and shake carry that feedback instead.
 - **Pause bug fixed:** in M1 the pause key showed "PAUSED" but nothing actually stopped.
 - **Balance was checked with an aim-bot** (`tools/run_demo.ps1`), which finishes stages 1 to 3 with 140 to 185 of 200 hull. A human will lose more; numbers will be retuned once shields exist.
+
+## 2026-11-21: M2 difficulty feedback (Marko)
+
+Marko found M2 too hard and asked for bigger hitboxes, especially at range.
+
+- **Distance-assisted hitboxes** (`combat.json: hitbox_assist`): every enemy and bomb keeps a minimum apparent hit radius of 0.55° as seen from the turret (about 13 px at 1440p), capped at 8× its real radius. Close up the real hitbox applies. The HUD diamond on each threat is drawn at exactly this size, so it shows where a shot counts.
+- Also eased (Claude): drone weave 14 m to 9 m, interceptor burst cooldown 2.5 s to 3.5 s, bombers drop 2 bombs per pass instead of 3, and stage 3's third wave has one bomber instead of two.

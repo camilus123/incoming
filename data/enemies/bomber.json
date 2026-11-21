@@ -14,7 +14,7 @@
       "id": "bombs",
       "type": "guided_bomb",
       "damage": 40.0,
-      "count": 3,
+      "count": 2,
       "interval_s": 0.8,
       "range_m": 1100.0,
       "projectile": {

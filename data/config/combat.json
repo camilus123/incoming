@@ -6,5 +6,10 @@
     "explosive": 1.0
   },
   "armour_min_damage_fraction": 0.3,
-  "splash_edge_damage_fraction": 0.4
+  "splash_edge_damage_fraction": 0.4,
+  "hitbox_assist": {
+    "_comment": "Far targets keep a minimum apparent size: the hit radius never looks smaller than min_angular_radius_deg from the turret, up to max_scale times the real radius.",
+    "min_angular_radius_deg": 0.55,
+    "max_scale": 8.0
+  }
 }

@@ -77,6 +77,7 @@ func _process(delta_s: float) -> void:
 		if not is_inside_tree() or is_queued_for_deletion():
 			return
 	_update_attack_sequence(delta_s)
+	_hurtbox.apply_distance_assist(global_position.distance_to(get_turret_point()))
 	if velocity.length_squared() > 0.01:
 		global_position += velocity * delta_s
 		var direction: Vector3 = velocity.normalized()
@@ -86,6 +87,10 @@ func _process(delta_s: float) -> void:
 
 func is_alive() -> bool:
 	return not away and super.is_alive()
+
+
+func get_hit_radius() -> float:
+	return _hurtbox.radius_m
 
 
 ## The point on the turret that enemies fly at and shoot at.

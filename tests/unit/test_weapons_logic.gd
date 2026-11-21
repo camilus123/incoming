@@ -142,6 +142,14 @@ func test_splash_falloff() -> void:
 	assert_eq(DamageCalc.splash_falloff(10.1, 10.0, 0.4), 0.0)
 
 
+func test_hitbox_assist_grows_far_targets_up_to_the_cap() -> void:
+	var assist: Dictionary = {"min_angular_radius_deg": 0.5, "max_scale": 8.0}
+	assert_almost_eq(DamageCalc.assisted_radius(3.0, 100.0, assist), 3.0, 0.0001, "close targets keep their real size")
+	assert_almost_eq(DamageCalc.assisted_radius(3.0, 1000.0, assist), 1000.0 * tan(deg_to_rad(0.5)), 0.0001)
+	assert_almost_eq(DamageCalc.assisted_radius(3.0, 100000.0, assist), 24.0, 0.0001, "capped at max_scale")
+	assert_almost_eq(DamageCalc.assisted_radius(3.0, 1000.0, {}), 3.0, 0.0001, "no assist configured")
+
+
 func test_archetype_list_matches_the_factory() -> void:
 	var from_factory: Array = WeaponFactory.ARCHETYPES.keys()
 	from_factory.sort()

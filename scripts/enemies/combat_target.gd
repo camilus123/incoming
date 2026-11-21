@@ -30,6 +30,12 @@ func is_alive() -> bool:
 	return not stats.is_dead() and is_inside_tree()
 
 
+## Radius within which a shot counts as a hit right now. Subclasses with a
+## distance-assisted hurtbox return its current radius.
+func get_hit_radius() -> float:
+	return target_radius_m
+
+
 ## The point weapons should aim at.
 func get_aim_point() -> Vector3:
 	return global_position

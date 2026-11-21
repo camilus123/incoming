@@ -9,6 +9,11 @@ var target: CombatTarget
 var damage_multiplier: float = 1.0
 ## Physics layer the shape sits on while enabled.
 var layer_bits: int = Layers.PHYSICS_ENEMY
+## Current hit radius (spherical hurtboxes), including the distance assist.
+var radius_m: float = 0.0
+
+var _base_radius_m: float = 0.0
+var _sphere: SphereShape3D
 
 
 func _init() -> void:
@@ -26,6 +31,9 @@ static func create_sphere(owner_target: CombatTarget, radius_m: float, layer: in
 	hurtbox.collision_layer = layer
 	var shape: SphereShape3D = SphereShape3D.new()
 	shape.radius = radius_m
+	hurtbox._sphere = shape
+	hurtbox._base_radius_m = radius_m
+	hurtbox.radius_m = radius_m
 	var collision: CollisionShape3D = CollisionShape3D.new()
 	collision.shape = shape
 	hurtbox.add_child(collision)
@@ -48,3 +56,16 @@ func apply_hit(info: DamageInfo) -> DamageResult:
 ## Turns the shape on or off (off while its target is dead or hidden).
 func set_enabled(enabled: bool) -> void:
 	collision_layer = layer_bits if enabled else 0
+
+
+## Grows the hit sphere for a target that is far from the shooter, so distant
+## targets stay hittable (see `hitbox_assist` in combat.json). The shape is
+## only touched when the radius changes noticeably.
+func apply_distance_assist(distance_m: float) -> void:
+	if _sphere == null:
+		return
+	var assist: Dictionary = GameData.loader.get_config("combat").get("hitbox_assist", {})
+	var wanted: float = DamageCalc.assisted_radius(_base_radius_m, distance_m, assist)
+	if absf(wanted - radius_m) > radius_m * 0.04:
+		radius_m = wanted
+		_sphere.radius = wanted

@@ -316,21 +316,25 @@ func _draw_threats(centre: Vector2) -> void:
 	var arrows: int = 0
 	for enemy: Enemy in _enemies.get_enemies():
 		if enemy.is_alive():
-			arrows += _draw_threat(camera, view, screen, centre, enemy.global_position, COLOR_WARN, arrows)
+			arrows += _draw_threat(camera, view, screen, centre, enemy, COLOR_WARN, arrows)
 	for projectile: EnemyProjectile in _enemies.get_projectiles():
 		if projectile.is_alive():
-			arrows += _draw_threat(camera, view, screen, centre, projectile.global_position, COLOR_ALERT, arrows)
+			arrows += _draw_threat(camera, view, screen, centre, projectile, COLOR_ALERT, arrows)
 
 
 ## Draws one threat marker. Returns 1 if it used an edge arrow, else 0.
-func _draw_threat(camera: Camera3D, view: Transform3D, screen: Rect2, centre: Vector2, world: Vector3, color: Color, arrows_used: int) -> int:
+func _draw_threat(camera: Camera3D, view: Transform3D, screen: Rect2, centre: Vector2, target: CombatTarget, color: Color, arrows_used: int) -> int:
+	var world: Vector3 = target.global_position
 	var local: Vector3 = view * world
 	if local.z < 0.0:
 		var point: Vector2 = camera.unproject_position(world)
 		if screen.has_point(point):
+			# The diamond is as large as the area that counts as a hit.
+			var focal: float = (size.y * 0.5) / tan(deg_to_rad(camera.fov) * 0.5)
+			var reach: float = clampf(target.get_hit_radius() / maxf(-local.z, 1.0) * focal, 7.0, 400.0)
 			for corner: int in 4:
-				var from: Vector2 = point + Vector2.UP.rotated(corner * PI * 0.5) * 7.0
-				var to: Vector2 = point + Vector2.UP.rotated((corner + 1) * PI * 0.5) * 7.0
+				var from: Vector2 = point + Vector2.UP.rotated(corner * PI * 0.5) * reach
+				var to: Vector2 = point + Vector2.UP.rotated((corner + 1) * PI * 0.5) * reach
 				draw_line(from, to, color, 1.5, true)
 			return 0
 	if arrows_used >= MAX_EDGE_INDICATORS:
