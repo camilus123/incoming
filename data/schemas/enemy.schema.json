@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "fields": {
+    "id": { "type": "string", "required": true, "non_empty": true },
+    "display_name": { "type": "string", "required": true, "non_empty": true },
+    "model": { "type": "string", "required": true, "non_empty": true },
+    "model_scale": { "type": "number", "min": 0.01, "default": 1.0 },
+    "hitbox_radius_m": { "type": "number", "min": 0.1, "default": 2.0 },
+    "hp": { "type": "number", "required": true, "min": 1.0 },
+    "armour": { "type": "number", "min": 0.0, "default": 0.0 },
+    "shield": { "type": "number", "min": 0.0, "default": 0.0 },
+    "shield_regen_per_s": { "type": "number", "min": 0.0, "default": 0.0 },
+    "shield_regen_delay_s": { "type": "number", "min": 0.0, "default": 3.0 },
+    "resistances": {
+      "type": "object",
+      "default": {},
+      "fields": {
+        "energy": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.0 },
+        "kinetic": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.0 },
+        "explosive": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.0 }
+      }
+    },
+    "speed_mps": { "type": "number", "required": true, "min": 0.0 },
+    "turn_rate_deg_s": { "type": "number", "min": 0.0, "default": 90.0 },
+    "behaviours": { "type": "array", "required": true, "min_items": 1, "items": { "type": "string", "non_empty": true } },
+    "attacks": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "fields": {
+          "id": { "type": "string", "required": true, "non_empty": true },
+          "type": { "type": "string", "required": true, "enum": ["collision", "hitscan_burst", "guided_bomb"] },
+          "damage": { "type": "number", "required": true, "min": 0.0 },
+          "count": { "type": "int", "min": 1, "default": 1 },
+          "interval_s": { "type": "number", "min": 0.0, "default": 0.1 },
+          "cooldown_s": { "type": "number", "min": 0.0, "default": 1.0 },
+          "range_m": { "type": "number", "min": 0.0, "default": 500.0 },
+          "color": { "type": "array", "default": [1.0, 0.3, 0.2], "min_items": 3, "items": { "type": "number", "min": 0.0 } },
+          "projectile": {
+            "type": "object",
+            "fields": {
+              "model": { "type": "string", "default": "" },
+              "hp": { "type": "number", "min": 1.0, "default": 20.0 },
+              "hitbox_radius_m": { "type": "number", "min": 0.1, "default": 2.0 },
+              "speed_mps": { "type": "number", "min": 1.0, "default": 60.0 },
+              "max_speed_mps": { "type": "number", "min": 1.0, "default": 150.0 },
+              "acceleration_mps2": { "type": "number", "min": 0.0, "default": 20.0 },
+              "blast_radius_m": { "type": "number", "min": 0.0, "default": 10.0 }
+            }
+          }
+        }
+      }
+    },
+    "credit_bounty": { "type": "int", "min": 0, "default": 0 },
+    "threat_cost": { "type": "number", "min": 0.0, "default": 0.0 },
+    "first_stage": { "type": "int", "min": 1, "default": 1 },
+    "group_size": { "type": "array", "default": [1, 1], "min_items": 2, "items": { "type": "int", "min": 1 } },
+    "spawn": {
+      "type": "object",
+      "default": {},
+      "fields": {
+        "pitch_deg": { "type": "array", "min_items": 2, "items": { "type": "number", "min": -5.0, "max": 90.0 } },
+        "distance_m": { "type": "array", "min_items": 2, "items": { "type": "number", "min": 50.0 } }
+      }
+    },
+    "hit_sound": { "type": "string", "default": "" },
+    "death_effect": {
+      "type": "object",
+      "default": { "radius_m": 8.0, "color": [1.0, 0.5, 0.2] },
+      "fields": {
+        "radius_m": { "type": "number", "min": 0.0, "default": 8.0 },
+        "color": { "type": "array", "default": [1.0, 0.5, 0.2], "min_items": 3, "items": { "type": "number", "min": 0.0 } }
+      }
+    }
+  }
+}

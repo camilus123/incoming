@@ -15,8 +15,13 @@ const HEAT_RADIUS: float = 52.0
 const HIT_MARKER_S: float = 0.14
 const KILL_MARKER_S: float = 0.35
 const MESSAGE_S: float = 2.5
+const MAX_EDGE_INDICATORS: int = 14
+const EDGE_MARGIN: float = 70.0
 
 var _turret: Turret
+var _stages: StageManager
+var _enemies: EnemyManager
+var _damage_flash: float = 0.0
 var _font: Font
 var _hit_left_s: float = 0.0
 var _kill_left_s: float = 0.0
@@ -31,11 +36,15 @@ func _ready() -> void:
 	_font = ThemeDB.fallback_font
 	EventBus.target_hit.connect(_on_target_hit)
 	EventBus.ui_message.connect(_on_ui_message)
+	EventBus.hull_damaged.connect(func(_amount: float, _remaining: float) -> void: _damage_flash = 1.0)
 
 
 func _process(delta_s: float) -> void:
 	if _turret == null:
 		_turret = get_tree().get_first_node_in_group(Turret.GROUP) as Turret
+		_stages = get_tree().get_first_node_in_group(StageManager.GROUP) as StageManager
+		_enemies = get_tree().get_first_node_in_group(EnemyManager.GROUP) as EnemyManager
+	_damage_flash = maxf(0.0, _damage_flash - delta_s * 2.5)
 	_time_s += delta_s
 	_hit_left_s = maxf(0.0, _hit_left_s - delta_s)
 	_kill_left_s = maxf(0.0, _kill_left_s - delta_s)
@@ -50,6 +59,11 @@ func _draw() -> void:
 	var primary: Weapon = _turret.get_weapon(Turret.SLOT_PRIMARY)
 	var alternate: Weapon = _turret.get_weapon(Turret.SLOT_ALTERNATE)
 
+	_draw_damage_flash()
+	if _enemies != null:
+		_draw_threats(centre)
+	if _stages != null:
+		_draw_stage_info(centre)
 	_draw_crosshair(centre, primary)
 	if primary != null:
 		_draw_heat_arc(centre, primary, -1.0)
@@ -267,3 +281,72 @@ func _on_target_hit(_slot: StringName, killed: bool) -> void:
 func _on_ui_message(text: String) -> void:
 	_message = text
 	_message_left_s = MESSAGE_S
+
+
+## Red frame that flashes when the turret is hit.
+func _draw_damage_flash() -> void:
+	if _damage_flash <= 0.0:
+		return
+	var color: Color = COLOR_ALERT
+	color.a = 0.45 * _damage_flash
+	var thickness: float = 26.0
+	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x, thickness)), color)
+	draw_rect(Rect2(Vector2(0.0, size.y - thickness), Vector2(size.x, thickness)), color)
+	draw_rect(Rect2(Vector2(0.0, thickness), Vector2(thickness, size.y - thickness * 2.0)), color)
+	draw_rect(Rect2(Vector2(size.x - thickness, thickness), Vector2(thickness, size.y - thickness * 2.0)), color)
+
+
+func _draw_stage_info(centre: Vector2) -> void:
+	if _stages.state == StageManager.State.IDLE:
+		return
+	var text: String = "STAGE %d     WAVE %d / %d     HOSTILES %d" % [
+		_stages.stage_number, mini(_stages.wave_index + 1, _stages.get_wave_count()), _stages.get_wave_count(),
+		_enemies.get_enemy_count() if _enemies != null else 0]
+	_text(Vector2(centre.x, 44.0), text, 15, COLOR_MAIN, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+## Marks every threat: a small diamond on distant ones that are on screen, an
+## arrow at the screen edge for those outside the view.
+func _draw_threats(centre: Vector2) -> void:
+	var camera: Camera3D = _turret.rig.get_camera()
+	if camera == null:
+		return
+	var view: Transform3D = camera.global_transform.affine_inverse()
+	var screen: Rect2 = Rect2(Vector2.ZERO, size).grow(-EDGE_MARGIN)
+	var arrows: int = 0
+	for enemy: Enemy in _enemies.get_enemies():
+		if enemy.is_alive():
+			arrows += _draw_threat(camera, view, screen, centre, enemy, COLOR_WARN, arrows)
+	for projectile: EnemyProjectile in _enemies.get_projectiles():
+		if projectile.is_alive():
+			arrows += _draw_threat(camera, view, screen, centre, projectile, COLOR_ALERT, arrows)
+
+
+## Draws one threat marker. Returns 1 if it used an edge arrow, else 0.
+func _draw_threat(camera: Camera3D, view: Transform3D, screen: Rect2, centre: Vector2, target: CombatTarget, color: Color, arrows_used: int) -> int:
+	var world: Vector3 = target.global_position
+	var local: Vector3 = view * world
+	if local.z < 0.0:
+		var point: Vector2 = camera.unproject_position(world)
+		if screen.has_point(point):
+			# The diamond is as large as the area that counts as a hit.
+			var focal: float = (size.y * 0.5) / tan(deg_to_rad(camera.fov) * 0.5)
+			var reach: float = clampf(target.get_hit_radius() / maxf(-local.z, 1.0) * focal, 7.0, 400.0)
+			for corner: int in 4:
+				var from: Vector2 = point + Vector2.UP.rotated(corner * PI * 0.5) * reach
+				var to: Vector2 = point + Vector2.UP.rotated((corner + 1) * PI * 0.5) * reach
+				draw_line(from, to, color, 1.5, true)
+			return 0
+	if arrows_used >= MAX_EDGE_INDICATORS:
+		return 0
+	# Off screen: an arrow on an ellipse inside the screen, pointing at the threat.
+	var direction: Vector2 = Vector2(local.x, -local.y)
+	if direction.length_squared() < 0.0001:
+		direction = Vector2.DOWN
+	direction = direction.normalized()
+	var radii: Vector2 = size * 0.5 - Vector2(EDGE_MARGIN, EDGE_MARGIN)
+	var tip: Vector2 = centre + Vector2(direction.x * radii.x, direction.y * radii.y)
+	var side: Vector2 = direction.orthogonal() * 9.0
+	var base: Vector2 = tip - direction * 20.0
+	draw_colored_polygon(PackedVector2Array([tip, base + side, base - side]), color)
+	return 1

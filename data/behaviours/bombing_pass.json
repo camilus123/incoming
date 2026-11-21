@@ -1,0 +1,9 @@
+{
+  "_comment": "Flies level over the turret and releases its 'guided_bomb' attack inside its range. After passing overhead it circles round (out of sight) and starts a new pass from the front.",
+  "id": "bombing_pass",
+  "module": "level_pass",
+  "params": {
+    "exit_distance_m": 500.0,
+    "repass_delay_s": 6.0
+  }
+}

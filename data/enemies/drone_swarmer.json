@@ -1,0 +1,21 @@
+{
+  "id": "drone_swarmer",
+  "display_name": "Swarm Drone",
+  "model": "model.enemy.drone_swarmer",
+  "hitbox_radius_m": 3.0,
+  "hp": 20.0,
+  "armour": 0.0,
+  "shield": 0.0,
+  "speed_mps": 70.0,
+  "turn_rate_deg_s": 180.0,
+  "behaviours": ["swarm_weave"],
+  "attacks": [
+    { "id": "ram", "type": "collision", "damage": 15.0 }
+  ],
+  "credit_bounty": 5,
+  "threat_cost": 2,
+  "first_stage": 1,
+  "group_size": [8, 20],
+  "spawn": { "pitch_deg": [6.0, 35.0], "distance_m": [900.0, 1500.0] },
+  "death_effect": { "radius_m": 6.0, "color": [1.0, 0.45, 0.2] }
+}

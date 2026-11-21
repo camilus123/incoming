@@ -1,47 +1,15 @@
-extends Node3D
-## M1 test range: the turret, a simple environment and static target dummies
-## placed from data/config/test_range.json.
-##
-## Command-line options (after `++`):
-##   --auto-demo   aim and fire automatically, log fps, save screenshots, quit.
+extends PlayScene
+## Test range: the turret and static target dummies placed from
+## data/config/test_range.json. A debug scene for trying weapons; run it with
+##   .\tools\godot.ps1 res://scenes/main/test_range.tscn
 
-const ACTION_PAUSE: StringName = &"pause"
-const ACTION_CAMERA_TOGGLE: StringName = &"camera_toggle"
-
-@onready var _turret: Turret = $Turret
 @onready var _targets: Node3D = $Targets
 
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
+	super._ready()
 	_spawn_dummies()
 	EventBus.data_reloaded.connect(_on_data_reloaded)
-	Input.use_accumulated_input = false
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if OS.get_cmdline_user_args().has("--auto-demo"):
-		var demo: AutoDemo = AutoDemo.new()
-		demo.name = "AutoDemo"
-		demo.turret = _turret
-		add_child(demo)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(ACTION_PAUSE):
-		_set_paused(not get_tree().paused)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed(ACTION_CAMERA_TOGGLE) and OS.is_debug_build():
-		EventBus.ui_message.emit("Third-person camera: coming soon")
-
-
-func _notification(what: int) -> void:
-	# Give the mouse back when the window loses focus.
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and _turret.player_input_enabled and not get_tree().paused:
-		_set_paused(true)
-
-
-func _set_paused(paused: bool) -> void:
-	get_tree().paused = paused
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if paused else Input.MOUSE_MODE_CAPTURED
 
 
 func _spawn_dummies() -> void:

@@ -207,7 +207,7 @@ func _fallback_visual() -> Node3D:
 
 func _build_trail_resources() -> void:
 	var fade: Gradient = Gradient.new()
-	fade.set_color(0, Color(1.0, 0.75, 0.4, 0.9))
+	fade.set_color(0, Color(1.0, 0.75, 0.4, 0.6))
 	fade.set_color(1, Color(0.5, 0.5, 0.5, 0.0))
 	var fade_texture: GradientTexture1D = GradientTexture1D.new()
 	fade_texture.gradient = fade
@@ -239,7 +239,7 @@ func _build_trail_resources() -> void:
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = puff
-	material.albedo_color = Color(2.0, 2.0, 2.0)
+	material.albedo_color = Color(0.7, 0.7, 0.7)
 	_trail_mesh = QuadMesh.new()
-	_trail_mesh.size = Vector2(1.2, 1.2)
+	_trail_mesh.size = Vector2(0.7, 0.7)
 	_trail_mesh.material = material

@@ -2,7 +2,7 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M1 (core turret and shooting)**. The game starts in a test range with practice targets. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **M2 (enemies and stages)**. The game starts at stage 1; stages 1 to 3 are authored and later ones are generated. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
 
@@ -12,6 +12,8 @@ Status: **M1 (core turret and shooting)**. The game starts in a test range with 
 | Left mouse button (hold) | Fire the Pulse Laser |
 | Right mouse button (hold, then release) | Lock targets near the crosshair, release to launch missiles |
 | Esc | Pause and release the mouse |
+| Enter or Space | Continue after a stage, or restart from stage 1 after game over |
+| R | Retry the stage after game over |
 | F5 (debug builds) | Reload all data files |
 
 Sensitivity, invert Y, turret weight, FOV and screen shake are stored in `user://settings.cfg` (settings menu comes in M8).
@@ -32,6 +34,14 @@ $env:GODOT_BIN = 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe'
 ```
 
 `tools\godot.ps1` uses `GODOT_BIN`, or `godot` from the PATH, and builds the import cache on a fresh clone.
+
+Useful variants:
+
+```powershell
+.\tools\godot.ps1 ++ --stage=3          # start at stage 3
+.\tools\godot.ps1 ++ --god              # the turret takes no damage
+.\tools\godot.ps1 res://scenes/main/test_range.tscn   # practice targets
+```
 
 ## Validate the data
 

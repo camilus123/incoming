@@ -8,6 +8,8 @@
     "power_reset": { "display_name": "Reset power split", "events": [ { "mouse_button": "middle" } ] },
     "pause": { "display_name": "Pause", "events": [ { "key": "Escape" } ] },
     "show_intel": { "display_name": "Stage stats and enemy intel", "events": [ { "key": "Tab" } ] },
+    "confirm": { "display_name": "Confirm / continue", "events": [ { "key": "Enter" }, { "key": "Kp Enter" }, { "key": "Space" } ] },
+    "retry": { "display_name": "Retry stage", "events": [ { "key": "R" } ] },
     "camera_toggle": { "display_name": "Toggle camera (reserved)", "events": [ { "key": "V" } ] },
     "zoom": { "display_name": "Zoom (optional)", "events": [] }
   }

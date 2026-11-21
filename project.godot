@@ -13,7 +13,7 @@ config_version=5
 config/name="INCOMING"
 config/description="First-person ground turret defence."
 config/version="0.0.1"
-run/main_scene="res://scenes/main/test_range.tscn"
+run/main_scene="res://scenes/main/game.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]

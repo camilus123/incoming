@@ -38,6 +38,7 @@ const INDEX_SCHEMA: Dictionary = {
 					"directory": {"type": "string", "required": true, "non_empty": true},
 					"schema": {"type": "string", "required": true, "non_empty": true},
 					"id_field": {"type": "string", "default": "id", "non_empty": true},
+					"file_pattern": {"type": "string", "default": "*.json", "non_empty": true},
 				},
 			},
 		},
@@ -181,7 +182,7 @@ func _load_collection(entry: Dictionary, report: DataReport) -> void:
 	var file_names: PackedStringArray = dir.get_files()
 	file_names.sort()
 	for file_name: String in file_names:
-		if file_name.get_extension().to_lower() != "json":
+		if not file_name.to_lower().match(str(entry["file_pattern"]).to_lower()):
 			continue
 		var file_path: String = dir_path.path_join(file_name)
 		report.files_checked += 1

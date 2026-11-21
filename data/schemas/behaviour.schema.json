@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "fields": {
+    "id": { "type": "string", "required": true, "non_empty": true },
+    "module": { "type": "string", "required": true, "non_empty": true },
+    "params": { "type": "dict", "default": {}, "values": { "type": "any" } }
+  }
+}

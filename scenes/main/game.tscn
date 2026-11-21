@@ -1,0 +1,32 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/main/game.gd" id="1_game"]
+[ext_resource type="PackedScene" path="res://scenes/environment/frontier_basic.tscn" id="2_env"]
+[ext_resource type="Script" path="res://scripts/weapons/combat_fx.gd" id="3_fx"]
+[ext_resource type="Script" path="res://scripts/weapons/missile_system.gd" id="4_missiles"]
+[ext_resource type="Script" path="res://scripts/turret/turret.gd" id="5_turret"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_manager.gd" id="6_enemies"]
+[ext_resource type="Script" path="res://scripts/director/stage_manager.gd" id="7_stages"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
+
+[node name="Game" type="Node3D"]
+script = ExtResource("1_game")
+
+[node name="Environment" parent="." instance=ExtResource("2_env")]
+
+[node name="CombatFx" type="Node3D" parent="."]
+script = ExtResource("3_fx")
+
+[node name="MissileSystem" type="Node3D" parent="."]
+script = ExtResource("4_missiles")
+
+[node name="Turret" type="Node3D" parent="."]
+script = ExtResource("5_turret")
+
+[node name="EnemyManager" type="Node3D" parent="."]
+script = ExtResource("6_enemies")
+
+[node name="StageManager" type="Node" parent="."]
+script = ExtResource("7_stages")
+
+[node name="Hud" parent="." instance=ExtResource("8_hud")]

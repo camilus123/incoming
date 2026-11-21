@@ -7,11 +7,15 @@
     { "name": "turret", "file": "config/turret.json", "schema": "schemas/turret.schema.json" },
     { "name": "combat", "file": "config/combat.json", "schema": "schemas/combat.schema.json" },
     { "name": "input", "file": "config/input.json", "schema": "schemas/input.schema.json" },
+    { "name": "director", "file": "stages/director.json", "schema": "schemas/director.schema.json" },
     { "name": "test_range", "file": "config/test_range.json", "schema": "schemas/test_range.schema.json" },
     { "name": "graphics_presets", "file": "config/graphics_presets.json", "schema": "schemas/graphics_presets.schema.json" },
     { "name": "asset_manifest", "file": "assets/asset_manifest.json", "schema": "schemas/asset_manifest.schema.json" }
   ],
   "collections": [
-    { "category": "weapons", "directory": "weapons", "schema": "schemas/weapon.schema.json" }
+    { "category": "weapons", "directory": "weapons", "schema": "schemas/weapon.schema.json" },
+    { "category": "behaviours", "directory": "behaviours", "schema": "schemas/behaviour.schema.json" },
+    { "category": "enemies", "directory": "enemies", "schema": "schemas/enemy.schema.json" },
+    { "category": "stages", "directory": "stages", "schema": "schemas/stage.schema.json", "file_pattern": "stage_*.json" }
   ]
 }
