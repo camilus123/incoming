@@ -27,6 +27,7 @@ var _damage_flash: float = 0.0
 var _shown_share: float = 0.5
 var _power_pulse: float = 0.0
 var _shield_flash: float = 0.0
+var _show_health_bars: bool = false
 var _font: Font
 var _hit_left_s: float = 0.0
 var _kill_left_s: float = 0.0
@@ -65,7 +66,7 @@ func _process(delta_s: float) -> void:
 
 
 func _draw() -> void:
-	if _turret == null:
+	if _turret == null or (_stages != null and _stages.state == StageManager.State.SHOP):
 		return
 	var centre: Vector2 = size * 0.5
 	var primary: Weapon = _turret.get_weapon(Turret.SLOT_PRIMARY)
@@ -321,9 +322,9 @@ func _draw_damage_flash() -> void:
 func _draw_stage_info(centre: Vector2) -> void:
 	if _stages.state == StageManager.State.IDLE:
 		return
-	var text: String = "STAGE %d     WAVE %d / %d     HOSTILES %d" % [
+	var text: String = "STAGE %d     WAVE %d / %d     HOSTILES %d     BOUNTY %d cr" % [
 		_stages.stage_number, mini(_stages.wave_index + 1, _stages.get_wave_count()), _stages.get_wave_count(),
-		_enemies.get_enemy_count() if _enemies != null else 0]
+		_enemies.get_enemy_count() if _enemies != null else 0, _stages.stats.bounty]
 	_text(Vector2(centre.x, 44.0), text, 15, COLOR_MAIN, HORIZONTAL_ALIGNMENT_CENTER)
 
 
@@ -336,12 +337,23 @@ func _draw_threats(centre: Vector2) -> void:
 	var view: Transform3D = camera.global_transform.affine_inverse()
 	var screen: Rect2 = Rect2(Vector2.ZERO, size).grow(-EDGE_MARGIN)
 	var arrows: int = 0
+	# Upgrades switch HUD features on (Targeting Computer, Threat Radar).
+	var flags: Dictionary = GameState.get_hud_flags()
+	_show_health_bars = flags.get("enemy_health_bars", false)
+	var warn_projectiles: bool = flags.get("projectile_warnings", false)
 	for enemy: Enemy in _enemies.get_enemies():
 		if enemy.is_alive():
 			arrows += _draw_threat(camera, view, screen, centre, enemy, COLOR_WARN, arrows)
+	var incoming: bool = false
 	for projectile: EnemyProjectile in _enemies.get_projectiles():
 		if projectile.is_alive():
-			arrows += _draw_threat(camera, view, screen, centre, projectile, COLOR_ALERT, arrows)
+			incoming = true
+			# Without the Threat Radar, ordnance outside the view gets no arrow.
+			arrows += _draw_threat(camera, view, screen, centre, projectile, COLOR_ALERT, arrows if warn_projectiles else MAX_EDGE_INDICATORS)
+	if incoming and warn_projectiles:
+		var warning: Color = COLOR_ALERT
+		warning.a = 0.6 + 0.4 * sin(_time_s * 10.0)
+		_text(Vector2(centre.x, 74.0), "INCOMING ORDNANCE", 16, warning, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 ## Draws one threat marker. Returns 1 if it used an edge arrow, else 0.
@@ -358,6 +370,10 @@ func _draw_threat(camera: Camera3D, view: Transform3D, screen: Rect2, centre: Ve
 				var from: Vector2 = point + Vector2.UP.rotated(corner * PI * 0.5) * reach
 				var to: Vector2 = point + Vector2.UP.rotated((corner + 1) * PI * 0.5) * reach
 				draw_line(from, to, color, 1.5, true)
+			if _show_health_bars and target.stats.hp < target.stats.max_hp:
+				var bar: Rect2 = Rect2(point + Vector2(-18.0, reach + 5.0), Vector2(36.0, 4.0))
+				draw_rect(bar, COLOR_DIM)
+				draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(target.stats.hp / target.stats.max_hp, 0.0, 1.0), bar.size.y)), color)
 			return 0
 	if arrows_used >= MAX_EDGE_INDICATORS:
 		return 0

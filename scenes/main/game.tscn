@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/main/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/environment/frontier_basic.tscn" id="2_env"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/enemies/enemy_manager.gd" id="6_enemies"]
 [ext_resource type="Script" path="res://scripts/director/stage_manager.gd" id="7_stages"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop.tscn" id="9_shop"]
 
 [node name="Game" type="Node3D"]
 script = ExtResource("1_game")
@@ -30,3 +31,5 @@ script = ExtResource("6_enemies")
 script = ExtResource("7_stages")
 
 [node name="Hud" parent="." instance=ExtResource("8_hud")]
+
+[node name="Shop" parent="." instance=ExtResource("9_shop")]
