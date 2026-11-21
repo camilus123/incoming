@@ -1,0 +1,47 @@
+{
+  "_comment": "Hold the trigger over targets to collect locks, release to launch the salvo. Missiles are not powered by the reactor: the ammo stock is refilled only between stages.",
+  "id": "micro_missile_pod",
+  "display_name": "Micro-Missile Pod",
+  "archetype": "homing",
+  "damage_type": "explosive",
+  "allowed_slots": ["alternate"],
+  "uses_power": false,
+  "ammo_per_stage": 32,
+  "damage": 45.0,
+  "range_m": 4500.0,
+  "armour_pierce": 2.0,
+  "heat": {
+    "per_shot": 0.1,
+    "cooling_per_s": 0.25,
+    "cooling_delay_s": 0.5,
+    "overheat_unlock": 0.4
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.25,
+    "recoil_kick_m": 0.08,
+    "recoil_recover_per_s": 10.0,
+    "shake": 0.12
+  },
+  "visuals": {
+    "model": "model.weapon.missile_pod",
+    "projectile_model": "model.projectile.micro_missile",
+    "crosshair": "cross",
+    "tracer_color": [1.0, 0.6, 0.25],
+    "impact_radius_m": 8.0
+  },
+  "homing": {
+    "salvo_size": 4,
+    "reload_s": 6.0,
+    "launch_interval_s": 0.09,
+    "lock_time_s": 0.3,
+    "lock_cone_deg": 7.0,
+    "launch_speed_mps": 60.0,
+    "speed_mps": 320.0,
+    "acceleration_mps2": 420.0,
+    "turn_rate_deg_s": 110.0,
+    "arm_delay_s": 0.15,
+    "lifetime_s": 14.0,
+    "proximity_fuse_m": 3.0,
+    "splash_radius_m": 10.0
+  }
+}

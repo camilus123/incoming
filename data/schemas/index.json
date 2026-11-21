@@ -5,8 +5,13 @@
     { "name": "economy", "file": "config/economy.json", "schema": "schemas/economy.schema.json" },
     { "name": "difficulty", "file": "config/difficulty.json", "schema": "schemas/difficulty.schema.json" },
     { "name": "turret", "file": "config/turret.json", "schema": "schemas/turret.schema.json" },
+    { "name": "combat", "file": "config/combat.json", "schema": "schemas/combat.schema.json" },
+    { "name": "input", "file": "config/input.json", "schema": "schemas/input.schema.json" },
+    { "name": "test_range", "file": "config/test_range.json", "schema": "schemas/test_range.schema.json" },
     { "name": "graphics_presets", "file": "config/graphics_presets.json", "schema": "schemas/graphics_presets.schema.json" },
     { "name": "asset_manifest", "file": "assets/asset_manifest.json", "schema": "schemas/asset_manifest.schema.json" }
   ],
-  "collections": []
+  "collections": [
+    { "category": "weapons", "directory": "weapons", "schema": "schemas/weapon.schema.json" }
+  ]
 }

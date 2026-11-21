@@ -13,12 +13,13 @@ config_version=5
 config/name="INCOMING"
 config/description="First-person ground turret defence."
 config/version="0.0.1"
-run/main_scene="res://scenes/main/boot.tscn"
+run/main_scene="res://scenes/main/test_range.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
 EventBus="*res://scripts/core/event_bus.gd"
+UserSettings="*res://scripts/core/user_settings.gd"
 GameData="*res://scripts/core/game_data.gd"
 
 [debug]
@@ -36,6 +37,15 @@ window/stretch/aspect="expand"
 [incoming]
 
 engine/pinned_version="4.7.2-stable"
+
+[layer_names]
+
+3d_render/layer_1="world"
+3d_render/layer_2="viewmodel"
+3d_physics/layer_1="world"
+3d_physics/layer_2="enemy"
+3d_physics/layer_3="enemy_projectile"
+3d_physics/layer_4="player"
 
 [physics]
 

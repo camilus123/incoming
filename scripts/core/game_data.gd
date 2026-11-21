@@ -19,6 +19,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if OS.is_debug_build():
 		_register_debug_actions()
+	_check_engine_version()
 	reload()
 
 
@@ -29,6 +30,7 @@ func reload() -> DataReport:
 	DataValidator.validate(new_loader, report)
 	loader = new_loader
 	assets.configure(loader.get_config("asset_manifest"))
+	InputSetup.apply(loader.get_config("input"))
 	last_report = report
 	report.push_to_log()
 	print("Data loaded: ", report.summary())
@@ -49,3 +51,12 @@ func _register_debug_actions() -> void:
 	key.keycode = KEY_F5
 	InputMap.add_action(ACTION_RELOAD_DATA)
 	InputMap.action_add_event(ACTION_RELOAD_DATA, key)
+
+
+## Warns if the project is run with a Godot version other than the pinned one.
+func _check_engine_version() -> void:
+	var pinned: String = ProjectSettings.get_setting("incoming/engine/pinned_version", "")
+	var info: Dictionary = Engine.get_version_info()
+	var running: String = "%d.%d.%d-%s" % [info["major"], info["minor"], info["patch"], info["status"]]
+	if not pinned.is_empty() and pinned != running:
+		push_warning("This project is pinned to Godot %s but is running on %s" % [pinned, running])

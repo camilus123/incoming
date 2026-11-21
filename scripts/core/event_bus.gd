@@ -30,6 +30,11 @@ signal power_split_changed(shield_share: float)
 ## Weapon events. `slot` is "primary" or "alternate".
 signal weapon_fired(slot: StringName)
 signal weapon_overheated(slot: StringName)
+## A player shot damaged a target. `slot` is the weapon slot that hit.
+signal target_hit(slot: StringName, killed: bool)
+
+## A short message for the player, shown by the HUD.
+signal ui_message(text: String)
 
 ## Economy.
 signal credits_changed(total: int)

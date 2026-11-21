@@ -2,7 +2,19 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M0 (setup)**. The project opens and runs to a test scene; the data loader, validator and tests work. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **M1 (core turret and shooting)**. The game starts in a test range with practice targets. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+
+## Controls
+
+| Input | Action |
+|---|---|
+| Mouse | Aim |
+| Left mouse button (hold) | Fire the Pulse Laser |
+| Right mouse button (hold, then release) | Lock targets near the crosshair, release to launch missiles |
+| Esc | Pause and release the mouse |
+| F5 (debug builds) | Reload all data files |
+
+Sensitivity, invert Y, turret weight, FOV and screen shake are stored in `user://settings.cfg` (settings menu comes in M8).
 
 ## Requirements
 
@@ -40,6 +52,14 @@ godot --headless --path . --script res://tools/validate_data.gd
 ```
 
 Runs the GUT unit tests in `tests/unit` headless.
+
+## Automated demo and fps
+
+```powershell
+.\tools\run_demo.ps1
+```
+
+The turret aims and fires by itself for 20 seconds in fullscreen with V-Sync off, then prints a `PERF` line with the average fps and 1 % lows. Add `-ScreenshotDir C:\some\folder` to save screenshots.
 
 ## Layout
 

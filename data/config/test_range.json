@@ -1,0 +1,21 @@
+{
+  "_comment": "Static target dummies for the M1 test range. Positions are given as seen from the turret: yaw (right is positive), pitch (up is positive) and distance.",
+  "model": "model.target.dummy",
+  "respawn_s": 3.0,
+  "dummies": [
+    { "yaw_deg": 0.0, "pitch_deg": 8.0, "distance_m": 400.0, "radius_m": 6.0, "hp": 150.0 },
+    { "yaw_deg": -25.0, "pitch_deg": 14.0, "distance_m": 600.0, "radius_m": 6.0, "hp": 150.0 },
+    { "yaw_deg": 25.0, "pitch_deg": 14.0, "distance_m": 600.0, "radius_m": 6.0, "hp": 150.0 },
+    { "yaw_deg": -55.0, "pitch_deg": 20.0, "distance_m": 900.0, "radius_m": 9.0, "hp": 300.0, "armour": 6.0 },
+    { "yaw_deg": 55.0, "pitch_deg": 20.0, "distance_m": 900.0, "radius_m": 9.0, "hp": 200.0, "shield": 150.0, "shield_regen_per_s": 20.0, "shield_regen_delay_s": 3.0 },
+    { "yaw_deg": -78.0, "pitch_deg": 5.0, "distance_m": 500.0, "radius_m": 6.0, "hp": 150.0 },
+    { "yaw_deg": 78.0, "pitch_deg": 5.0, "distance_m": 500.0, "radius_m": 6.0, "hp": 150.0 },
+    { "yaw_deg": 0.0, "pitch_deg": 82.0, "distance_m": 700.0, "radius_m": 8.0, "hp": 150.0 },
+    { "yaw_deg": -6.0, "pitch_deg": 34.0, "distance_m": 1200.0, "radius_m": 7.0, "hp": 80.0 },
+    { "yaw_deg": -2.0, "pitch_deg": 37.0, "distance_m": 1200.0, "radius_m": 7.0, "hp": 80.0 },
+    { "yaw_deg": 2.0, "pitch_deg": 34.0, "distance_m": 1200.0, "radius_m": 7.0, "hp": 80.0 },
+    { "yaw_deg": 6.0, "pitch_deg": 37.0, "distance_m": 1200.0, "radius_m": 7.0, "hp": 80.0 },
+    { "yaw_deg": 35.0, "pitch_deg": 50.0, "distance_m": 2500.0, "radius_m": 14.0, "hp": 400.0 },
+    { "yaw_deg": -35.0, "pitch_deg": 2.0, "distance_m": 1500.0, "radius_m": 10.0, "hp": 200.0 }
+  ]
+}

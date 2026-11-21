@@ -1,0 +1,14 @@
+{
+  "_comment": "Default key and mouse bindings (spec 3.3). The settings menu (M8) stores the player's changes on top of these. Keys use Godot key names (e.g. Escape, Tab, V, F1). Mouse buttons: left, right, middle, wheel_up, wheel_down, extra1, extra2.",
+  "actions": {
+    "fire_primary": { "display_name": "Fire primary weapon", "events": [ { "mouse_button": "left" } ] },
+    "fire_alternate": { "display_name": "Fire alternate weapon", "events": [ { "mouse_button": "right" } ] },
+    "power_to_weapons": { "display_name": "Shift power to weapons", "events": [ { "mouse_button": "wheel_up" } ] },
+    "power_to_shields": { "display_name": "Shift power to shields", "events": [ { "mouse_button": "wheel_down" } ] },
+    "power_reset": { "display_name": "Reset power split", "events": [ { "mouse_button": "middle" } ] },
+    "pause": { "display_name": "Pause", "events": [ { "key": "Escape" } ] },
+    "show_intel": { "display_name": "Stage stats and enemy intel", "events": [ { "key": "Tab" } ] },
+    "camera_toggle": { "display_name": "Toggle camera (reserved)", "events": [ { "key": "V" } ] },
+    "zoom": { "display_name": "Zoom (optional)", "events": [] }
+  }
+}

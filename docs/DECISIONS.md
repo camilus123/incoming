@@ -52,3 +52,22 @@ The Micro-Missile Pod keeps its 6 s reload between salvos; the ammo stock limits
 - **Speed bonus formula:** full bonus (300) at clear time ≤ 0.6 × par, zero at ≥ 1.2 × par, linear in between (`economy.json`).
 - **Hull repair cost:** 2 credits per hull point (`economy.json`).
 - **Wrapper scripts are PowerShell** and find Godot through `GODOT_BIN` or the PATH, so no machine-specific path is committed.
+
+## 2026-11-21: confirmations after M0 (Marko)
+
+- Alternate weapons: Flak Barrage uses per-stage ammo like the missiles; EMP Burst, Arc Projector, Rail Lance and Singularity Charge use reactor power. Confirmed.
+- Hull 200 is fine as a start and may change with balance.
+
+## 2026-11-21: M1 technical decisions (Claude)
+
+- **Viewmodel:** the turret and guns are drawn by a second camera into a transparent SubViewport laid over the world (own FOV, no clipping). Lights must include render layer 2 to light them. Shots are traced from the sighting position so they land exactly under the crosshair; tracers are drawn from the muzzle as it appears on screen.
+- **Aim feel:** the mouse moves the aim directly and the camera uses that exact aim. Only the visible gun model is smoothed (30 ms time constant by default, 0 = off), so weight never costs responsiveness. Input uses unaccumulated, unscaled mouse counts.
+- **Arc edges:** inside the last 4° before a limit, input towards the limit is scaled down to 35 %, then clamped. The HUD shows a yaw/pitch arc map and amber brackets near a limit.
+- **FOV:** 90° horizontal is defined at 16:9 and converted to a fixed vertical FOV, so 21:9 sees more to the sides (Hor+).
+- **Micro-Missile Pod:** hold RMB to collect up to 4 locks (0.3 s each, within 7° of the crosshair), release to launch; without locks the missiles fly straight. 32 missiles per stage (8 salvos), first guess.
+- **Recoil is visual only:** the view kick and gun kick-back do not move the aim.
+- **Input bindings are data** (`config/input.json`); `project.godot` contains no actions. The player's rebinds (M8) will be stored on top.
+- **Weapon timing runs per rendered frame**, not on the 60 Hz physics tick, so fire and missiles stay smooth at 240 Hz.
+- **Test range:** the M1 scene is `scenes/main/test_range.tscn` with dummies from `config/test_range.json`. It stays as a debug scene after M2 adds real stages.
+- **Automated demo** (`tools/run_demo.ps1`): drives the turret without a player, prints fps and saves screenshots. It is a stop-gap for the M7 benchmark mode.
+- **No audio yet.** Weapon files have an `audio` block, but sounds arrive with the M8 audio pass.
