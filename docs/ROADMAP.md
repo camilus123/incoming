@@ -11,8 +11,8 @@
 | M4 Economy, shop and tech tree | Rewards, shop UI, tech tree, loadout, saving | Done |
 | M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | Done |
 | M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | Done |
-| M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | Done, awaiting approval |
-| M8 Polish | Audio, settings, menus, Windows export | Next |
+| M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | Done |
+| M8 Polish | Audio, settings, menus, Windows export | In progress |
 
 ## Later (designed for, not built)
 
