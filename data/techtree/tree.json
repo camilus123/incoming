@@ -1,0 +1,2358 @@
+{
+  "_comment": "The tech tree (spec section 4). Everything here is data: nodes, costs, prerequisites, exclusive groups, effects and positions in the shop. See docs/DATA_FORMAT.md.",
+  "planned_weapons": [
+    "beam_laser",
+    "particle_lance",
+    "plasma_repeater",
+    "plasma_cannon",
+    "chain_gun",
+    "rotary_cannon",
+    "autocannon",
+    "twin_autocannon",
+    "coilgun",
+    "railgun",
+    "hyper_rail",
+    "swarm_missiles",
+    "seeker_torpedo",
+    "flak_barrage",
+    "emp_burst",
+    "arc_projector",
+    "rail_lance",
+    "singularity_charge"
+  ],
+  "branches": {
+    "shield_core": {
+      "display_name": "Shield",
+      "color": [
+        0.45,
+        0.8,
+        1.0
+      ]
+    },
+    "shield_bastion": {
+      "display_name": "Bastion",
+      "color": [
+        0.3,
+        0.55,
+        1.0
+      ]
+    },
+    "shield_flicker": {
+      "display_name": "Flicker",
+      "color": [
+        0.3,
+        1.0,
+        0.9
+      ]
+    },
+    "shield_shared": {
+      "display_name": "Shield tuning",
+      "color": [
+        0.55,
+        0.75,
+        0.95
+      ]
+    },
+    "primary_energy": {
+      "display_name": "Primary: Energy",
+      "color": [
+        1.0,
+        0.45,
+        0.85
+      ]
+    },
+    "primary_kinetic": {
+      "display_name": "Primary: Kinetic",
+      "color": [
+        1.0,
+        0.75,
+        0.3
+      ]
+    },
+    "primary_rail": {
+      "display_name": "Primary: Rail",
+      "color": [
+        0.75,
+        0.6,
+        1.0
+      ]
+    },
+    "alternate": {
+      "display_name": "Alternate weapons",
+      "color": [
+        1.0,
+        0.5,
+        0.3
+      ]
+    },
+    "core": {
+      "display_name": "Core systems",
+      "color": [
+        0.6,
+        0.95,
+        0.5
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "basic_deflector",
+      "name": "Basic Deflector",
+      "branch": "shield_core",
+      "cost": 0,
+      "owned_at_start": true,
+      "description": "Standard shield. Capacity 100, recharge 12/s, delay 3 s.",
+      "effects": [],
+      "ui": {
+        "x": 0,
+        "y": 179
+      }
+    },
+    {
+      "id": "bastion_1",
+      "name": "Bastion I: Dense Emitters",
+      "branch": "shield_bastion",
+      "cost": 600,
+      "description": "A big, slow shield. Choosing Bastion locks the Flicker branch.",
+      "requires": {
+        "all_of": [
+          "basic_deflector"
+        ]
+      },
+      "exclusive_group": "shield_core",
+      "effects": [
+        {
+          "target": "shield.capacity",
+          "op": "set",
+          "value": 180
+        },
+        {
+          "target": "shield.recharge_per_s",
+          "op": "set",
+          "value": 9
+        },
+        {
+          "target": "shield.recharge_delay_s",
+          "op": "set",
+          "value": 3.5
+        },
+        {
+          "target": "shield.display_name",
+          "op": "set",
+          "value": "Bastion Shield"
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 78
+      }
+    },
+    {
+      "id": "bastion_2",
+      "name": "Bastion II: Layered Field",
+      "branch": "shield_bastion",
+      "cost": 1100,
+      "description": "More capacity.",
+      "requires": {
+        "all_of": [
+          "bastion_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "shield.capacity",
+          "op": "set",
+          "value": 260
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 78
+      }
+    },
+    {
+      "id": "bastion_3",
+      "name": "Bastion III: Hardened Matrix",
+      "branch": "shield_bastion",
+      "cost": 1800,
+      "description": "All incoming damage is reduced by 15 % while the shield is above 50 %.",
+      "requires": {
+        "all_of": [
+          "bastion_2"
+        ]
+      },
+      "effects": [
+        {
+          "effect": "damage_reduction_while_shielded",
+          "params": {
+            "reduction": 0.15,
+            "min_shield_fraction": 0.5
+          }
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 78
+      }
+    },
+    {
+      "id": "bastion_4",
+      "name": "Bastion IV: Deep Capacitors",
+      "branch": "shield_bastion",
+      "cost": 2600,
+      "description": "More capacity. The shield still recharges at 25 % speed when no power is routed to it.",
+      "requires": {
+        "all_of": [
+          "bastion_3"
+        ]
+      },
+      "effects": [
+        {
+          "target": "shield.capacity",
+          "op": "set",
+          "value": 360
+        },
+        {
+          "target": "shield.min_recharge_multiplier",
+          "op": "set",
+          "value": 0.25
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 78
+      }
+    },
+    {
+      "id": "aegis_bulwark",
+      "name": "Aegis Bulwark",
+      "branch": "shield_bastion",
+      "cost": 4000,
+      "description": "Capstone. Once per stage a lethal hull hit is fully absorbed and the shield is restored to 50 %.",
+      "requires": {
+        "all_of": [
+          "bastion_4"
+        ]
+      },
+      "effects": [
+        {
+          "effect": "aegis_bulwark",
+          "params": {
+            "restore_fraction": 0.5
+          }
+        }
+      ],
+      "ui": {
+        "x": 1375,
+        "y": 78
+      }
+    },
+    {
+      "id": "flicker_1",
+      "name": "Flicker I: Rapid Cycling",
+      "branch": "shield_flicker",
+      "cost": 600,
+      "description": "A small, fast shield that hugs the turret. Choosing Flicker locks the Bastion branch.",
+      "requires": {
+        "all_of": [
+          "basic_deflector"
+        ]
+      },
+      "exclusive_group": "shield_core",
+      "effects": [
+        {
+          "target": "shield.capacity",
+          "op": "set",
+          "value": 80
+        },
+        {
+          "target": "shield.recharge_per_s",
+          "op": "set",
+          "value": 28
+        },
+        {
+          "target": "shield.recharge_delay_s",
+          "op": "set",
+          "value": 1.5
+        },
+        {
+          "target": "shield.visuals.style",
+          "op": "set",
+          "value": "conformal"
+        },
+        {
+          "target": "shield.display_name",
+          "op": "set",
+          "value": "Flicker Shield"
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 280
+      }
+    },
+    {
+      "id": "flicker_2",
+      "name": "Flicker II: Overclocked Coils",
+      "branch": "shield_flicker",
+      "cost": 1100,
+      "description": "Faster recharge.",
+      "requires": {
+        "all_of": [
+          "flicker_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "shield.recharge_per_s",
+          "op": "set",
+          "value": 40
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 280
+      }
+    },
+    {
+      "id": "flicker_3",
+      "name": "Flicker III: Instant Restart",
+      "branch": "shield_flicker",
+      "cost": 1800,
+      "description": "The shield starts recharging 0.6 s after the last hit.",
+      "requires": {
+        "all_of": [
+          "flicker_2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "shield.recharge_delay_s",
+          "op": "set",
+          "value": 0.6
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 280
+      }
+    },
+    {
+      "id": "flicker_4",
+      "name": "Flicker IV: Reflex Field",
+      "branch": "shield_flicker",
+      "cost": 2600,
+      "description": "Recharge is doubled for 2 s after the shield breaks.",
+      "requires": {
+        "all_of": [
+          "flicker_3"
+        ]
+      },
+      "effects": [
+        {
+          "effect": "reflex_field",
+          "params": {
+            "multiplier": 2.0,
+            "duration_s": 2.0
+          }
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 280
+      }
+    },
+    {
+      "id": "phase_pulse",
+      "name": "Phase Pulse",
+      "branch": "shield_flicker",
+      "cost": 4000,
+      "description": "Capstone. When the shield goes from empty to full it emits a 300 m shockwave that damages and staggers enemies and destroys their projectiles.",
+      "requires": {
+        "all_of": [
+          "flicker_4"
+        ]
+      },
+      "effects": [
+        {
+          "effect": "phase_pulse",
+          "params": {
+            "radius_m": 300.0,
+            "damage": 60.0,
+            "stagger_s": 1.5
+          }
+        }
+      ],
+      "ui": {
+        "x": 1375,
+        "y": 280
+      }
+    },
+    {
+      "id": "shield_harmonics",
+      "name": "Shield Harmonics",
+      "branch": "shield_shared",
+      "cost": 900,
+      "description": "20 % less damage from energy attacks.",
+      "requires": {
+        "any_of": [
+          "bastion_1",
+          "flicker_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "turret.resistances.energy",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 179
+      }
+    },
+    {
+      "id": "kinetic_dampers",
+      "name": "Kinetic Dampers",
+      "branch": "shield_shared",
+      "cost": 900,
+      "description": "20 % less damage from kinetic attacks.",
+      "requires": {
+        "any_of": [
+          "bastion_1",
+          "flicker_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "turret.resistances.kinetic",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 179
+      }
+    },
+    {
+      "id": "pulse_laser_mk1",
+      "name": "Pulse Laser Mk I",
+      "branch": "primary_energy",
+      "cost": 0,
+      "owned_at_start": true,
+      "description": "Rapid hitscan energy bolts. Good against shields, weak against armour.",
+      "effects": [
+        {
+          "unlock": "pulse_laser"
+        }
+      ],
+      "ui": {
+        "x": 2150,
+        "y": 213
+      }
+    },
+    {
+      "id": "pulse_laser_mk2",
+      "name": "Pulse Laser Mk II",
+      "branch": "primary_energy",
+      "cost": 500,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "pulse_laser_mk1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.pulse_laser.damage",
+          "op": "mul",
+          "value": 1.25
+        },
+        {
+          "target": "weapon.pulse_laser.heat.per_shot",
+          "op": "mul",
+          "value": 0.85
+        },
+        {
+          "target": "weapon.pulse_laser.display_name",
+          "op": "set",
+          "value": "Pulse Laser Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2425,
+        "y": 213
+      }
+    },
+    {
+      "id": "pulse_laser_mk3",
+      "name": "Pulse Laser Mk III",
+      "branch": "primary_energy",
+      "cost": 1000,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "pulse_laser_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.pulse_laser.damage",
+          "op": "mul",
+          "value": 1.25
+        },
+        {
+          "target": "weapon.pulse_laser.fire_rate",
+          "op": "mul",
+          "value": 1.125
+        },
+        {
+          "target": "weapon.pulse_laser.heat.per_shot",
+          "op": "mul",
+          "value": 0.85
+        },
+        {
+          "target": "weapon.pulse_laser.display_name",
+          "op": "set",
+          "value": "Pulse Laser Mk III"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 213
+      }
+    },
+    {
+      "id": "beam_laser",
+      "name": "Beam Laser",
+      "branch": "primary_energy",
+      "cost": 1400,
+      "description": "Continuous beam. Damage ramps up while it stays on a target.",
+      "requires": {
+        "all_of": [
+          "pulse_laser_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "beam_laser"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 101
+      }
+    },
+    {
+      "id": "beam_laser_mk2",
+      "name": "Beam Laser Mk II",
+      "branch": "primary_energy",
+      "cost": 550,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "beam_laser"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.beam_laser.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.beam_laser.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.beam_laser.display_name",
+          "op": "set",
+          "value": "Beam Laser Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 101
+      }
+    },
+    {
+      "id": "beam_laser_mk3",
+      "name": "Beam Laser Mk III",
+      "branch": "primary_energy",
+      "cost": 1100,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "beam_laser_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.beam_laser.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.beam_laser.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.beam_laser.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.beam_laser.display_name",
+          "op": "set",
+          "value": "Beam Laser Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 101
+      }
+    },
+    {
+      "id": "particle_lance",
+      "name": "Particle Lance",
+      "branch": "primary_energy",
+      "cost": 3200,
+      "description": "Very high damage beam that pierces targets. Runs very hot.",
+      "requires": {
+        "all_of": [
+          "beam_laser_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "particle_lance"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 0
+      }
+    },
+    {
+      "id": "particle_lance_mk2",
+      "name": "Particle Lance Mk II",
+      "branch": "primary_energy",
+      "cost": 1300,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "particle_lance"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.particle_lance.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.particle_lance.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.particle_lance.display_name",
+          "op": "set",
+          "value": "Particle Lance Mk II"
+        }
+      ],
+      "ui": {
+        "x": 3525,
+        "y": 0
+      }
+    },
+    {
+      "id": "particle_lance_mk3",
+      "name": "Particle Lance Mk III",
+      "branch": "primary_energy",
+      "cost": 2550,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "particle_lance_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.particle_lance.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.particle_lance.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.particle_lance.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.particle_lance.display_name",
+          "op": "set",
+          "value": "Particle Lance Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3800,
+        "y": 0
+      }
+    },
+    {
+      "id": "plasma_repeater",
+      "name": "Plasma Repeater",
+      "branch": "primary_energy",
+      "cost": 1600,
+      "description": "Slow plasma bolts with a 6 m splash. Strong against shields.",
+      "requires": {
+        "all_of": [
+          "pulse_laser_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "plasma_repeater"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 314
+      }
+    },
+    {
+      "id": "plasma_repeater_mk2",
+      "name": "Plasma Repeater Mk II",
+      "branch": "primary_energy",
+      "cost": 650,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "plasma_repeater"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.plasma_repeater.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.plasma_repeater.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.plasma_repeater.display_name",
+          "op": "set",
+          "value": "Plasma Repeater Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 314
+      }
+    },
+    {
+      "id": "plasma_repeater_mk3",
+      "name": "Plasma Repeater Mk III",
+      "branch": "primary_energy",
+      "cost": 1300,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "plasma_repeater_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.plasma_repeater.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.plasma_repeater.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.plasma_repeater.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.plasma_repeater.display_name",
+          "op": "set",
+          "value": "Plasma Repeater Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 314
+      }
+    },
+    {
+      "id": "plasma_cannon",
+      "name": "Plasma Cannon",
+      "branch": "primary_energy",
+      "cost": 3000,
+      "description": "Big, slow plasma bolts with a 15 m splash.",
+      "requires": {
+        "all_of": [
+          "plasma_repeater_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "plasma_cannon"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 414
+      }
+    },
+    {
+      "id": "plasma_cannon_mk2",
+      "name": "Plasma Cannon Mk II",
+      "branch": "primary_energy",
+      "cost": 1200,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "plasma_cannon"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.plasma_cannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.plasma_cannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.plasma_cannon.display_name",
+          "op": "set",
+          "value": "Plasma Cannon Mk II"
+        }
+      ],
+      "ui": {
+        "x": 3525,
+        "y": 414
+      }
+    },
+    {
+      "id": "plasma_cannon_mk3",
+      "name": "Plasma Cannon Mk III",
+      "branch": "primary_energy",
+      "cost": 2400,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "plasma_cannon_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.plasma_cannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.plasma_cannon.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.plasma_cannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.plasma_cannon.display_name",
+          "op": "set",
+          "value": "Plasma Cannon Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3800,
+        "y": 414
+      }
+    },
+    {
+      "id": "chain_gun",
+      "name": "Chain Gun",
+      "branch": "primary_kinetic",
+      "cost": 1200,
+      "description": "Spins up from 6 to 30 rounds per second. Strong against armour.",
+      "effects": [
+        {
+          "unlock": "chain_gun"
+        }
+      ],
+      "ui": {
+        "x": 2150,
+        "y": 582
+      }
+    },
+    {
+      "id": "chain_gun_mk2",
+      "name": "Chain Gun Mk II",
+      "branch": "primary_kinetic",
+      "cost": 500,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "chain_gun"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.chain_gun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.chain_gun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.chain_gun.display_name",
+          "op": "set",
+          "value": "Chain Gun Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2425,
+        "y": 582
+      }
+    },
+    {
+      "id": "chain_gun_mk3",
+      "name": "Chain Gun Mk III",
+      "branch": "primary_kinetic",
+      "cost": 950,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "chain_gun_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.chain_gun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.chain_gun.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.chain_gun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.chain_gun.display_name",
+          "op": "set",
+          "value": "Chain Gun Mk III"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 582
+      }
+    },
+    {
+      "id": "rotary_cannon",
+      "name": "Rotary Cannon",
+      "branch": "primary_kinetic",
+      "cost": 2800,
+      "description": "Bigger rounds, slower spin-up.",
+      "requires": {
+        "all_of": [
+          "chain_gun_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "rotary_cannon"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 683
+      }
+    },
+    {
+      "id": "rotary_cannon_mk2",
+      "name": "Rotary Cannon Mk II",
+      "branch": "primary_kinetic",
+      "cost": 1100,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "rotary_cannon"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.rotary_cannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.rotary_cannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.rotary_cannon.display_name",
+          "op": "set",
+          "value": "Rotary Cannon Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 683
+      }
+    },
+    {
+      "id": "rotary_cannon_mk3",
+      "name": "Rotary Cannon Mk III",
+      "branch": "primary_kinetic",
+      "cost": 2250,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "rotary_cannon_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.rotary_cannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.rotary_cannon.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.rotary_cannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.rotary_cannon.display_name",
+          "op": "set",
+          "value": "Rotary Cannon Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 683
+      }
+    },
+    {
+      "id": "autocannon",
+      "name": "Autocannon",
+      "branch": "primary_kinetic",
+      "cost": 1300,
+      "description": "Flak rounds with a proximity fuse. Great against swarms.",
+      "effects": [
+        {
+          "unlock": "autocannon"
+        }
+      ],
+      "ui": {
+        "x": 2150,
+        "y": 784
+      }
+    },
+    {
+      "id": "autocannon_mk2",
+      "name": "Autocannon Mk II",
+      "branch": "primary_kinetic",
+      "cost": 500,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "autocannon"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.autocannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.autocannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.autocannon.display_name",
+          "op": "set",
+          "value": "Autocannon Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2425,
+        "y": 784
+      }
+    },
+    {
+      "id": "autocannon_mk3",
+      "name": "Autocannon Mk III",
+      "branch": "primary_kinetic",
+      "cost": 1050,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "autocannon_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.autocannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.autocannon.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.autocannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.autocannon.display_name",
+          "op": "set",
+          "value": "Autocannon Mk III"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 784
+      }
+    },
+    {
+      "id": "twin_autocannon",
+      "name": "Twin Autocannon",
+      "branch": "primary_kinetic",
+      "cost": 2900,
+      "description": "Two barrels firing in turn.",
+      "requires": {
+        "all_of": [
+          "autocannon_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "twin_autocannon"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 885
+      }
+    },
+    {
+      "id": "twin_autocannon_mk2",
+      "name": "Twin Autocannon Mk II",
+      "branch": "primary_kinetic",
+      "cost": 1150,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "twin_autocannon"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.twin_autocannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.twin_autocannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.twin_autocannon.display_name",
+          "op": "set",
+          "value": "Twin Autocannon Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 885
+      }
+    },
+    {
+      "id": "twin_autocannon_mk3",
+      "name": "Twin Autocannon Mk III",
+      "branch": "primary_kinetic",
+      "cost": 2300,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "twin_autocannon_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.twin_autocannon.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.twin_autocannon.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.twin_autocannon.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.twin_autocannon.display_name",
+          "op": "set",
+          "value": "Twin Autocannon Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 885
+      }
+    },
+    {
+      "id": "coilgun",
+      "name": "Coilgun",
+      "branch": "primary_rail",
+      "cost": 1500,
+      "description": "Very fast slugs (1,500 m/s) with no drop.",
+      "requires": {
+        "any_of": [
+          "chain_gun",
+          "autocannon"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "coilgun"
+        }
+      ],
+      "ui": {
+        "x": 2425,
+        "y": 1030
+      }
+    },
+    {
+      "id": "coilgun_mk2",
+      "name": "Coilgun Mk II",
+      "branch": "primary_rail",
+      "cost": 600,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "coilgun"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.coilgun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.coilgun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.coilgun.display_name",
+          "op": "set",
+          "value": "Coilgun Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 1030
+      }
+    },
+    {
+      "id": "coilgun_mk3",
+      "name": "Coilgun Mk III",
+      "branch": "primary_rail",
+      "cost": 1200,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "coilgun_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.coilgun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.coilgun.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.coilgun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.coilgun.display_name",
+          "op": "set",
+          "value": "Coilgun Mk III"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 1030
+      }
+    },
+    {
+      "id": "railgun",
+      "name": "Railgun",
+      "branch": "primary_rail",
+      "cost": 3000,
+      "description": "Charge for 0.8 s, then pierce up to 5 targets.",
+      "requires": {
+        "all_of": [
+          "coilgun_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "railgun"
+        }
+      ],
+      "ui": {
+        "x": 2700,
+        "y": 1131
+      }
+    },
+    {
+      "id": "railgun_mk2",
+      "name": "Railgun Mk II",
+      "branch": "primary_rail",
+      "cost": 1200,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "railgun"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.railgun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.railgun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.railgun.display_name",
+          "op": "set",
+          "value": "Railgun Mk II"
+        }
+      ],
+      "ui": {
+        "x": 2975,
+        "y": 1131
+      }
+    },
+    {
+      "id": "railgun_mk3",
+      "name": "Railgun Mk III",
+      "branch": "primary_rail",
+      "cost": 2400,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "railgun_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.railgun.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.railgun.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.railgun.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.railgun.display_name",
+          "op": "set",
+          "value": "Railgun Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 1131
+      }
+    },
+    {
+      "id": "hyper_rail",
+      "name": "Hyper-Rail",
+      "branch": "primary_rail",
+      "cost": 5000,
+      "description": "Pierces everything on its line and leaves an ionised trail that keeps damaging.",
+      "requires": {
+        "all_of": [
+          "railgun_mk3"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "hyper_rail"
+        }
+      ],
+      "ui": {
+        "x": 3250,
+        "y": 1232
+      }
+    },
+    {
+      "id": "hyper_rail_mk2",
+      "name": "Hyper-Rail Mk II",
+      "branch": "primary_rail",
+      "cost": 2000,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "hyper_rail"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.hyper_rail.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.hyper_rail.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.hyper_rail.display_name",
+          "op": "set",
+          "value": "Hyper-Rail Mk II"
+        }
+      ],
+      "ui": {
+        "x": 3525,
+        "y": 1232
+      }
+    },
+    {
+      "id": "hyper_rail_mk3",
+      "name": "Hyper-Rail Mk III",
+      "branch": "primary_rail",
+      "cost": 4000,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "hyper_rail_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.hyper_rail.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.hyper_rail.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.hyper_rail.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.hyper_rail.display_name",
+          "op": "set",
+          "value": "Hyper-Rail Mk III"
+        }
+      ],
+      "ui": {
+        "x": 3800,
+        "y": 1232
+      }
+    },
+    {
+      "id": "micro_missile_pod_mk1",
+      "name": "Micro-Missile Pod Mk I",
+      "branch": "alternate",
+      "cost": 0,
+      "owned_at_start": true,
+      "description": "Hold to lock up to 4 targets, release to launch. Ammo is refilled between stages.",
+      "effects": [
+        {
+          "unlock": "micro_missile_pod"
+        }
+      ],
+      "ui": {
+        "x": 0,
+        "y": 851
+      }
+    },
+    {
+      "id": "micro_missile_pod_mk2",
+      "name": "Micro-Missile Pod Mk II",
+      "branch": "alternate",
+      "cost": 600,
+      "description": "Two more missiles per salvo, more ammo and faster locks.",
+      "requires": {
+        "all_of": [
+          "micro_missile_pod_mk1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.micro_missile_pod.homing.salvo_size",
+          "op": "add",
+          "value": 2
+        },
+        {
+          "target": "weapon.micro_missile_pod.ammo_per_stage",
+          "op": "add",
+          "value": 16
+        },
+        {
+          "target": "weapon.micro_missile_pod.homing.lock_time_s",
+          "op": "mul",
+          "value": 0.75
+        },
+        {
+          "target": "weapon.micro_missile_pod.display_name",
+          "op": "set",
+          "value": "Micro-Missile Pod Mk II"
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 851
+      }
+    },
+    {
+      "id": "micro_missile_pod_mk3",
+      "name": "Micro-Missile Pod Mk III",
+      "branch": "alternate",
+      "cost": 1200,
+      "description": "Two more missiles per salvo, more ammo and faster locks.",
+      "requires": {
+        "all_of": [
+          "micro_missile_pod_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.micro_missile_pod.homing.salvo_size",
+          "op": "add",
+          "value": 2
+        },
+        {
+          "target": "weapon.micro_missile_pod.ammo_per_stage",
+          "op": "add",
+          "value": 16
+        },
+        {
+          "target": "weapon.micro_missile_pod.homing.lock_time_s",
+          "op": "mul",
+          "value": 0.75
+        },
+        {
+          "target": "weapon.micro_missile_pod.display_name",
+          "op": "set",
+          "value": "Micro-Missile Pod Mk III"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 851
+      }
+    },
+    {
+      "id": "swarm_missiles",
+      "name": "Swarm Missiles",
+      "branch": "alternate",
+      "cost": 2200,
+      "description": "16 mini-missiles that spread themselves over the targets.",
+      "requires": {
+        "all_of": [
+          "micro_missile_pod_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "swarm_missiles"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 952
+      }
+    },
+    {
+      "id": "swarm_missiles_mk2",
+      "name": "Swarm Missiles Mk II",
+      "branch": "alternate",
+      "cost": 900,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "swarm_missiles"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.swarm_missiles.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.swarm_missiles.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.swarm_missiles.display_name",
+          "op": "set",
+          "value": "Swarm Missiles Mk II"
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 952
+      }
+    },
+    {
+      "id": "swarm_missiles_mk3",
+      "name": "Swarm Missiles Mk III",
+      "branch": "alternate",
+      "cost": 1750,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "swarm_missiles_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.swarm_missiles.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.swarm_missiles.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.swarm_missiles.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.swarm_missiles.display_name",
+          "op": "set",
+          "value": "Swarm Missiles Mk III"
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 952
+      }
+    },
+    {
+      "id": "seeker_torpedo",
+      "name": "Seeker Torpedo",
+      "branch": "alternate",
+      "cost": 2600,
+      "description": "One huge, slow torpedo that you steer while holding the trigger.",
+      "requires": {
+        "all_of": [
+          "micro_missile_pod_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "seeker_torpedo"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 1053
+      }
+    },
+    {
+      "id": "seeker_torpedo_mk2",
+      "name": "Seeker Torpedo Mk II",
+      "branch": "alternate",
+      "cost": 1050,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "seeker_torpedo"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.seeker_torpedo.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.seeker_torpedo.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.seeker_torpedo.display_name",
+          "op": "set",
+          "value": "Seeker Torpedo Mk II"
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 1053
+      }
+    },
+    {
+      "id": "seeker_torpedo_mk3",
+      "name": "Seeker Torpedo Mk III",
+      "branch": "alternate",
+      "cost": 2100,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "seeker_torpedo_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.seeker_torpedo.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.seeker_torpedo.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.seeker_torpedo.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.seeker_torpedo.display_name",
+          "op": "set",
+          "value": "Seeker Torpedo Mk III"
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 1053
+      }
+    },
+    {
+      "id": "flak_barrage",
+      "name": "Flak Barrage",
+      "branch": "alternate",
+      "cost": 1400,
+      "description": "A shotgun-like cone of flak. Clears swarms and enemy missiles.",
+      "effects": [
+        {
+          "unlock": "flak_barrage"
+        }
+      ],
+      "ui": {
+        "x": 0,
+        "y": 1165
+      }
+    },
+    {
+      "id": "flak_barrage_mk2",
+      "name": "Flak Barrage Mk II",
+      "branch": "alternate",
+      "cost": 550,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "flak_barrage"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.flak_barrage.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.flak_barrage.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.flak_barrage.display_name",
+          "op": "set",
+          "value": "Flak Barrage Mk II"
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 1165
+      }
+    },
+    {
+      "id": "flak_barrage_mk3",
+      "name": "Flak Barrage Mk III",
+      "branch": "alternate",
+      "cost": 1100,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "flak_barrage_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.flak_barrage.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.flak_barrage.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.flak_barrage.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.flak_barrage.display_name",
+          "op": "set",
+          "value": "Flak Barrage Mk III"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 1165
+      }
+    },
+    {
+      "id": "emp_burst",
+      "name": "EMP Burst",
+      "branch": "alternate",
+      "cost": 1800,
+      "description": "Strips enemy shields and stuns drones around the impact.",
+      "requires": {
+        "any_of": [
+          "flak_barrage",
+          "micro_missile_pod_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "emp_burst"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 1266
+      }
+    },
+    {
+      "id": "emp_burst_mk2",
+      "name": "EMP Burst Mk II",
+      "branch": "alternate",
+      "cost": 700,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "emp_burst"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.emp_burst.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.emp_burst.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.emp_burst.display_name",
+          "op": "set",
+          "value": "EMP Burst Mk II"
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 1266
+      }
+    },
+    {
+      "id": "emp_burst_mk3",
+      "name": "EMP Burst Mk III",
+      "branch": "alternate",
+      "cost": 1450,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "emp_burst_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.emp_burst.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.emp_burst.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.emp_burst.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.emp_burst.display_name",
+          "op": "set",
+          "value": "EMP Burst Mk III"
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 1266
+      }
+    },
+    {
+      "id": "arc_projector",
+      "name": "Arc Projector",
+      "branch": "alternate",
+      "cost": 2400,
+      "description": "Lightning that chains between up to 6 targets.",
+      "requires": {
+        "all_of": [
+          "emp_burst"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "arc_projector"
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 1366
+      }
+    },
+    {
+      "id": "arc_projector_mk2",
+      "name": "Arc Projector Mk II",
+      "branch": "alternate",
+      "cost": 950,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "arc_projector"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.arc_projector.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.arc_projector.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.arc_projector.display_name",
+          "op": "set",
+          "value": "Arc Projector Mk II"
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 1366
+      }
+    },
+    {
+      "id": "arc_projector_mk3",
+      "name": "Arc Projector Mk III",
+      "branch": "alternate",
+      "cost": 1900,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "arc_projector_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.arc_projector.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.arc_projector.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.arc_projector.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.arc_projector.display_name",
+          "op": "set",
+          "value": "Arc Projector Mk III"
+        }
+      ],
+      "ui": {
+        "x": 1375,
+        "y": 1366
+      }
+    },
+    {
+      "id": "rail_lance",
+      "name": "Rail Lance",
+      "branch": "alternate",
+      "cost": 3500,
+      "description": "A railgun for the alternate slot, with a long cooldown.",
+      "requires": {
+        "all_of": [
+          "coilgun"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "rail_lance"
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 1467
+      }
+    },
+    {
+      "id": "rail_lance_mk2",
+      "name": "Rail Lance Mk II",
+      "branch": "alternate",
+      "cost": 1400,
+      "description": "More damage and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "rail_lance"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.rail_lance.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.rail_lance.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.rail_lance.display_name",
+          "op": "set",
+          "value": "Rail Lance Mk II"
+        }
+      ],
+      "ui": {
+        "x": 825,
+        "y": 1467
+      }
+    },
+    {
+      "id": "rail_lance_mk3",
+      "name": "Rail Lance Mk III",
+      "branch": "alternate",
+      "cost": 2800,
+      "description": "More damage, a higher fire rate and less heat per shot.",
+      "requires": {
+        "all_of": [
+          "rail_lance_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "weapon.rail_lance.damage",
+          "op": "mul",
+          "value": 1.2
+        },
+        {
+          "target": "weapon.rail_lance.fire_rate",
+          "op": "mul",
+          "value": 1.1
+        },
+        {
+          "target": "weapon.rail_lance.heat.per_shot",
+          "op": "mul",
+          "value": 0.9
+        },
+        {
+          "target": "weapon.rail_lance.display_name",
+          "op": "set",
+          "value": "Rail Lance Mk III"
+        }
+      ],
+      "ui": {
+        "x": 1100,
+        "y": 1467
+      }
+    },
+    {
+      "id": "singularity_charge",
+      "name": "Singularity Charge",
+      "branch": "alternate",
+      "cost": 6000,
+      "description": "Capstone. Creates a gravity well for 4 s that pulls enemies together, then implodes.",
+      "requires": {
+        "any_of": [
+          "arc_projector",
+          "swarm_missiles_mk2"
+        ]
+      },
+      "effects": [
+        {
+          "unlock": "singularity_charge"
+        }
+      ],
+      "ui": {
+        "x": 1650,
+        "y": 1165
+      }
+    },
+    {
+      "id": "reactor_1",
+      "name": "Reactor Upgrade I",
+      "branch": "core",
+      "cost": 800,
+      "description": "+10 % to the top of both power curves (shield recharge and weapon output).",
+      "effects": [
+        {
+          "target": "power.reactor_bonus",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "ui": {
+        "x": 0,
+        "y": 493
+      }
+    },
+    {
+      "id": "reactor_2",
+      "name": "Reactor Upgrade II",
+      "branch": "core",
+      "cost": 1600,
+      "description": "+10 % to the top of both power curves (shield recharge and weapon output).",
+      "requires": {
+        "all_of": [
+          "reactor_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "power.reactor_bonus",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 493
+      }
+    },
+    {
+      "id": "reactor_3",
+      "name": "Reactor Upgrade III",
+      "branch": "core",
+      "cost": 3000,
+      "description": "+10 % to the top of both power curves (shield recharge and weapon output).",
+      "requires": {
+        "all_of": [
+          "reactor_2"
+        ]
+      },
+      "effects": [
+        {
+          "target": "power.reactor_bonus",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 493
+      }
+    },
+    {
+      "id": "armoured_hull_1",
+      "name": "Armoured Hull I",
+      "branch": "core",
+      "cost": 700,
+      "description": "+25 % maximum hull.",
+      "effects": [
+        {
+          "target": "turret.hull.max_bonus",
+          "op": "add",
+          "value": 0.25
+        }
+      ],
+      "ui": {
+        "x": 0,
+        "y": 594
+      }
+    },
+    {
+      "id": "armoured_hull_2",
+      "name": "Armoured Hull II",
+      "branch": "core",
+      "cost": 1500,
+      "description": "+25 % maximum hull.",
+      "requires": {
+        "all_of": [
+          "armoured_hull_1"
+        ]
+      },
+      "effects": [
+        {
+          "target": "turret.hull.max_bonus",
+          "op": "add",
+          "value": 0.25
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 594
+      }
+    },
+    {
+      "id": "targeting_computer",
+      "name": "Targeting Computer",
+      "branch": "core",
+      "cost": 900,
+      "description": "Shows enemy health bars and lead indicators for projectile weapons.",
+      "effects": [
+        {
+          "target": "hud.enemy_health_bars",
+          "op": "set",
+          "value": true
+        },
+        {
+          "target": "hud.lead_indicators",
+          "op": "set",
+          "value": true
+        }
+      ],
+      "ui": {
+        "x": 0,
+        "y": 694
+      }
+    },
+    {
+      "id": "threat_radar",
+      "name": "Threat Radar",
+      "branch": "core",
+      "cost": 700,
+      "description": "Marks incoming bombs and missiles outside your view and warns when ordnance is inbound.",
+      "effects": [
+        {
+          "target": "hud.projectile_warnings",
+          "op": "set",
+          "value": true
+        }
+      ],
+      "ui": {
+        "x": 275,
+        "y": 694
+      }
+    },
+    {
+      "id": "fast_cooling",
+      "name": "Fast Cooling",
+      "branch": "core",
+      "cost": 1000,
+      "description": "All weapons build 20 % less heat.",
+      "effects": [
+        {
+          "target": "weapon.*.heat.per_shot",
+          "op": "mul",
+          "value": 0.8
+        }
+      ],
+      "ui": {
+        "x": 550,
+        "y": 694
+      }
+    }
+  ]
+}

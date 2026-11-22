@@ -104,7 +104,7 @@ static func procedural_stage(stage: int, director: Dictionary, enemies: Dictiona
 	return {
 		"id": "stage_%02d" % stage,
 		"stage": stage,
-		"display_name": "Stage %d" % stage,
+		"display_name": "",
 		"briefing": "",
 		"time_of_day": "day",
 		"par_time_s": float(rules.get("par_time_base_s", 70.0)) + float(rules.get("par_time_per_stage_s", 12.0)) * (stage - 1),

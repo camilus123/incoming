@@ -351,6 +351,102 @@ One file per shield configuration. The turret's starting shield is `default_load
 | `visuals.conformal_offset_m` | How far the shell floats above the hull (conformal style only) |
 | `visuals.color` | Colour of the shield effect |
 
+## techtree/tree.json
+
+The whole tech tree: what exists, what it costs, what it needs, what it does and where it sits in the shop.
+
+```json
+{
+  "planned_weapons": ["chain_gun"],
+  "branches": {
+    "shield_bastion": { "display_name": "Bastion", "color": [0.3, 0.55, 1.0] }
+  },
+  "nodes": [
+    {
+      "id": "bastion_1",
+      "name": "Bastion I: Dense Emitters",
+      "branch": "shield_bastion",
+      "cost": 600,
+      "description": "A big, slow shield. Choosing Bastion locks the Flicker branch.",
+      "requires": { "all_of": ["basic_deflector"] },
+      "exclusive_group": "shield_core",
+      "effects": [
+        { "target": "shield.capacity", "op": "set", "value": 180 },
+        { "target": "shield.recharge_per_s", "op": "set", "value": 9 }
+      ],
+      "ui": { "x": 275, "y": 78 }
+    }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `branches` | Display name and colour of each branch |
+| `planned_weapons` | Weapon ids the tree may mention before their data files exist. Their nodes are shown as "later build" and cannot be bought |
+| `id`, `name`, `description` | Identifier and texts. A name with `": "` is shown on two lines |
+| `branch` | Which branch the node belongs to (colour and label) |
+| `cost` | Price in credits |
+| `owned_at_start` | The player has the node from the beginning (starting shield and weapons) |
+| `requires.all_of` | Every listed node must be owned |
+| `requires.any_of` | At least one listed node must be owned (drawn as dashed links) |
+| `exclusive_group` | Nodes sharing a group exclude each other. Everything reachable only through an excluded node is locked out too |
+| `effects` | What the node does, see below |
+| `ui.x`, `ui.y` | Position in the shop's graph. Rearranging the tree is a data change |
+
+### Effects
+
+Each effect is exactly one of three kinds.
+
+**Modifier**: `{ "target": "<scope>.<field>", "op": "set" | "add" | "mul", "value": ... }`
+
+| Scope | What it changes | Example targets |
+|---|---|---|
+| `shield` | The shield's data | `shield.capacity`, `shield.recharge_per_s`, `shield.recharge_delay_s`, `shield.min_recharge_multiplier`, `shield.visuals.style` |
+| `weapon.<id>` or `weapon.*` | One weapon's data, or every weapon's | `weapon.pulse_laser.damage`, `weapon.*.heat.per_shot`, `weapon.micro_missile_pod.homing.salvo_size` |
+| `turret` | The turret config | `turret.hull.max_bonus` (0.25 = +25 % hull), `turret.resistances.energy` |
+| `power` | The reactor | `power.reactor_bonus` (0.1 = +10 % at the top of both power curves) |
+| `hud` | HUD features | `hud.enemy_health_bars`, `hud.projectile_warnings`, `hud.lead_indicators` |
+
+Stacking: a stat's value is the last `set` (or the base value), plus the sum of all `add`s, times all `mul`s. Apart from which `set` is last, the order of purchase does not matter.
+
+**Unlock**: `{ "unlock": "<weapon id>" }` makes a weapon available in the loadout.
+
+**Special effect**: `{ "effect": "<name>", "params": { ... } }` runs a small script for behaviour a number cannot express.
+
+| Effect | Parameters |
+|---|---|
+| `damage_reduction_while_shielded` | `reduction`, `min_shield_fraction` |
+| `aegis_bulwark` | `restore_fraction` |
+| `reflex_field` | `multiplier`, `duration_s` |
+| `phase_pulse` | `radius_m`, `damage`, `stagger_s` |
+
+### Adding an upgrade
+
+Add an object to `nodes`. Nothing else is needed as long as it uses modifiers, unlocks and existing special effects. For example, this gives a new core upgrade after Reactor Upgrade I:
+
+```json
+{
+  "id": "overcharged_capacitors",
+  "name": "Overcharged Capacitors",
+  "branch": "core",
+  "cost": 750,
+  "description": "+50 shield capacity and 10 % more pulse laser damage.",
+  "requires": { "all_of": ["reactor_1"] },
+  "effects": [
+    { "target": "shield.capacity", "op": "add", "value": 50 },
+    { "target": "weapon.pulse_laser.damage", "op": "mul", "value": 1.1 }
+  ],
+  "ui": { "x": 825, "y": 493 }
+}
+```
+
+Run `.\tools\validate_data.ps1` (it checks references, cycles and unreachable nodes), then press F5 in the game. The unit test `test_a_node_added_in_json_works_without_code` does exactly this with `tests/fixtures/extra_node.json`.
+
+## Saves
+
+The run is saved as JSON in `user://saves/run.json` (on Windows: `%APPDATA%\Godot\app_userdata\INCOMING\saves\`) every time the armoury opens. Fields: `save_version`, `stage`, `credits`, `purchased` (node ids in order of purchase), `loadout`, `hull`, `statistics`. Nodes and weapons that no longer exist are dropped on load. `SaveSystem.migrate()` is where older versions get upgraded.
+
 ## Planned formats
 
 Added in the milestone that first uses them:

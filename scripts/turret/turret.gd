@@ -47,7 +47,8 @@ var _anchor_in_pitch: Transform3D
 var _degrees_per_count: float = 0.04
 var _smoothing_default_s: float = 0.03
 var _shield_visual: ShieldVisual
-var _shield_id: String = ""
+var _resistances: Dictionary = {}
+var _effects: Array[SpecialEffect] = []
 
 
 func _enter_tree() -> void:
@@ -55,10 +56,8 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
-	_config = GameData.loader.get_config("turret")
+	_config = GameState.get_turret_data()
 	_read_config()
-	max_hull = _block("hull").get("max", 200.0)
-	hull = max_hull
 
 	rig = FirstPersonRig.new()
 	rig.name = "CameraRig"
@@ -72,18 +71,37 @@ func _ready() -> void:
 	_context.missiles = get_tree().get_first_node_in_group(MissileSystem.GROUP) as MissileSystem
 
 	power.configure(GameData.loader.get_config("power"))
-	var loadout: Dictionary = _block("default_loadout")
-	equip_shield(loadout.get("shield", ""))
-	for slot: StringName in SLOTS:
-		equip(slot, loadout.get(String(slot), ""))
+	apply_player_state()
+	hull = GameState.get_current_hull()
 	EventBus.data_reloaded.connect(_on_data_reloaded)
 	_update_aim_outputs(0.0)
+
+
+## Rebuilds the turret from the player's run ([GameState]): upgraded stats,
+## the equipped weapons, the shield and the special effects. Called at start,
+## when leaving the shop and after a data reload.
+func apply_player_state() -> void:
+	_config = GameState.get_turret_data()
+	_read_config()
+	rig.configure(_block("camera"))
+	max_hull = GameState.get_max_hull()
+	hull = minf(hull, max_hull)
+	_resistances = _block("resistances")
+	power.reactor_bonus = GameState.get_reactor_bonus()
+	_apply_shield(GameState.get_shield_data())
+	for slot: StringName in SLOTS:
+		equip(slot, GameState.loadout.get(String(slot), ""))
+	_effects.clear()
+	for effect_data: Dictionary in GameState.get_special_effects():
+		var effect: SpecialEffect = EffectRegistry.create(effect_data, self)
+		if effect != null:
+			_effects.append(effect)
 
 
 ## Puts the weapon with the given data id into a slot. Returns false if the
 ## weapon is unknown, not allowed in that slot, or its archetype is missing.
 func equip(slot: StringName, weapon_id: String) -> bool:
-	var weapon_data: Dictionary = GameData.loader.get_entry("weapons", weapon_id)
+	var weapon_data: Dictionary = GameState.get_weapon_data(weapon_id)
 	if weapon_data.is_empty():
 		push_warning("Turret: unknown weapon \"%s\" for slot %s" % [weapon_id, slot])
 		return false
@@ -104,14 +122,14 @@ func equip(slot: StringName, weapon_id: String) -> bool:
 	return true
 
 
-## Installs the shield with the given data id (fully charged).
-func equip_shield(shield_id: String) -> bool:
-	var shield_data: Dictionary = GameData.loader.get_entry("shields", shield_id)
+## Installs a shield from its (upgraded) data, keeping the current charge level.
+func _apply_shield(shield_data: Dictionary) -> bool:
 	if shield_data.is_empty():
-		push_warning("Turret: unknown shield \"%s\"" % shield_id)
+		push_warning("Turret: no shield data")
 		return false
-	_shield_id = shield_id
+	var charge_fraction: float = shield.get_fraction() if _shield_visual != null else 1.0
 	shield.configure(shield_data)
+	shield.charge = shield.capacity * charge_fraction
 	# The look of the shield (dome or conformal skin) is part of its data.
 	var visuals: Dictionary = shield_data.get("visuals", {})
 	var style: String = visuals.get("style", "dome")
@@ -147,10 +165,22 @@ func get_hit_point() -> Vector3:
 	return global_transform * _yaw_in_turret.origin + Vector3.UP * 0.8
 
 
-## Damages the turret. The shield absorbs what it can; the rest hits the hull.
-## `from_position` is where the hit came from (for the shield ripple).
-func take_damage(amount: float, from_position: Vector3 = Vector3.INF) -> void:
-	if destroyed or invulnerable or amount <= 0.0:
+## Lights up the shield effect briefly (used by special effects).
+func flash_shield(strength: float) -> void:
+	_shield_visual.flash(strength)
+
+
+## Damages the turret. Resistances and special effects reduce the hit, the
+## shield absorbs what it can and the rest hits the hull.
+## `from_position` is where the hit came from (for the shield ripple);
+## `damage_type` is "energy", "kinetic" or "explosive".
+func take_damage(raw_amount: float, from_position: Vector3 = Vector3.INF, damage_type: String = "kinetic") -> void:
+	if destroyed or invulnerable or raw_amount <= 0.0:
+		return
+	var amount: float = raw_amount * (1.0 - clampf(float(_resistances.get(damage_type, 0.0)), 0.0, 0.95))
+	for effect: SpecialEffect in _effects:
+		amount = effect.modify_incoming_damage(amount, damage_type)
+	if amount <= 0.0:
 		return
 	var through: float = amount
 	if shield.is_up():
@@ -161,8 +191,14 @@ func take_damage(amount: float, from_position: Vector3 = Vector3.INF) -> void:
 		if not shield.is_up():
 			_shield_visual.flash(1.0)
 			EventBus.shield_broken.emit()
+			for effect: SpecialEffect in _effects:
+				effect.on_shield_broken()
 	if through <= 0.0:
 		return
+	if through >= hull:
+		for effect: SpecialEffect in _effects:
+			if effect.absorb_lethal_hit():
+				return
 	hull = maxf(0.0, hull - through)
 	rig.add_shake(clampf(through / 40.0, 0.15, 0.8))
 	EventBus.hull_damaged.emit(through, hull)
@@ -171,12 +207,17 @@ func take_damage(amount: float, from_position: Vector3 = Vector3.INF) -> void:
 		EventBus.turret_destroyed.emit()
 
 
-## Repairs the hull and refills ammo for a new stage. Temporary until the
-## shop (M4) sells repairs.
+## Prepares the turret for a new stage: hull as it stands in the run (repairs
+## are bought in the shop), full shield, full ammo, cold weapons.
 func restore_for_stage() -> void:
 	destroyed = false
-	hull = max_hull
+	hull = GameState.get_current_hull()
 	shield.refill()
+	shield.bonus_recharge_multiplier = 1.0
+	power.reset()
+	EventBus.power_split_changed.emit(power.shield_share)
+	for effect: SpecialEffect in _effects:
+		effect.on_stage_start()
 	for slot: StringName in SLOTS:
 		var weapon: Weapon = _weapons.get(slot)
 		if weapon != null:
@@ -235,9 +276,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta_s: float) -> void:
 	_context.power_output = power.weapon_output_multiplier()
-	if not destroyed and shield.tick(delta_s, power.shield_recharge_multiplier()) > 0:
-		_shield_visual.flash(0.6)
-		EventBus.shield_restored.emit()
+	if not destroyed:
+		for effect: SpecialEffect in _effects:
+			effect.tick(delta_s)
+		if shield.tick(delta_s, power.shield_recharge_multiplier()) > 0:
+			_shield_visual.flash(0.6)
+			EventBus.shield_restored.emit()
+			for effect: SpecialEffect in _effects:
+				effect.on_shield_restored()
 	_shield_visual.set_charge(shield.get_fraction())
 	if player_input_enabled:
 		var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
@@ -307,15 +353,6 @@ func _socket(socket_name: String, default_parent: Node3D, default_position: Vect
 
 
 func _on_data_reloaded(_report: DataReport) -> void:
-	# Hot reload: pick up new limits and rebuild the weapons from the new data.
-	_config = GameData.loader.get_config("turret")
-	_read_config()
-	rig.configure(_block("camera"))
+	# Hot reload: rebuild weapons, shield and stats from the new data.
 	power.configure(GameData.loader.get_config("power"), false)
-	if not _shield_id.is_empty():
-		var charge_fraction: float = shield.get_fraction()
-		equip_shield(_shield_id)
-		shield.charge = shield.capacity * charge_fraction
-	for slot: StringName in SLOTS:
-		if _equipped_ids.has(slot):
-			equip(slot, _equipped_ids[slot])
+	apply_player_state()

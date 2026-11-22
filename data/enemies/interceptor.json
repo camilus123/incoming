@@ -10,7 +10,7 @@
   "turn_rate_deg_s": 75.0,
   "behaviours": ["strafe_run"],
   "attacks": [
-    { "id": "laser_burst", "type": "hitscan_burst", "damage": 4.0, "count": 4, "interval_s": 0.12, "cooldown_s": 3.5, "range_m": 700.0, "color": [1.0, 0.25, 0.2] }
+    { "id": "laser_burst", "type": "hitscan_burst", "damage_type": "energy", "damage": 4.0, "count": 4, "interval_s": 0.12, "cooldown_s": 3.5, "range_m": 700.0, "color": [1.0, 0.25, 0.2] }
   ],
   "credit_bounty": 20,
   "threat_cost": 8,

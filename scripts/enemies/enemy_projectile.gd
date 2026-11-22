@@ -14,6 +14,7 @@ var _manager: EnemyManager
 var _turret: Turret
 var _projectile: Dictionary = {}
 var _speed_mps: float = 0.0
+var _damage_type: String = "explosive"
 var _visual: Node3D
 var _hurtbox: Hurtbox
 
@@ -24,6 +25,7 @@ func setup(attack: Dictionary, start_velocity: Vector3, attack_damage: float, ma
 	_turret = turret
 	_projectile = attack.get("projectile", {})
 	damage = attack_damage
+	_damage_type = attack.get("damage_type", "explosive")
 	name = str(attack.get("id", "projectile"))
 	velocity = start_velocity
 	_speed_mps = maxf(start_velocity.length(), float(_projectile.get("speed_mps", 60.0)))
@@ -65,7 +67,7 @@ func get_hit_radius() -> float:
 func _impact(distance_to_turret: float) -> void:
 	var blast_radius_m: float = _projectile.get("blast_radius_m", 10.0)
 	if distance_to_turret <= blast_radius_m:
-		_turret.take_damage(damage, global_position)
+		_turret.take_damage(damage, global_position, _damage_type)
 	_explode(blast_radius_m)
 	_manager.notify_projectile_gone(self)
 	queue_free()

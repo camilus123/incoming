@@ -7,6 +7,10 @@ extends PlayScene
 
 
 func _ready() -> void:
+	# The range is a sandbox: a fresh, unsaved run with the starting loadout.
+	GameState.persistent = false
+	GameState.new_run()
+	($Turret as Turret).apply_player_state()
 	super._ready()
 	_spawn_dummies()
 	EventBus.data_reloaded.connect(_on_data_reloaded)

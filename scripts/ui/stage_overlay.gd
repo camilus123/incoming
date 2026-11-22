@@ -42,9 +42,9 @@ func _draw() -> void:
 				color.a = clampf(_wave_message_left_s, 0.0, 1.0)
 				_text(Vector2(centre.x, size.y * 0.2), _wave_message, 26, color)
 		StageManager.State.COMPLETE:
-			_draw_summary(centre, "STAGE %d COMPLETE" % _stages.stage_number, COLOR_TITLE, "Enter: next stage")
+			_draw_summary(centre, "STAGE %d COMPLETE" % _stages.stage_number, COLOR_TITLE, "Enter: continue to the armoury")
 		StageManager.State.GAME_OVER:
-			_draw_summary(centre, "TURRET DESTROYED", COLOR_ALERT, "R: retry stage %d      Enter: restart from stage 1" % _stages.stage_number)
+			_draw_summary(centre, "TURRET DESTROYED", COLOR_ALERT, "R: back to the armoury before stage %d      Enter: start a new run" % _stages.stage_number)
 
 
 func _draw_intro(centre: Vector2) -> void:
@@ -59,29 +59,42 @@ func _draw_intro(centre: Vector2) -> void:
 	_text(Vector2(centre.x, size.y * 0.24 + 66.0), data.get("briefing", ""), 16, text)
 
 
+## Stage complete: the itemised reward. Game over: what was achieved.
 func _draw_summary(centre: Vector2, title: String, title_color: Color, prompt: String) -> void:
-	var stats: StageStats = _stages.stats
-	var panel: Rect2 = Rect2(centre - Vector2(300.0, 200.0), Vector2(600.0, 360.0))
+	var rows: Array[Array] = []
+	var total_row: Array = []
+	if _stages.state == StageManager.State.COMPLETE:
+		for line: Dictionary in _stages.reward_lines:
+			rows.append([line["label"], line["detail"], "%d" % int(line["amount"])])
+		total_row = ["TOTAL", "", "%d cr" % RewardCalculator.total(_stages.reward_lines)]
+	else:
+		var stats: StageStats = _stages.stats
+		rows = [
+			["Time survived", "", "%d:%02d" % [int(stats.time_s) / 60, int(stats.time_s) % 60]],
+			["Enemies destroyed", "", str(stats.kills)],
+			["Bombs shot down", "", str(stats.intercepts)],
+			["Accuracy", "", "%d %%" % roundi(stats.accuracy_percent())],
+			["Stages cleared this run", "", str(int(GameState.statistics.get("stages_cleared", 0)))],
+		]
+
+	var height: float = 150.0 + rows.size() * 28.0 + (44.0 if not total_row.is_empty() else 0.0)
+	var panel: Rect2 = Rect2(centre - Vector2(340.0, height * 0.5 + 20.0), Vector2(680.0, height))
 	draw_rect(panel, COLOR_PANEL)
 	draw_rect(panel, title_color, false, 2.0)
-	_text(Vector2(centre.x, panel.position.y + 56.0), title, 34, title_color)
+	_text(Vector2(centre.x, panel.position.y + 52.0), title, 34, title_color)
 
-	var rows: Array[Array] = [
-		["Time", "%d:%02d   (par %d:%02d)" % [int(stats.time_s) / 60, int(stats.time_s) % 60, int(_par()) / 60, int(_par()) % 60]],
-		["Enemies destroyed", str(stats.kills)],
-		["Bombs shot down", str(stats.intercepts)],
-		["Accuracy", "%d %%" % roundi(stats.accuracy_percent())],
-		["Hull remaining", "%d %%" % roundi(stats.hull_percent())],
-		["Shields", "broken" if stats.shield_broken else "held"],
-		["Bounties", "%d cr" % stats.bounty],
-	]
-	var y: float = panel.position.y + 108.0
+	var y: float = panel.position.y + 100.0
 	for row: Array in rows:
-		_text(Vector2(panel.position.x + 60.0, y), row[0], 17, COLOR_TEXT, HORIZONTAL_ALIGNMENT_LEFT)
-		_text(Vector2(panel.end.x - 60.0, y), row[1], 17, COLOR_TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
+		_text(Vector2(panel.position.x + 50.0, y), row[0], 17, COLOR_TEXT, HORIZONTAL_ALIGNMENT_LEFT)
+		_text(Vector2(panel.position.x + 400.0, y), row[1], 15, Color(COLOR_TEXT, 0.6), HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(panel.end.x - 50.0, y), row[2], 17, COLOR_TEXT, HORIZONTAL_ALIGNMENT_RIGHT)
 		y += 28.0
-	_text(Vector2(centre.x, panel.end.y - 24.0), prompt, 15, title_color)
-
+	if not total_row.is_empty():
+		y += 6.0
+		draw_line(Vector2(panel.position.x + 50.0, y - 18.0), Vector2(panel.end.x - 50.0, y - 18.0), title_color, 1.0)
+		_text(Vector2(panel.position.x + 50.0, y + 6.0), total_row[0], 20, title_color, HORIZONTAL_ALIGNMENT_LEFT)
+		_text(Vector2(panel.end.x - 50.0, y + 6.0), total_row[2], 20, title_color, HORIZONTAL_ALIGNMENT_RIGHT)
+	_text(Vector2(centre.x, panel.end.y - 20.0), prompt, 15, title_color)
 
 func _par() -> float:
 	return _stages.stage_data.get("par_time_s", 0.0)

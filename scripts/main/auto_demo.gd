@@ -12,6 +12,7 @@ extends Node
 ##   --demo-stages=N         also stop once stage N is completed
 ##   --demo-speed=X          run the game X times faster (for quick checks, not for fps)
 ##   --demo-power            step the power split every 2 s and print its effects
+##   --demo-look=YAW,PITCH   hold this aim instead of tracking targets (for screenshots)
 
 const WARMUP_S: float = 2.0
 const AIM_SPEED_DEG_S: float = 160.0
@@ -31,6 +32,8 @@ var _last_tick_usec: int = 0
 var _finished: bool = false
 var _stop_after_stage: int = 0
 var _cycle_power: bool = false
+var _has_fixed_look: bool = false
+var _fixed_look: Vector2 = Vector2.ZERO
 var _power_timer_s: float = 0.0
 var _power_direction: int = 1
 
@@ -41,6 +44,11 @@ func _ready() -> void:
 			_duration_s = argument.trim_prefix("--demo-seconds=").to_float()
 		elif argument.begins_with("--demo-speed="):
 			Engine.time_scale = maxf(0.1, argument.trim_prefix("--demo-speed=").to_float())
+		elif argument.begins_with("--demo-look="):
+			var angles: PackedStringArray = argument.trim_prefix("--demo-look=").split(",")
+			if angles.size() == 2:
+				_has_fixed_look = true
+				_fixed_look = Vector2(angles[0].to_float(), angles[1].to_float())
 		elif argument.begins_with("--demo-stages="):
 			_stop_after_stage = argument.trim_prefix("--demo-stages=").to_int()
 		elif argument.begins_with("--screenshot-dir="):
@@ -67,6 +75,14 @@ func _process(delta_s: float) -> void:
 
 	if _cycle_power:
 		_update_power_cycle(delta_s)
+	if _has_fixed_look:
+		turret.aim.apply_input(_fixed_look.x - turret.aim.yaw_deg, _fixed_look.y - turret.aim.pitch_deg)
+		if _next_screenshot < SCREENSHOT_TIMES_S.size() and _time_s >= SCREENSHOT_TIMES_S[_next_screenshot]:
+			_save_screenshot("look_%d" % _next_screenshot)
+			_next_screenshot += 1
+		if _time_s >= _duration_s:
+			_finish()
+		return
 	var edge_phase: bool = _time_s > _duration_s - 3.0
 	if edge_phase:
 		# Push into the right-hand yaw limit and the lower pitch limit to exercise the arc clamp.
@@ -155,6 +171,10 @@ func _on_stage_ended(stage: int, result: String) -> void:
 		roundi(stats.accuracy_percent()), roundi(turret.hull)])
 	if result == "COMPLETE" and _stop_after_stage > 0 and stage >= _stop_after_stage:
 		_finish()
+	elif not _screenshot_dir.is_empty():
+		# Capture the result screen once it has faded in.
+		await get_tree().create_timer(1.0, true, false, true).timeout
+		_save_screenshot("result_stage_%d" % stages.stage_number)
 
 func _save_screenshot(file_name: String) -> void:
 	if _screenshot_dir.is_empty() or DisplayServer.get_name() == "headless":

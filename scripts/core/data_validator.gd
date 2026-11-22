@@ -22,6 +22,7 @@ static func validate(loader: DataLoader, report: DataReport) -> void:
 	_check_loadout(loader, report)
 	_check_enemies(loader, report)
 	_check_stages(loader, report)
+	_check_tech_tree(loader, report)
 	_check_asset_reference(loader, report, loader.source_of_config("turret"), "model", loader.get_config("turret").get("model", ""))
 	_check_asset_reference(loader, report, loader.source_of_config("test_range"), "model", loader.get_config("test_range").get("model", ""))
 
@@ -209,3 +210,57 @@ static func _check_stage_enemy(report: DataReport, file: String, field: String, 
 		report.add_error(file, field, "unknown enemy \"%s\"" % enemy_id)
 	elif int(enemies[enemy_id]["first_stage"]) > stage_number:
 		report.add_warning(file, field, "enemy \"%s\" is used before its first_stage (%d)" % [enemy_id, int(enemies[enemy_id]["first_stage"])])
+
+static func _check_tech_tree(loader: DataLoader, report: DataReport) -> void:
+	var config: Dictionary = loader.get_config("techtree")
+	if config.is_empty():
+		return
+	var file: String = loader.source_of_config("techtree")
+	for problem: Dictionary in TechTree.find_problems(config):
+		report.add_error(file, problem["field"], problem["problem"])
+	var planned: Array = config.get("planned_weapons", [])
+	var start_unlocks: Array[String] = []
+	for tree_node: Dictionary in config["nodes"]:
+		var id: String = tree_node["id"]
+		var effects: Array = tree_node["effects"]
+		for index: int in effects.size():
+			var effect: Dictionary = effects[index]
+			var field: String = "nodes.%s.effects[%d]" % [id, index]
+			var kinds: int = int(effect.has("target")) + int(effect.has("unlock")) + int(effect.has("effect"))
+			if kinds != 1:
+				report.add_error(file, field, "needs exactly one of \"target\", \"unlock\" or \"effect\"")
+				continue
+			if effect.has("unlock"):
+				_check_tree_weapon(loader, report, file, field + ".unlock", effect["unlock"], planned)
+				if tree_node["owned_at_start"]:
+					start_unlocks.append(effect["unlock"])
+			elif effect.has("effect"):
+				if not EffectNames.IMPLEMENTED.has(effect["effect"]):
+					report.add_error(file, field + ".effect", "unknown special effect \"%s\"" % effect["effect"])
+			else:
+				if not effect.has("op") or not effect.has("value"):
+					report.add_error(file, field, "a modifier needs \"op\" and \"value\"")
+				var parts: PackedStringArray = str(effect["target"]).split(".")
+				if parts.size() < 2 or not Modifiers.SCOPES.has(parts[0]):
+					report.add_error(file, field + ".target", "must start with one of %s and name a field" % ", ".join(Modifiers.SCOPES))
+				elif parts[0] == "weapon":
+					if parts.size() < 3:
+						report.add_error(file, field + ".target", "a weapon target is \"weapon.<id or *>.<field>\"")
+					elif parts[1] != "*":
+						_check_tree_weapon(loader, report, file, field + ".target", parts[1], planned)
+				if effect.has("op") and effect["op"] != "set" and not (effect.get("value") is float or effect.get("value") is int):
+					report.add_error(file, field + ".value", "\"%s\" needs a number" % effect["op"])
+	# The starting loadout must be owned from the start.
+	var loadout: Dictionary = loader.get_config("turret").get("default_loadout", {})
+	for slot: String in ["primary", "alternate"]:
+		if not start_unlocks.has(loadout.get(slot, "")):
+			report.add_error(file, "nodes", "no starting node (owned_at_start) unlocks the default %s weapon \"%s\"" % [slot, loadout.get(slot, "")])
+
+
+## A weapon named in the tree must exist, or be listed under planned_weapons.
+static func _check_tree_weapon(loader: DataLoader, report: DataReport, file: String, field: String, weapon_id: String, planned: Array) -> void:
+	if loader.has_entry("weapons", weapon_id):
+		if planned.has(weapon_id):
+			report.add_warning(file, "planned_weapons", "\"%s\" exists now and can be removed from planned_weapons" % weapon_id)
+	elif not planned.has(weapon_id):
+		report.add_error(file, field, "unknown weapon \"%s\" (add its data file, or list it under planned_weapons)" % weapon_id)

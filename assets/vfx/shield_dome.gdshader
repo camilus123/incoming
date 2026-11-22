@@ -10,7 +10,8 @@ uniform vec4 shield_color : source_color = vec4(0.3, 0.8, 1.0, 1.0);
 // 0 = shield down, 1 = full.
 uniform float charge = 1.0;
 uniform float rest_alpha = 0.004;
-uniform float hex_scale = 44.0;
+// Hexagon cells per radian of sky, measured straight overhead.
+uniform float hex_scale = 16.0;
 // Whole-dome flash when the shield breaks or comes back.
 uniform float flash = 0.0;
 // xyz = direction from the dome centre to the impact (unit), w = age in seconds (< 0 = unused).
@@ -45,7 +46,10 @@ void fragment() {
 		discard;
 	}
 	float ground_fade = smoothstep(0.01, 0.12, direction.y);
-	vec2 uv = vec2(atan(direction.x, direction.z), asin(clamp(direction.y, -1.0, 1.0))) * hex_scale / PI;
+	// Stereographic projection from the point under the turret: no pole, so the cells
+	// stay regular hexagons everywhere (overhead included) and only grow gently
+	// towards the ground. Longitude/latitude would pinch them together at the top.
+	vec2 uv = direction.xz / (1.0 + direction.y) * 2.0 * hex_scale;
 	float lattice = smoothstep(0.46, 0.5, hex_distance(uv));
 
 	float glow = 0.0;

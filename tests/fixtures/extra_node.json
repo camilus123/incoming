@@ -1,0 +1,14 @@
+{
+  "_comment": "A new upgrade defined purely in JSON, used by tests/unit/test_economy.gd to show that adding a node needs no code. In the game you would paste this object into the 'nodes' list of data/techtree/tree.json.",
+  "id": "overcharged_capacitors",
+  "name": "Overcharged Capacitors",
+  "branch": "core",
+  "cost": 750,
+  "description": "+50 shield capacity and 10 % more pulse laser damage.",
+  "requires": { "all_of": ["reactor_1"] },
+  "effects": [
+    { "target": "shield.capacity", "op": "add", "value": 50 },
+    { "target": "weapon.pulse_laser.damage", "op": "mul", "value": 1.1 }
+  ],
+  "ui": { "x": 825, "y": 493 }
+}
