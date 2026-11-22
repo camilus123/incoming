@@ -163,7 +163,8 @@ func _refresh() -> void:
 		(_slot_details[slot] as Label).text = _weapon_summary(GameState.get_weapon_data(GameState.loadout.get(slot, "")))
 
 	var stage_data: Dictionary = _stages.get_stage_data(GameState.stage) if _stages != null else {}
-	_stage_title.text = "NEXT:  STAGE %d  ·  %s" % [GameState.stage, str(stage_data.get("display_name", "")).to_upper()]
+	var stage_name: String = str(stage_data.get("display_name", "")).to_upper()
+	_stage_title.text = "NEXT:  STAGE %d" % GameState.stage + ("  ·  " + stage_name if not stage_name.is_empty() else "")
 	_stage_briefing.text = stage_data.get("briefing", "")
 	_stage_enemies.text = "Expected:  " + ", ".join(_expected_enemies(stage_data))
 	_continue_button.text = "CONTINUE TO STAGE %d" % GameState.stage

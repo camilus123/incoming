@@ -134,3 +134,7 @@ Basic Deflector and Bastion use the dome; Flicker uses the conformal shell (`fli
 - **Hull now carries over between stages** and is repaired only in the armoury. The shield and ammo are refilled each stage; the power split resets to 50/50.
 - **Debug:** F2 in the armoury adds 1,000 credits (debug builds only). The rest of the debug menu from spec 14 is still to do.
 - **Demo and debug starts never touch the save** (`--auto-demo`, `--stage=N`, the test range).
+
+## 2026-11-22: dome lattice mapping (Marko)
+
+Marko pointed out that looking up, the dome looked like a tunnel going up for ever. The hex lattice was mapped by longitude and latitude, which squeezes every cell into the pole. It now uses a stereographic projection centred overhead: cells are regular hexagons everywhere and only grow gently towards the ground, so the dome reads as a bubble around the turret.
