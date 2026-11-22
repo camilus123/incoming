@@ -8,6 +8,10 @@ var amount: float = 0.0
 var damage_type: String = "energy"
 ## Points of the target's armour this hit ignores.
 var armour_pierce: float = 0.0
+## Share of the target's armour that applies to this hit. Continuous damage
+## (beams, lingering trails) is dealt in small ticks; each tick only meets the
+## matching share of the armour, so armour acts per second, not per tick.
+var armour_factor: float = 1.0
 ## "primary" or "alternate" (empty for non-player damage).
 var source_slot: StringName = &""
 var hit_position: Vector3 = Vector3.ZERO

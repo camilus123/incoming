@@ -13,7 +13,9 @@ extends RefCounted
 
 ## Applies one hit to `stats` and returns what happened.
 ## `rules` is the "combat" config.
-static func apply(amount: float, damage_type: String, armour_pierce: float, stats: TargetStats, rules: Dictionary) -> DamageResult:
+## `armour_factor` scales the target's armour for hits that are one tick of
+## continuous damage (see [member DamageInfo.armour_factor]).
+static func apply(amount: float, damage_type: String, armour_pierce: float, stats: TargetStats, rules: Dictionary, armour_factor: float = 1.0) -> DamageResult:
 	var result: DamageResult = DamageResult.new()
 	if amount <= 0.0 or stats.is_dead():
 		return result
@@ -36,7 +38,7 @@ static func apply(amount: float, damage_type: String, armour_pierce: float, stat
 		if remaining <= 0.0:
 			return result
 
-	var effective_armour: float = maxf(0.0, stats.armour - armour_pierce)
+	var effective_armour: float = maxf(0.0, (stats.armour - armour_pierce) * armour_factor)
 	var min_fraction: float = rules.get("armour_min_damage_fraction", 0.1)
 	var after_armour: float = maxf(remaining - effective_armour, remaining * min_fraction)
 	var resistance: float = clampf(stats.resistances.get(damage_type, 0.0), 0.0, 1.0)

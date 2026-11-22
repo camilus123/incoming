@@ -9,6 +9,8 @@ var rig: CameraRig
 var fx: CombatFx
 ## Pooled homing missiles (may be null in tests).
 var missiles: MissileSystem
+## Pooled unguided projectiles and lingering effects (may be null in tests).
+var projectiles: ProjectileSystem
 ## Physics world for raycasts.
 var world: World3D
 ## Weapon output multiplier from the power split (1.0 until M3).

@@ -24,6 +24,10 @@ class Missile:
 	var visual: Node3D
 	var visual_id: String = ""
 	var trail: GPUParticles3D
+	## Player-steered missiles fly towards this point instead of a target.
+	var steered: bool = false
+	var steer_point: Vector3
+	var flare_checked: bool = false
 
 
 var _missiles: Array[Missile] = []
@@ -48,10 +52,13 @@ func _ready() -> void:
 
 ## Launches one missile from `origin` along `direction`. `target` may be null
 ## for an unguided shot. `weapon_data` is the weapon's data file.
-func launch(origin: Vector3, direction: Vector3, target: CombatTarget, weapon_data: Dictionary, slot: StringName) -> void:
+## Returns a handle for `steer()`, or -1 if the pool is full.
+func launch(origin: Vector3, direction: Vector3, target: CombatTarget, weapon_data: Dictionary, slot: StringName) -> int:
 	var missile: Missile = _take_free()
 	if missile == null:
-		return
+		return -1
+	missile.steered = false
+	missile.flare_checked = false
 	missile.active = true
 	missile.position = origin
 	missile.direction = direction.normalized()
@@ -66,6 +73,25 @@ func launch(origin: Vector3, direction: Vector3, target: CombatTarget, weapon_da
 	missile.visual.visible = true
 	missile.trail.restart()
 	missile.trail.emitting = true
+	return _missiles.find(missile)
+
+
+## Steers a player-guided missile (Seeker Torpedo) towards a point. Call it
+## every frame while the player is steering; without calls the missile flies straight.
+func steer(handle: int, point: Vector3) -> void:
+	if handle >= 0 and handle < _missiles.size() and _missiles[handle].active:
+		_missiles[handle].steered = true
+		_missiles[handle].steer_point = point
+
+
+## True while the missile with this handle is still flying.
+func is_flying(handle: int) -> bool:
+	return handle >= 0 and handle < _missiles.size() and _missiles[handle].active
+
+
+## World position of a flying missile.
+func get_missile_position(handle: int) -> Vector3:
+	return _missiles[handle].position if is_flying(handle) else Vector3.ZERO
 
 
 ## Number of missiles in flight (for the debug overlay and tests).
@@ -90,7 +116,18 @@ func _update_missile(missile: Missile, delta_s: float, space: PhysicsDirectSpace
 	missile.speed = minf(missile.speed + float(homing.get("acceleration_mps2", 400.0)) * delta_s, homing.get("speed_mps", 300.0))
 
 	var has_target: bool = is_instance_valid(missile.target) and missile.target.is_alive()
-	if has_target and missile.age_s >= float(homing.get("arm_delay_s", 0.15)):
+	var armed: bool = missile.age_s >= float(homing.get("arm_delay_s", 0.15))
+	if has_target and armed and not missile.flare_checked:
+		# Some enemies drop flares: the missile may lose its lock once.
+		missile.flare_checked = true
+		var enemy: Enemy = missile.target as Enemy
+		if enemy != null and enemy.try_flare():
+			missile.target = null
+			has_target = false
+	if missile.steered:
+		_turn_towards(missile, (missile.steer_point - missile.position).normalized(), delta_s)
+		missile.steered = false
+	elif has_target and armed:
 		_steer(missile, delta_s)
 
 	var next_position: Vector3 = missile.position + missile.direction * missile.speed * delta_s
@@ -118,7 +155,11 @@ func _steer(missile: Missile, delta_s: float) -> void:
 	var aim_point: Vector3 = missile.target.get_aim_point()
 	var distance: float = missile.position.distance_to(aim_point)
 	var lead_s: float = distance / maxf(missile.speed, 1.0)
-	var desired: Vector3 = (aim_point + missile.target.velocity * lead_s - missile.position).normalized()
+	_turn_towards(missile, (aim_point + missile.target.velocity * lead_s - missile.position).normalized(), delta_s)
+
+
+## Rotates the missile's flight direction towards `desired`, limited by its turn rate.
+func _turn_towards(missile: Missile, desired: Vector3, delta_s: float) -> void:
 	var angle: float = missile.direction.angle_to(desired)
 	if angle < 0.0005:
 		missile.direction = desired
@@ -136,19 +177,7 @@ func _detonate(missile: Missile, at: Vector3) -> void:
 	missile.trail.emitting = false
 
 	var radius_m: float = missile.homing.get("splash_radius_m", 8.0)
-	var edge_fraction: float = GameData.loader.get_config("combat").get("splash_edge_damage_fraction", 0.4)
-	var full_damage: float = missile.weapon_data.get("damage", 0.0)
-	for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
-		var target: CombatTarget = node as CombatTarget
-		if target == null or not target.is_alive():
-			continue
-		var distance: float = maxf(0.0, at.distance_to(target.get_aim_point()) - target.target_radius_m)
-		var falloff: float = DamageCalc.splash_falloff(distance, radius_m, edge_fraction)
-		if falloff <= 0.0:
-			continue
-		missile.info.amount = full_damage * falloff
-		missile.info.hit_position = at
-		target.apply_damage(missile.info)
+	Splash.apply(get_tree(), at, radius_m, missile.weapon_data.get("damage", 0.0), missile.info)
 
 	var fx: CombatFx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
 	if fx != null:
