@@ -21,6 +21,8 @@ const LIFETIME_S: Dictionary = {Kind.FIRE: 0.55, Kind.SMOKE: 2.4, Kind.DEBRIS: 1
 const MAX_DENSITY: float = 1.5
 ## Sparks from a beam arrive every frame; this caps how many bursts start per second.
 const MIN_SPARK_INTERVAL_S: float = 0.03
+## Explosions closer to the camera than this (plus their radius) show debris only.
+const NEAR_SKIP_M: float = 30.0
 
 var _pools: Dictionary = {}  # Kind -> Array[GPUParticles3D]
 var _next: Dictionary = {}  # Kind -> int
@@ -45,8 +47,14 @@ func _process(delta_s: float) -> void:
 func explosion(at: Vector3, radius_m: float) -> void:
 	if not _in_view(at, radius_m):
 		return
-	_burst(Kind.FIRE, Transform3D(Basis.from_scale(Vector3.ONE * radius_m), at))
 	_burst(Kind.DEBRIS, Transform3D(Basis.from_scale(Vector3.ONE * radius_m), at))
+	# Fire and smoke right at the camera would fade to nothing anyway (see the
+	# distance fade of their material) but still be drawn over the whole screen.
+	# A swarm ramming the turret cost three quarters of the frame rate that way.
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera != null and camera.global_position.distance_to(at) < NEAR_SKIP_M + radius_m:
+		return
+	_burst(Kind.FIRE, Transform3D(Basis.from_scale(Vector3.ONE * radius_m), at))
 	if radius_m >= 4.0:
 		_burst(Kind.SMOKE, Transform3D(Basis.from_scale(Vector3.ONE * radius_m), at))
 
