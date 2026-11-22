@@ -2,16 +2,16 @@
 # Needs the Godot export templates for the pinned engine version
 # (Godot editor: Editor > Manage Export Templates > Download and Install).
 #   .\tools\export_windows.ps1            release build
-#   .\tools\export_windows.ps1 -Debug     debug build (F1, F3, F4, F5 keys work)
+#   .\tools\export_windows.ps1 -DebugBuild     debug build (F1, F3, F4, F5 keys work)
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [switch]$Debug
+    [switch]$DebugBuild
 )
 
 $root = Split-Path $PSScriptRoot -Parent
 $out = Join-Path $root 'build\windows'
 New-Item -ItemType Directory -Force $out | Out-Null
-$mode = if ($Debug) { '--export-debug' } else { '--export-release' }
+$mode = if ($DebugBuild) { '--export-debug' } else { '--export-release' }
 
 & (Join-Path $PSScriptRoot 'godot.ps1') --headless $mode 'Windows Desktop' (Join-Path $out 'INCOMING.exe')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

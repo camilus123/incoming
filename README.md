@@ -22,7 +22,7 @@ Every binding can be changed under Settings, Controls.
 
 In the armoury: left click buys an upgrade, right click refunds it, drag pans the tree and the wheel zooms.
 
-Debug builds only (the editor and `export_windows.ps1 -Debug`):
+Debug builds only (the editor and `export_windows.ps1 -DebugBuild`):
 
 | Key | Action |
 |---|---|
