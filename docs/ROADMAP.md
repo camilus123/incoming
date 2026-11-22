@@ -20,6 +20,8 @@
 - **Mods folder:** `AssetResolver` already supports override roots. Still needed: scanning a `mods/` folder next to the executable, runtime loading of external `.glb` (GLTFDocument) and images, and merging mod data files into `DataLoader`.
 - **Story:** stage briefings and setting text are data, so a campaign narrative can be added without code changes.
 - **ADS/zoom:** an optional zoom key, possibly unlocked by an upgrade.
-- **Respec refund:** set `economy.json: respec_refund_ratio` back to 0.75 when testing is over.
+- **Respec refund:** still 100 % for testing; set `economy.json: respec_refund_ratio` to 0.75 for release.
+- **Audio:** recorded voice alerts, composed music, real sound effects in place of the generated ones.
+- **Gamepad support.**
 - **Graphics left over from M6:** heat distortion on beams, orbital debris, decals, real PBR texture sets for terrain and hulls.
-- **Renderer option (asked by Marko, for M8):** let the player switch between Vulkan and DirectX 12 in the final build (settings menu plus a launch option; the engine already runs on both, see `--rendering-driver d3d12`). Marko wants to try OptiScaler on DirectX 12 for FSR 4; that may not work, because Godot builds FSR 2 in and has no separate upscaler library to hook.
+- **OptiScaler / FSR 4:** the renderer option exists (Settings, Video). Whether OptiScaler can hook the game on DirectX 12 is untested; Godot builds FSR 2 in and has no separate upscaler library.

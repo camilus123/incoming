@@ -207,3 +207,24 @@ Checked with the self-playing demo, which is only a rough guide (it never misses
 - **Big ships are not pooled.** Resetting weak points, phases and hangars safely is a lot of state for a handful of spawns per stage.
 - **No hand-set LOD.** See `docs/PERFORMANCE.md`; to revisit with final art.
 - **Explosions within 30 m of the camera show debris but no fire or smoke.** They were faded out there anyway.
+
+## 2026-11-22: M8 decisions (Claude)
+
+- **All sounds are generated** by `tools/build_placeholder_audio.py` (sine waves and noise, Python standard library only). No third-party audio, nothing to licence. They are placeholders in the plain sense: recognisable and distinct per weapon family, not pleasant.
+- **"Voice" alerts are tones**, each with the HUD message it already had ("SHIELDS DOWN" and so on). Synthesising speech was out of reach without third-party voices. The Alerts bus and the event names (`shields_down`, `hull_critical`, `overheat`, `incoming`) are ready for recorded lines.
+- **Sound follows the event bus.** Gameplay code emits what happened (weapon fired, explosion, shield hit); the audio manager decides what that sounds like. Only interface code calls it directly.
+- **Automated runs are silent** (`--mute`, set by `run_demo.ps1` and `run_benchmark.ps1` unless `-Sound` is given; tests are headless).
+- **Difficulty is chosen in the main menu and fixed per run.** It is stored in the save; old saves load as Normal.
+- **A new run from the main menu asks once more** when a saved run exists, because it replaces it.
+- **Restart stage** (pause menu) reloads the armoury autosave and starts the same stage again; credits or purchases made since are those of the save.
+- **Renderer option:** the engine chooses its driver before any script runs, so the settings menu writes the choice to `override.cfg` next to the executable and it applies at the next start. `--rendering-driver` on the command line still wins. Vulkan stays the default (it measured slightly better here).
+- **Debug keys** (F1 to F5) only exist in debug builds. The release build has none of them.
+- **The main menu is the first scene.** Command-line starts used by the tools (`--auto-demo`, `--benchmark`, `--stage=N`) skip it.
+- **Respec refund is still 100 %** (Marko's testing setting). The design value is 75 %; it is one number in `config/economy.json`.
+
+### Not done in M8 (honest list)
+
+- **No recorded voice lines and no composed music.** One generated ambient pad loops.
+- **Separate X and Y sensitivity** is a single sensitivity plus a vertical factor. Raw mouse input is whatever Godot gives on Windows (relative motion events, unaccelerated); there is no separate switch.
+- **Rebinding takes one key or button per action.** Actions with several defaults (confirm: Enter, numpad Enter, Space) keep them until rebound.
+- **Gamepad** is not supported (not in the spec).

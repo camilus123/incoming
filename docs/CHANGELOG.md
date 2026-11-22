@@ -2,6 +2,17 @@
 
 Updated at every merge to `main`.
 
+## M8: Polish (2026-11-22)
+
+- Sound: six buses (Master, Music, SFX, Weapons, UI, Alerts), 37 generated placeholder sounds, a fire sound per weapon family, sized explosions and hits placed in the world, engine loops with Doppler shift on larger enemies, alert tones (shields down and up, hull critical, overheat, incoming ordnance), interface clicks and an ambient music loop. All named by asset id in data.
+- Main menu: continue, new run, difficulty (Easy, Normal, Hard), settings, quit.
+- Pause menu: resume, settings, restart stage, main menu, quit.
+- Settings: mouse sensitivity, invert Y, rebinding of every action (with wheel swap and reset), graphics preset, renderer (Vulkan or DirectX 12, after a restart), fullscreen, V-Sync, frame rate limit, field of view, lens effects, six volume sliders, screen shake and turret weight.
+- Hold Tab for stage stats and what is in the air.
+- Debug menu (F4, debug builds): credits, skip stage, spawn an enemy, god mode, show hit shapes, stats overlay.
+- Windows export preset and `tools\export_windows.ps1`.
+- 17 new unit tests (151 in total).
+
 ## M7: Performance pass (2026-11-22)
 
 - Benchmark mode: `tools\run_benchmark.ps1` or `--benchmark` plays a scripted fight with about 115 enemies at once and writes average fps, median, 1 % lows, a per-second timeline and every frame time to a JSON file.

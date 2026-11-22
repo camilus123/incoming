@@ -2,27 +2,47 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M5 (content pass)**. All 20 weapons and 9 enemies are in. The game starts in the armoury before stage 1; stages 1 to 10 are authored (bosses at 5 and 10) and later ones are generated. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **all eight milestones are built (M8, polish).** 20 weapons, 9 enemies, stages 1 to 10 with bosses at 5 and 10 and generated stages after that, a tech tree of 79 upgrades, four graphics presets, sound, menus and a Windows build. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
+
+Every binding can be changed under Settings, Controls.
 
 | Input | Action |
 |---|---|
 | Mouse | Aim |
-| Left mouse button (hold) | Fire the Pulse Laser |
-| Right mouse button (hold, then release) | Lock targets near the crosshair, release to launch missiles |
+| Left mouse button (hold) | Fire the primary weapon |
+| Right mouse button | Fire the alternate weapon (missiles: hold to lock, release to launch) |
 | Mouse wheel up / down | Shift power towards weapons / shields |
 | Middle mouse click | Reset the power split to 50/50 |
-| Esc | Pause and release the mouse |
+| Tab (hold) | Stage stats and what is in the air |
+| Esc | Pause menu (resume, settings, restart stage, main menu, quit) |
 | Enter or Space | Continue to the armoury after a stage, or start a new run after game over |
 | R | After game over: back to the armoury before the lost stage |
 
-In the armoury: left click buys an upgrade, right click refunds it, drag pans the tree and the wheel zooms. F2 adds 1,000 credits in debug builds.
-| F5 (debug builds) | Reload all data files |
-| F1 (debug builds) | Show or hide the developer read-out (fps, aim, power and weapon numbers) |
-| F3 (debug builds) | Next graphics preset (Low, Medium, High, Ultra) |
+In the armoury: left click buys an upgrade, right click refunds it, drag pans the tree and the wheel zooms.
 
-Sensitivity, invert Y, turret weight, FOV and screen shake are stored in `user://settings.cfg` (settings menu comes in M8).
+Debug builds only (the editor and `export_windows.ps1 -Debug`):
+
+| Key | Action |
+|---|---|
+| F1 | Developer read-out (fps, aim, power and weapon numbers) |
+| F2 | In the armoury: 1,000 credits |
+| F3 | Next graphics preset |
+| F4 | Debug menu: credits, skip stage, spawn an enemy, god mode, show hit shapes |
+| F5 | Reload all data files |
+
+Settings are stored in `user://settings.cfg` (on Windows: `%APPDATA%\Godot\app_userdata\INCOMING\`), the run in `user://saves/run.json`.
+
+## Windows build
+
+```powershell
+.\tools\export_windows.ps1
+```
+
+writes `build\windows\INCOMING.exe` and `INCOMING.pck`; copy both anywhere and run the exe. It needs the Godot export templates for the pinned version (Godot editor: Editor, Manage Export Templates, Download and Install).
+
+Launch options: `--rendering-driver d3d12` or `vulkan` picks the renderer for one start (Settings, Video stores a lasting choice); after `++` the game's own options work, for example `INCOMING.exe ++ --preset=high`.
 
 ## Requirements
 
