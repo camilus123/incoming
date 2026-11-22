@@ -12,6 +12,8 @@
     { "name": "test_range", "file": "config/test_range.json", "schema": "schemas/test_range.schema.json" },
     { "name": "graphics_presets", "file": "config/graphics_presets.json", "schema": "schemas/graphics_presets.schema.json" },
     { "name": "environments", "file": "config/environments.json", "schema": "schemas/environments.schema.json" },
+    { "name": "benchmark", "file": "config/benchmark.json", "schema": "schemas/benchmark.schema.json" },
+    { "name": "benchmark_stage", "file": "stages/benchmark.json", "schema": "schemas/stage.schema.json" },
     { "name": "asset_manifest", "file": "assets/asset_manifest.json", "schema": "schemas/asset_manifest.schema.json" }
   ],
   "collections": [

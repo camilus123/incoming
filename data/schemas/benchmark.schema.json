@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "fields": {
+    "duration_s": {
+      "type": "number",
+      "min": 5.0,
+      "default": 70.0
+    },
+    "warmup_s": {
+      "type": "number",
+      "min": 0.0,
+      "default": 2.0
+    },
+    "seed": {
+      "type": "int",
+      "default": 20261122
+    },
+    "results_dir": {
+      "type": "string",
+      "default": "user://benchmarks",
+      "non_empty": true
+    }
+  }
+}

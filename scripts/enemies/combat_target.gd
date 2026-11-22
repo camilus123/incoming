@@ -4,12 +4,17 @@ extends Node3D
 ## and enemy projectiles from M2 on.
 ##
 ## Holds the health state ([TargetStats]) and applies hits through
-## [DamageCalc]. Homing weapons find targets through the group.
+## [DamageCalc]. Weapons find targets through `CombatTarget.registry`.
 
 signal damaged(result: DamageResult)
 signal died()
 
 const GROUP: StringName = &"combat_targets"
+
+## Every target in the scene tree, alive or not (check `is_alive()`). Hot loops
+## (proximity fuses, splash, lock-on) read this instead of asking the scene
+## tree for the group, which builds a new array on every call.
+static var registry: Array[CombatTarget] = []
 
 var stats: TargetStats = TargetStats.new()
 ## Current velocity in m/s, used by homing weapons and lead indicators.
@@ -20,6 +25,11 @@ var target_radius_m: float = 1.0
 
 func _enter_tree() -> void:
 	add_to_group(GROUP)
+	registry.append(self)
+
+
+func _exit_tree() -> void:
+	registry.erase(self)
 
 
 func _process(delta_s: float) -> void:

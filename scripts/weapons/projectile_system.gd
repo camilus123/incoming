@@ -274,9 +274,8 @@ func _update_zone(zone: Zone, delta_s: float) -> bool:
 		zone.tick_s -= ZONE_TICK_S
 		zone.info.amount = zone.dps * ZONE_TICK_S
 		zone.info.armour_factor = ZONE_TICK_S
-		for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
-			var target: CombatTarget = node as CombatTarget
-			if target == null or not target.is_alive():
+		for target: CombatTarget in CombatTarget.registry:
+			if not target.is_alive():
 				continue
 			var closest: Vector3 = Geometry3D.get_closest_point_to_segment(target.get_aim_point(), zone.from, zone.to)
 			if closest.distance_to(target.get_aim_point()) <= zone.radius_m + target.target_radius_m:
@@ -316,9 +315,8 @@ func _update_well(zone: Zone, delta_s: float) -> bool:
 func _fuse_point(from: Vector3, to: Vector3, distance_m: float) -> Vector3:
 	var step: Vector3 = to - from
 	var length_squared: float = step.length_squared()
-	for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
-		var target: CombatTarget = node as CombatTarget
-		if target == null or not target.is_alive():
+	for target: CombatTarget in CombatTarget.registry:
+		if not target.is_alive():
 			continue
 		var aim_point: Vector3 = target.get_aim_point()
 		var along: float = clampf((aim_point - from).dot(step) / length_squared, 0.0, 1.0) if length_squared > 0.0 else 1.0

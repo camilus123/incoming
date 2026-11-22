@@ -13,6 +13,8 @@ var layer_bits: int = Layers.PHYSICS_ENEMY
 var radius_m: float = 0.0
 
 var _base_radius_m: float = 0.0
+static var _assist: Dictionary = {}
+static var _assist_report: DataReport
 var _sphere: SphereShape3D
 
 
@@ -92,8 +94,22 @@ func set_enabled(enabled: bool) -> void:
 func apply_distance_assist(distance_m: float) -> void:
 	if _sphere == null:
 		return
-	var assist: Dictionary = GameData.loader.get_config("combat").get("hitbox_assist", {})
-	var wanted: float = DamageCalc.assisted_radius(_base_radius_m, distance_m, assist)
+	var wanted: float = DamageCalc.assisted_radius(_base_radius_m, distance_m, _assist_settings())
 	if absf(wanted - radius_m) > radius_m * 0.04:
 		radius_m = wanted
 		_sphere.radius = wanted
+
+
+## Back to the unassisted size (a pooled target is reused somewhere else).
+func reset_radius() -> void:
+	if _sphere != null:
+		radius_m = _base_radius_m
+		_sphere.radius = _base_radius_m
+
+
+## The "hitbox_assist" block of combat.json, looked up once per data load.
+static func _assist_settings() -> Dictionary:
+	if _assist_report != GameData.last_report:
+		_assist_report = GameData.last_report
+		_assist = GameData.loader.get_config("combat").get("hitbox_assist", {})
+	return _assist

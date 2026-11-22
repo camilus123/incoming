@@ -559,6 +559,14 @@ More attack fields: `enabled` (false = switched on later by a boss phase), `widt
 - `director.json` → `procedural.enemy_hp_growth_per_stage` / `enemy_damage_growth_per_stage`: how much tougher all enemies get for every stage beyond the authored ones.
 - `procedural.boss`: `enemy` (the boss type), `every` (boss stage interval), `escort_budget_share`, `hp_growth_per_boss`, `damage_growth_per_boss`, `first_scaled_stage`.
 
+## config/benchmark.json and stages/benchmark.json
+
+Benchmark mode (`--benchmark`, `tools/run_benchmark.ps1`). `config/benchmark.json`: `duration_s`, `warmup_s` (frames before this are not measured), `seed` (same seed, same fight) and `results_dir` (where the JSON result goes; `user://benchmarks` by default, overridden by `--benchmark-out=<folder>`). `stages/benchmark.json` is an ordinary stage file (same schema as `stage_NN.json`) that is not part of the campaign.
+
+## Swarm enemies
+
+`"swarm": true` in an enemy file (the Swarm Drone has it) makes the type cheap in large numbers: it has no model node of its own, all of its kind are drawn as one MultiMesh, the enemy manager advances them in one loop, and destroyed ones are pooled and reused. Behaviours, attacks and hit shapes work as for any enemy. Limits: the model is drawn as one rigid mesh (no moving parts, no per-enemy effects attached to it), and a weak point on a swarm enemy needs an `offset` instead of a `socket`.
+
 ## Planned formats
 
 Added in the milestone that first uses them:

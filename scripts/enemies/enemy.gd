@@ -10,6 +10,7 @@ extends CombatTarget
 
 ## Enemy beams and bolts are drawn up to this distance from the turret.
 const IMPACT_STANDOFF_M: float = 13.0
+const ASSIST_INTERVAL_S: float = 0.12
 
 var data: Dictionary = {}
 var enemy_id: String = ""
@@ -54,6 +55,20 @@ var _granted_shield_left_s: float = 0.0
 var _granted_regen_per_s: float = 0.0
 var _shield_bubble: MeshInstance3D
 var _rotation_rad: float = 0.0
+## Drawn by the manager's swarm renderer instead of having a model of its own,
+## and advanced by the manager in one loop (data field "swarm").
+var swarm: bool = false
+## Changes every time the enemy is spawned or reused: lets others tell "the
+## drone I launched" from "the same pooled object, now a different drone".
+var life_id: int = 0
+## Kept and reused by the manager after it is destroyed.
+var pooled: bool = false
+## Time of the last destruction (manager clock), so a pooled enemy rests a
+## moment before it is reused.
+var retired_at_s: float = 0.0
+var _assist_left_s: float = 0.0
+var _difficulty: Dictionary = {}
+var _scale: Dictionary = {}
 
 
 ## Builds the enemy from its data. Called once, before it enters the tree.
@@ -64,23 +79,17 @@ func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, diffic
 	name = enemy_id
 	_manager = manager
 	_turret = turret
-	speed_mps = enemy_data["speed_mps"]
 	target_radius_m = enemy_data.get("hitbox_radius_m", 2.0)
-	damage_multiplier = float(difficulty.get("enemy_damage_mult", 1.0)) * float(scale.get("damage", 1.0))
-	spawn_enabled = enemy_data.get("spawn_enabled", true)
-	stats = TargetStats.from_data(enemy_data)
+	swarm = enemy_data.get("swarm", false)
+	reset_state(difficulty, scale)
 	var hp_scale: float = float(difficulty.get("enemy_hp_mult", 1.0)) * float(scale.get("hp", 1.0))
-	stats.max_hp *= hp_scale
-	stats.hp = stats.max_hp
-	stats.max_shield *= float(scale.get("hp", 1.0))
-	stats.shield = stats.max_shield
-	_base_max_shield = stats.max_shield
 
-	var scene: PackedScene = GameData.assets.load_asset(enemy_data.get("model", "")) as PackedScene
-	_visual = scene.instantiate() if scene != null else _fallback_visual()
-	_visual.scale = Vector3.ONE * float(enemy_data.get("model_scale", 1.0))
-	add_child(_visual)
-	_hardpoint = _visual.find_child("Hardpoint_0", true, false) as Node3D
+	if not swarm:
+		var scene: PackedScene = GameData.assets.load_asset(enemy_data.get("model", "")) as PackedScene
+		_visual = scene.instantiate() if scene != null else _fallback_visual()
+		_visual.scale = Vector3.ONE * float(enemy_data.get("model_scale", 1.0))
+		add_child(_visual)
+		_hardpoint = _visual.find_child("Hardpoint_0", true, false) as Node3D
 
 	# Hit shapes: one sphere by default, or the list in "hitboxes" for big ships.
 	var hitboxes: Array = enemy_data.get("hitboxes", [])
@@ -94,16 +103,12 @@ func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, diffic
 		var weak_point: WeakPoint = WeakPoint.new()
 		weak_point.setup(weak_point_data, self, hp_scale)
 		add_child(weak_point)
-		var socket: Node3D = _visual.find_child(str(weak_point_data.get("socket", "")), true, false) as Node3D
+		# A swarm enemy has no model of its own, so a weak point on one needs an "offset".
+		var socket: Node3D = _visual.find_child(str(weak_point_data.get("socket", "")), true, false) as Node3D if _visual != null else null
 		var offset: Array = weak_point_data.get("offset", [0.0, 0.0, 0.0])
 		weak_point.position = socket.position * _visual.scale.x if socket != null else Vector3(offset[0], offset[1], offset[2])
 		_weak_points.append(weak_point)
 
-	var attacks: Array = enemy_data.get("attacks", [])
-	_cooldowns.resize(attacks.size())
-	for attack: Dictionary in attacks:
-		if not attack.get("enabled", true):
-			_disabled_attacks[attack["id"]] = true
 	for behaviour_id: String in enemy_data.get("behaviours", []):
 		var behaviour_data: Dictionary = GameData.loader.get_entry("behaviours", behaviour_id)
 		var behaviour: EnemyBehaviour = BehaviourRegistry.create(behaviour_data) if not behaviour_data.is_empty() else null
@@ -112,14 +117,68 @@ func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, diffic
 			_behaviour_params.append(behaviour_data.get("params", {}))
 
 
+## Everything that must be fresh each time the enemy enters the fight: health,
+## cooldowns, flags. Called by `setup()` and again when a pooled enemy is reused.
+func reset_state(difficulty: Dictionary, scale: Dictionary = {}) -> void:
+	_difficulty = difficulty
+	_scale = scale
+	speed_mps = data["speed_mps"]
+	damage_multiplier = float(difficulty.get("enemy_damage_mult", 1.0)) * float(scale.get("damage", 1.0))
+	spawn_enabled = data.get("spawn_enabled", true)
+	stats = TargetStats.from_data(data)
+	var hp_scale: float = float(difficulty.get("enemy_hp_mult", 1.0)) * float(scale.get("hp", 1.0))
+	stats.max_hp *= hp_scale
+	stats.hp = stats.max_hp
+	stats.max_shield *= float(scale.get("hp", 1.0))
+	stats.shield = stats.max_shield
+	_base_max_shield = stats.max_shield
+	var attacks: Array = data.get("attacks", [])
+	_cooldowns.resize(attacks.size())
+	_cooldowns.fill(0.0)
+	_disabled_attacks.clear()
+	for attack: Dictionary in attacks:
+		if not attack.get("enabled", true):
+			_disabled_attacks[attack["id"]] = true
+	_sequence_left = 0
+	_stagger_left_s = 0.0
+	_granted_shield_left_s = 0.0
+	_rotation_rad = 0.0
+	_assist_left_s = 0.0
+	velocity = Vector3.ZERO
+	away = false
+	face_turret = false
+	rotate_deg_s = 0.0
+	hold_heading = false
+	if _shield_bubble != null:
+		_shield_bubble.visible = false
+
+
+## Brings a pooled enemy back for a new spawn. The manager places it and
+## calls `activate()` afterwards.
+func revive(difficulty: Dictionary, scale: Dictionary = {}) -> void:
+	reset_state(difficulty, scale)
+	visible = true
+	for hurtbox: Hurtbox in _hurtboxes:
+		hurtbox.reset_radius()
+		hurtbox.set_enabled(true)
+	set_process(not swarm)
+
+
 ## Starts the behaviours; called by the manager once the enemy is placed.
 func activate() -> void:
 	for index: int in _behaviours.size():
 		_behaviours[index].setup(self, _behaviour_params[index])
+	# Swarm members are advanced by the manager in one loop, not one by one.
+	set_process(not swarm)
 
 
 func _process(delta_s: float) -> void:
-	super._process(delta_s)
+	advance(delta_s)
+
+
+## One frame of the enemy: health, behaviours, attacks, movement.
+func advance(delta_s: float) -> void:
+	stats.tick(delta_s)
 	if stats.is_dead():
 		return
 	_update_granted_shield(delta_s)
@@ -133,12 +192,16 @@ func _process(delta_s: float) -> void:
 		return
 	for behaviour: EnemyBehaviour in _behaviours:
 		behaviour.tick(delta_s)
-		if not is_inside_tree() or is_queued_for_deletion():
+		if not is_inside_tree() or is_queued_for_deletion() or stats.is_dead():
 			return
 	_update_attack_sequence(delta_s)
-	var distance: float = global_position.distance_to(get_turret_point())
-	for hurtbox: Hurtbox in _hurtboxes:
-		hurtbox.apply_distance_assist(distance)
+	# The hit shape only needs to follow the distance a few times per second.
+	_assist_left_s -= delta_s
+	if _assist_left_s <= 0.0:
+		_assist_left_s = ASSIST_INTERVAL_S * randf_range(0.8, 1.2)
+		var distance: float = global_position.distance_to(get_turret_point())
+		for hurtbox: Hurtbox in _hurtboxes:
+			hurtbox.apply_distance_assist(distance)
 	global_position += velocity * delta_s
 	if rotate_deg_s != 0.0 or hold_heading:
 		_rotation_rad += deg_to_rad(rotate_deg_s) * delta_s
@@ -283,8 +346,8 @@ func return_for_new_pass() -> void:
 ## Destroys the enemy without credit to the player (it rammed the turret).
 func self_destruct() -> void:
 	_explode()
+	stats.hp = 0.0
 	_manager.notify_enemy_gone(self, false)
-	queue_free()
 
 
 ## Called by a weak point when it is destroyed: applies its own effect and,
@@ -327,7 +390,16 @@ func _on_killed() -> void:
 		weak_point.queue_free()
 	EventBus.enemy_killed.emit(StringName(enemy_id), int(data.get("credit_bounty", 0)))
 	_manager.notify_enemy_gone(self, true)
-	queue_free()
+
+
+## Out of the fight but kept for reuse: hidden, unhittable, not processed.
+func retire(now_s: float) -> void:
+	retired_at_s = now_s
+	stats.hp = 0.0
+	visible = false
+	set_process(false)
+	for hurtbox: Hurtbox in _hurtboxes:
+		hurtbox.set_enabled(false)
 
 
 func _try_attack_where(matches: Callable) -> bool:

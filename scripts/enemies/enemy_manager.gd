@@ -1,10 +1,21 @@
 class_name EnemyManager
 extends Node3D
 ## Owns every enemy and enemy projectile in play: spawning, counting and
-## clean-up. All spawning goes through here so pooling and the MultiMesh
-## swarm renderer (M7) can be added without touching the callers.
+## clean-up. All spawning goes through here.
+##
+## Performance work lives here too:
+## - Swarm enemies (data field "swarm") have no model of their own. They are
+##   drawn by a [SwarmRenderer] (one MultiMesh per model) and advanced in one
+##   loop in `_process` instead of each running its own.
+## - Swarm enemies and enemy projectiles are pooled: a destroyed one is hidden
+##   and reused for a later spawn after a short rest.
+## - `prewarm()` builds each enemy type of a stage once during the intro, so
+##   its first appearance does not cost a long frame.
 
 const GROUP: StringName = &"enemy_manager"
+## A destroyed pooled object rests this long before reuse, so anything that
+## still points at it (a missile, a lock) sees it dead first and lets go.
+const POOL_REST_S: float = 1.5
 
 ## The active difficulty level's multipliers (difficulty.json).
 var difficulty: Dictionary = {}
@@ -16,6 +27,14 @@ var _fx: CombatFx
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Glow materials shared by all markers of one look: "tint|intensity" -> material.
 var _glow_materials: Dictionary = {}
+var _clock_s: float = 0.0
+var _next_life_id: int = 1
+## Swarm members in play, advanced here.
+var _swarm: Array[Enemy] = []
+var _swarm_renderers: Dictionary = {}  # model asset id -> SwarmRenderer
+var _enemy_pool: Dictionary = {}  # enemy id -> Array[Enemy]
+var _projectile_pool: Dictionary = {}  # pool key -> Array[EnemyProjectile]
+var _prewarmed: Dictionary = {}  # enemy id -> true
 
 
 func _enter_tree() -> void:
@@ -34,21 +53,35 @@ func spawn_enemy(enemy_id: String, at: Vector3, wave_index: int = 0, scale: Dict
 	if enemy_data.is_empty():
 		push_warning("EnemyManager: unknown enemy \"%s\"" % enemy_id)
 		return null
-	var enemy: Enemy = Enemy.new()
-	enemy.setup(enemy_data, self, _get_turret(), difficulty, scale)
+	var enemy: Enemy = _take_pooled_enemy(enemy_id)
+	if enemy != null:
+		enemy.revive(difficulty, scale)
+	else:
+		enemy = Enemy.new()
+		enemy.setup(enemy_data, self, _get_turret(), difficulty, scale)
+		enemy.pooled = enemy.swarm
+		add_child(enemy)
+	enemy.life_id = _next_life_id
+	_next_life_id += 1
 	enemy.wave_index = wave_index
-	add_child(enemy)
 	enemy.global_position = at
 	enemy.activate()
 	_enemies.append(enemy)
+	if enemy.swarm:
+		_swarm.append(enemy)
+		_ensure_swarm_renderer(enemy_data)
 	return enemy
 
 
 ## Spawns a shootable projectile for an enemy attack.
 func spawn_projectile(attack: Dictionary, at: Vector3, start_velocity: Vector3, damage: float) -> EnemyProjectile:
-	var projectile: EnemyProjectile = EnemyProjectile.new()
-	projectile.setup(attack, start_velocity, damage, self, _get_turret())
-	add_child(projectile)
+	var projectile: EnemyProjectile = _take_pooled_projectile(EnemyProjectile.key_for(attack))
+	if projectile != null:
+		projectile.restart(attack, start_velocity, damage)
+	else:
+		projectile = EnemyProjectile.new()
+		projectile.setup(attack, start_velocity, damage, self, _get_turret())
+		add_child(projectile)
 	projectile.global_position = at
 	_projectiles.append(projectile)
 	return projectile
@@ -128,21 +161,148 @@ func get_respawn_point(enemy: Enemy) -> Vector3:
 
 ## Removes everything without effects or credit (stage restart).
 func clear_all() -> void:
-	for enemy: Enemy in _enemies:
-		enemy.queue_free()
-	for projectile: EnemyProjectile in _projectiles:
-		projectile.queue_free()
+	for enemy: Enemy in _enemies.duplicate():
+		_remove_enemy(enemy)
+	for projectile: EnemyProjectile in _projectiles.duplicate():
+		notify_projectile_gone(projectile)
 	_enemies.clear()
 	_projectiles.clear()
+	_swarm.clear()
 
 
 ## Called by an enemy when it is destroyed or destroys itself.
 func notify_enemy_gone(enemy: Enemy, _killed_by_player: bool) -> void:
-	_enemies.erase(enemy)
+	_remove_enemy(enemy)
 
 
 func notify_projectile_gone(projectile: EnemyProjectile) -> void:
 	_projectiles.erase(projectile)
+	projectile.retire(_clock_s)
+	if not _projectile_pool.has(projectile.pool_key):
+		_projectile_pool[projectile.pool_key] = []
+	(_projectile_pool[projectile.pool_key] as Array).append(projectile)
+
+
+## Builds each enemy type of a stage once, out of sight, so the cost of its
+## first appearance (loading and instancing its model) is paid during the
+## stage intro instead of in the middle of a fight.
+func prewarm(stage_data: Dictionary) -> void:
+	var ids: Dictionary = {}
+	for wave: Dictionary in stage_data.get("waves", []):
+		for group: Dictionary in wave.get("groups", []):
+			ids[str(group.get("enemy", ""))] = true
+		for enemy_id: Variant in wave.get("enemies", []):
+			ids[str(enemy_id)] = true
+	_prewarm_glow()
+	var enemies: Dictionary = GameData.loader.get_category("enemies")
+	var pending: Array[String] = []
+	for enemy_id: String in ids:
+		pending.append(enemy_id)
+	# Enemies launched by other enemies (carrier drones) count too.
+	while not pending.is_empty():
+		var enemy_id: String = pending.pop_back()
+		if _prewarmed.has(enemy_id) or not enemies.has(enemy_id):
+			continue
+		_prewarmed[enemy_id] = true
+		var enemy_data: Dictionary = enemies[enemy_id]
+		for behaviour_id: Variant in enemy_data.get("behaviours", []):
+			var child_id: String = str((GameData.loader.get_entry("behaviours", str(behaviour_id)).get("params", {}) as Dictionary).get("enemy", ""))
+			if not child_id.is_empty():
+				pending.append(child_id)
+		if enemy_data.get("swarm", false):
+			_ensure_swarm_renderer(enemy_data)
+			continue
+		# Instancing the model once loads its meshes and materials into memory.
+		var scene: PackedScene = GameData.assets.load_asset(enemy_data.get("model", "")) as PackedScene
+		if scene != null:
+			var model: Node = scene.instantiate()
+			model.free()
+
+
+## Shield bubbles and weak point markers use a shader nothing else does. The
+## first one drawn made the renderer build it mid-fight (a frame of about
+## 30 ms). Two pin-sized ones shown for a moment during the intro pay that early.
+func _prewarm_glow() -> void:
+	if _prewarmed.has("_glow"):
+		return
+	_prewarmed["_glow"] = true
+	var turret: Turret = _get_turret()
+	if turret == null:
+		return
+	var ahead: Vector3 = turret.get_aim_transform().origin + turret.get_aim_transform().basis * Vector3(0.0, 0.0, -40.0)
+	for marker: MeshInstance3D in [make_shield_bubble(0.01), make_weak_point_marker(0.01)]:
+		add_child(marker)
+		marker.global_position = ahead
+		get_tree().create_timer(1.0).timeout.connect(marker.queue_free)
+
+
+## Enemies and projectiles waiting in the pools (for the debug overlay and tests).
+func get_pooled_count() -> int:
+	var count: int = 0
+	for pool: Array in _enemy_pool.values():
+		count += pool.size()
+	for pool: Array in _projectile_pool.values():
+		count += pool.size()
+	return count
+
+
+func get_swarm_count() -> int:
+	return _swarm.size()
+
+
+func _process(delta_s: float) -> void:
+	_clock_s += delta_s
+	for renderer: SwarmRenderer in _swarm_renderers.values():
+		renderer.begin()
+	# Backwards, because a member that rams the turret removes itself.
+	for index: int in range(_swarm.size() - 1, -1, -1):
+		var member: Enemy = _swarm[index]
+		member.advance(delta_s)
+		if member.stats.is_dead() or member.away:
+			continue
+		var renderer: SwarmRenderer = _swarm_renderers.get(member.data.get("model", ""))
+		if renderer != null:
+			renderer.add(member.global_transform)
+	for renderer: SwarmRenderer in _swarm_renderers.values():
+		renderer.finish()
+
+
+func _remove_enemy(enemy: Enemy) -> void:
+	_enemies.erase(enemy)
+	if enemy.swarm:
+		_swarm.erase(enemy)
+	if not enemy.pooled:
+		enemy.queue_free()
+		return
+	enemy.retire(_clock_s)
+	if not _enemy_pool.has(enemy.enemy_id):
+		_enemy_pool[enemy.enemy_id] = []
+	(_enemy_pool[enemy.enemy_id] as Array).append(enemy)
+
+
+func _take_pooled_enemy(enemy_id: String) -> Enemy:
+	var pool: Array = _enemy_pool.get(enemy_id, [])
+	# The pool is in order of retirement, so only the oldest needs checking.
+	if pool.is_empty() or _clock_s - (pool[0] as Enemy).retired_at_s < POOL_REST_S:
+		return null
+	return pool.pop_front() as Enemy
+
+
+func _take_pooled_projectile(key: String) -> EnemyProjectile:
+	var pool: Array = _projectile_pool.get(key, [])
+	if pool.is_empty() or _clock_s - (pool[0] as EnemyProjectile).retired_at_s < POOL_REST_S:
+		return null
+	return pool.pop_front() as EnemyProjectile
+
+
+func _ensure_swarm_renderer(enemy_data: Dictionary) -> void:
+	var model_id: String = enemy_data.get("model", "")
+	if _swarm_renderers.has(model_id):
+		return
+	var renderer: SwarmRenderer = SwarmRenderer.create(model_id, enemy_data.get("model_scale", 1.0))
+	_swarm_renderers[model_id] = renderer
+	if renderer != null:
+		add_child(renderer)
 
 
 func _get_turret() -> Turret:

@@ -6,6 +6,8 @@ extends Node3D
 ## Command-line options (after `++`):
 ##   --auto-demo   aim and fire automatically, log fps, save screenshots, quit
 ##   --god         the turret takes no damage
+##   --benchmark   (game scene) play the benchmark stage with the automatic
+##                 gunner and write the result to a file; see config/benchmark.json
 
 const ACTION_PAUSE: StringName = &"pause"
 const ACTION_CAMERA_TOGGLE: StringName = &"camera_toggle"
@@ -21,12 +23,14 @@ func _ready() -> void:
 	lens.name = "ScreenEffects"
 	add_child(lens)
 	var arguments: PackedStringArray = OS.get_cmdline_user_args()
-	if arguments.has("--god"):
+	var benchmark: bool = arguments.has("--benchmark")
+	if arguments.has("--god") or benchmark:
 		_turret.invulnerable = true
-	if arguments.has("--auto-demo"):
+	if arguments.has("--auto-demo") or benchmark:
 		var demo: AutoDemo = AutoDemo.new()
 		demo.name = "AutoDemo"
 		demo.turret = _turret
+		demo.benchmark = benchmark
 		add_child(demo)
 		_on_demo_started()
 	# This node keeps running while paused so it can un-pause; everything else stops.

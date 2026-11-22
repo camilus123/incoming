@@ -13,9 +13,8 @@ static func apply(tree: SceneTree, at: Vector3, radius_m: float, full_damage: fl
 		return 0
 	var edge_fraction: float = GameData.loader.get_config("combat").get("splash_edge_damage_fraction", 0.4)
 	var hits: int = 0
-	for node: Node in tree.get_nodes_in_group(CombatTarget.GROUP):
-		var target: CombatTarget = node as CombatTarget
-		if target == null or not target.is_alive():
+	for target: CombatTarget in CombatTarget.registry:
+		if not target.is_alive():
 			continue
 		var distance: float = maxf(0.0, at.distance_to(target.get_aim_point()) - target.target_radius_m)
 		var falloff: float = DamageCalc.splash_falloff(distance, radius_m, edge_fraction)

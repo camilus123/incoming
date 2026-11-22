@@ -75,6 +75,7 @@ Runs the GUT unit tests in `tests/unit` headless.
 
 ```powershell
 .\tools\run_demo.ps1
+.\tools\run_benchmark.ps1 -Preset high   # scripted heavy fight, prints fps and writes a result file
 ```
 
 The turret aims and fires by itself for 20 seconds in fullscreen with V-Sync off, then prints a `PERF` line with the average fps and 1 % lows. Add `-ScreenshotDir C:\some\folder` to save screenshots.

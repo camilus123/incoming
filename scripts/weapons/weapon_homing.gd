@@ -91,9 +91,8 @@ func _find_lock_candidate() -> CombatTarget:
 	var range_m: float = data.get("range_m", 4000.0)
 	var best: CombatTarget = null
 	var best_score: float = -INF
-	for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
-		var target: CombatTarget = node as CombatTarget
-		if target == null or not target.is_alive():
+	for target: CombatTarget in CombatTarget.registry:
+		if not target.is_alive():
 			continue
 		var to_target: Vector3 = target.get_aim_point() - _context.aim_origin
 		var distance: float = to_target.length()
@@ -116,9 +115,8 @@ func _collect_targets() -> Array[CombatTarget]:
 	var range_m: float = data.get("range_m", 4000.0)
 	var found: Array[CombatTarget] = []
 	var alignments: Dictionary = {}
-	for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
-		var target: CombatTarget = node as CombatTarget
-		if target == null or not target.is_alive():
+	for target: CombatTarget in CombatTarget.registry:
+		if not target.is_alive():
 			continue
 		var to_target: Vector3 = target.get_aim_point() - _context.aim_origin
 		var distance: float = to_target.length()

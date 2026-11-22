@@ -476,6 +476,10 @@
           "max": 1.0
         }
       }
+    },
+    "swarm": {
+      "type": "bool",
+      "default": false
     }
   }
 }
