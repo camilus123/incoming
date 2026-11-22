@@ -12,6 +12,8 @@ extends EnemyBehaviour
 
 var _timer_s: float = 0.0
 var _children: Array[Enemy] = []
+## Life id of each child when it was launched (pooled enemies are reused).
+var _child_lives: PackedInt32Array = []
 
 
 func _on_setup() -> void:
@@ -26,8 +28,9 @@ func tick(delta_s: float) -> void:
 		return
 	_timer_s = _param("interval_s", 12.0)
 	for index: int in range(_children.size() - 1, -1, -1):
-		if not is_instance_valid(_children[index]) or _children[index].stats.is_dead():
+		if not is_instance_valid(_children[index]) or _children[index].stats.is_dead() or _children[index].life_id != _child_lives[index]:
 			_children.remove_at(index)
+			_child_lives.remove_at(index)
 	var count: int = mini(int(_param("count", 4.0)), int(_param("max_alive", 16.0)) - _children.size())
 	var spread_m: float = _param("spread_m", 40.0)
 	for index: int in count:
@@ -35,3 +38,4 @@ func tick(delta_s: float) -> void:
 		var child: Enemy = enemy.get_manager().spawn_enemy(str(params.get("enemy", "")), enemy.global_position + offset, enemy.wave_index)
 		if child != null:
 			_children.append(child)
+			_child_lives.append(child.life_id)

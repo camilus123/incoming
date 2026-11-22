@@ -97,13 +97,11 @@ func _find_chain(first: CombatTarget, block: Dictionary) -> void:
 		return
 	var range_m: float = block.get("chain_range_m", 150.0)
 	var from: CombatTarget = first
-	var candidates: Array[Node] = get_tree().get_nodes_in_group(CombatTarget.GROUP)
 	for jump: int in chain_targets:
 		var best: CombatTarget = null
 		var best_distance: float = range_m
-		for node: Node in candidates:
-			var target: CombatTarget = node as CombatTarget
-			if target == null or target == first or _chain.has(target) or not target.is_alive():
+		for target: CombatTarget in CombatTarget.registry:
+			if target == first or _chain.has(target) or not target.is_alive():
 				continue
 			var distance: float = from.get_aim_point().distance_to(target.get_aim_point())
 			if distance < best_distance:

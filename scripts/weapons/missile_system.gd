@@ -122,6 +122,9 @@ func _update_missile(missile: Missile, delta_s: float, space: PhysicsDirectSpace
 	missile.speed = minf(missile.speed + float(homing.get("acceleration_mps2", 400.0)) * delta_s, homing.get("speed_mps", 300.0))
 
 	var has_target: bool = is_instance_valid(missile.target) and missile.target.is_alive()
+	if not has_target:
+		# Forget it for good: a pooled enemy comes back to life as a different enemy.
+		missile.target = null
 	var armed: bool = missile.age_s >= float(homing.get("arm_delay_s", 0.15))
 	if has_target and armed and not missile.flare_checked:
 		# Some enemies drop flares: the missile may lose its lock once.

@@ -121,6 +121,7 @@ func _begin_stage(number: int, data: Dictionary) -> void:
 
 	_enemies.clear_all()
 	_enemies.difficulty = _difficulty
+	_enemies.prewarm(stage_data)
 	_turret.apply_player_state()
 	_turret.restore_for_stage()
 	stats = StageStats.new()

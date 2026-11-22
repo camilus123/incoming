@@ -17,12 +17,34 @@ var _speed_mps: float = 0.0
 var _damage_type: String = "explosive"
 var _visual: Node3D
 var _hurtbox: Hurtbox
+## Pool key: projectiles with the same model and size are interchangeable.
+var pool_key: String = ""
+var retired_at_s: float = 0.0
 
 
 ## `attack` is the attack entry of the enemy that released the projectile.
 func setup(attack: Dictionary, start_velocity: Vector3, attack_damage: float, manager: EnemyManager, turret: Turret) -> void:
 	_manager = manager
 	_turret = turret
+	pool_key = key_for(attack)
+	restart(attack, start_velocity, attack_damage)
+
+	var model_id: String = _projectile.get("model", "")
+	var scene: PackedScene = GameData.assets.load_asset(model_id) as PackedScene if not model_id.is_empty() else null
+	_visual = scene.instantiate() if scene != null else _fallback_visual()
+	add_child(_visual)
+	_hurtbox = Hurtbox.create_sphere(self, target_radius_m, Layers.PHYSICS_ENEMY_PROJECTILE)
+	add_child(_hurtbox)
+
+
+## Projectiles with the same key can stand in for each other in the pool.
+static func key_for(attack: Dictionary) -> String:
+	var projectile: Dictionary = attack.get("projectile", {})
+	return "%s|%s" % [projectile.get("model", ""), projectile.get("hitbox_radius_m", 2.0)]
+
+
+## Fresh state for a launch: used by `setup()` and when a pooled projectile is reused.
+func restart(attack: Dictionary, start_velocity: Vector3, attack_damage: float) -> void:
 	_projectile = attack.get("projectile", {})
 	damage = attack_damage
 	_damage_type = attack.get("damage_type", "explosive")
@@ -31,13 +53,20 @@ func setup(attack: Dictionary, start_velocity: Vector3, attack_damage: float, ma
 	_speed_mps = maxf(start_velocity.length(), float(_projectile.get("speed_mps", 60.0)))
 	target_radius_m = _projectile.get("hitbox_radius_m", 2.0)
 	stats = TargetStats.from_data({"hp": _projectile.get("hp", 20.0)})
+	visible = true
+	set_process(true)
+	if _hurtbox != null:
+		_hurtbox.reset_radius()
+		_hurtbox.set_enabled(true)
 
-	var model_id: String = _projectile.get("model", "")
-	var scene: PackedScene = GameData.assets.load_asset(model_id) as PackedScene if not model_id.is_empty() else null
-	_visual = scene.instantiate() if scene != null else _fallback_visual()
-	add_child(_visual)
-	_hurtbox = Hurtbox.create_sphere(self, target_radius_m, Layers.PHYSICS_ENEMY_PROJECTILE)
-	add_child(_hurtbox)
+
+## Out of play but kept for reuse.
+func retire(now_s: float) -> void:
+	retired_at_s = now_s
+	stats.hp = 0.0
+	visible = false
+	set_process(false)
+	_hurtbox.set_enabled(false)
 
 
 func _process(delta_s: float) -> void:
@@ -70,14 +99,12 @@ func _impact(distance_to_turret: float) -> void:
 		_turret.take_damage(damage, global_position, _damage_type)
 	_explode(blast_radius_m)
 	_manager.notify_projectile_gone(self)
-	queue_free()
 
 
 func _on_killed() -> void:
 	_explode(float(_projectile.get("blast_radius_m", 10.0)) * 0.6)
 	EventBus.enemy_projectile_intercepted.emit(StringName(name))
 	_manager.notify_projectile_gone(self)
-	queue_free()
 
 
 func _explode(radius_m: float) -> void:
