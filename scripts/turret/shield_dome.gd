@@ -16,6 +16,7 @@ var _impacts: Array[Vector4] = []
 var _active_count: int = 0
 var _flash: float = 0.0
 var _activity: float = 0.0
+var _idle_alpha: float = 0.0
 var _radius_m: float = 14.0
 
 
@@ -51,7 +52,9 @@ func configure(visuals: Dictionary) -> void:
 	_material.set_shader_parameter(&"shield_color", Color(color[0], color[1], color[2]))
 	var low: Array = visuals.get("low_color", [1.0, 0.42, 0.08])
 	_material.set_shader_parameter(&"low_color", Color(low[0], low[1], low[2]))
-	_material.set_shader_parameter(&"idle_alpha", visuals.get("idle_alpha", 0.0))
+	_idle_alpha = visuals.get("idle_alpha", 0.0)
+	_material.set_shader_parameter(&"idle_alpha", _idle_alpha)
+	_update_visibility()
 
 
 func set_charge(fraction: float) -> void:
@@ -71,10 +74,18 @@ func add_impact(from_position: Vector3) -> void:
 	_impacts[slot] = Vector4(direction.x, direction.y, direction.z, 0.0)
 	_active_count = mini(_active_count + 1, MAX_IMPACTS)
 	_activity = 1.0
+	_update_visibility()
 
 
 func flash(strength: float = 1.0) -> void:
 	_flash = maxf(_flash, strength)
+	_update_visibility()
+
+
+## An invisible dome is not drawn at all: its shader would still run for
+## every pixel of the screen.
+func _update_visibility() -> void:
+	_mesh.visible = _idle_alpha > 0.0 or _active_count > 0 or _flash > 0.0 or _activity > 0.0
 
 
 func _process(delta_s: float) -> void:
@@ -98,3 +109,4 @@ func _process(delta_s: float) -> void:
 	_material.set_shader_parameter(&"impact_count", live)
 	_material.set_shader_parameter(&"flash", _flash)
 	_material.set_shader_parameter(&"activity", _activity)
+	_update_visibility()

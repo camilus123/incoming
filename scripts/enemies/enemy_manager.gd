@@ -193,6 +193,7 @@ func prewarm(stage_data: Dictionary) -> void:
 			ids[str(group.get("enemy", ""))] = true
 		for enemy_id: Variant in wave.get("enemies", []):
 			ids[str(enemy_id)] = true
+	_prewarm_glow()
 	var enemies: Dictionary = GameData.loader.get_category("enemies")
 	var pending: Array[String] = []
 	for enemy_id: String in ids:
@@ -216,6 +217,23 @@ func prewarm(stage_data: Dictionary) -> void:
 		if scene != null:
 			var model: Node = scene.instantiate()
 			model.free()
+
+
+## Shield bubbles and weak point markers use a shader nothing else does. The
+## first one drawn made the renderer build it mid-fight (a frame of about
+## 30 ms). Two pin-sized ones shown for a moment during the intro pay that early.
+func _prewarm_glow() -> void:
+	if _prewarmed.has("_glow"):
+		return
+	_prewarmed["_glow"] = true
+	var turret: Turret = _get_turret()
+	if turret == null:
+		return
+	var ahead: Vector3 = turret.get_aim_transform().origin + turret.get_aim_transform().basis * Vector3(0.0, 0.0, -40.0)
+	for marker: MeshInstance3D in [make_shield_bubble(0.01), make_weak_point_marker(0.01)]:
+		add_child(marker)
+		marker.global_position = ahead
+		get_tree().create_timer(1.0).timeout.connect(marker.queue_free)
 
 
 ## Enemies and projectiles waiting in the pools (for the debug overlay and tests).

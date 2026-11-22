@@ -198,3 +198,12 @@ Checked with the self-playing demo, which is only a rough guide (it never misses
 - **Upscaling:** Marko asked for FSR 4 (native on Ultra, quality on High, balanced on Medium, performance on Low). Godot 4.7.2 has no FSR 4 or FSR 3: its only upscalers on Windows are bilinear, FSR 1 and FSR 2.2, and FSR 4 needs engine integration of AMD's SDK that a project cannot add from script. The same four steps are therefore set up with FSR 2, which also replaces TAA. If a later Godot version adds FSR 4, only the `upscaler` field of the presets and one line in `graphics_settings.gd` change.
 - **Default preset: Ultra.**
 - Also toned down: lens dirt and colour fringing from explosions, and big fireballs right at the camera now fade, after a shot of a drone ramming the turret showed half the screen white.
+
+## 2026-11-22: M7 decisions (Claude)
+
+- **Benchmark first.** Nothing in M7 was changed before the benchmark could show what it cost. The first finding was not on the list in the spec: particles drawn right at the camera.
+- **Swarm drones keep their node** (a hit shape that weapons can raycast, health, behaviours) but lose their model and their own `_process`. A swarm with no nodes at all would need its own hit testing, lock-on and splash code beside the one every other enemy uses; the measured cost did not justify that.
+- **Pooled objects rest 1.5 s before reuse** and get a new `life_id`. A missile or lock that still points at a destroyed drone sees it dead and lets go, instead of chasing the next drone that happens to reuse the object.
+- **Big ships are not pooled.** Resetting weak points, phases and hangars safely is a lot of state for a handful of spawns per stage.
+- **No hand-set LOD.** See `docs/PERFORMANCE.md`; to revisit with final art.
+- **Explosions within 30 m of the camera show debris but no fire or smoke.** They were faded out there anyway.

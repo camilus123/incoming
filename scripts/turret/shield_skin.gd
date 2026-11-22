@@ -31,6 +31,8 @@ var _impacts: Array[Vector4] = []
 var _active_count: int = 0
 var _flash: float = 0.0
 var _activity: float = 0.0
+var _idle_alpha: float = 0.0
+var _shown: bool = true
 
 
 func _init() -> void:
@@ -50,7 +52,8 @@ func configure(visuals: Dictionary) -> void:
 	_material.set_shader_parameter(&"shield_color", Color(color[0], color[1], color[2]))
 	var low: Array = visuals.get("low_color", [1.0, 0.42, 0.08])
 	_material.set_shader_parameter(&"low_color", Color(low[0], low[1], low[2]))
-	_material.set_shader_parameter(&"idle_alpha", visuals.get("idle_alpha", 0.0))
+	_idle_alpha = visuals.get("idle_alpha", 0.0)
+	_material.set_shader_parameter(&"idle_alpha", _idle_alpha)
 	var offset_m: float = visuals.get("conformal_offset_m", 0.06)
 	if not is_equal_approx(offset_m, _offset_m):
 		_offset_m = offset_m
@@ -60,6 +63,8 @@ func configure(visuals: Dictionary) -> void:
 func attach(model_root: Node3D) -> void:
 	detach()
 	_cover(model_root)
+	_shown = true
+	_update_visibility()
 	_material.set_shader_parameter(&"centre", global_position + Vector3.UP * 1.5)
 
 
@@ -82,14 +87,27 @@ func add_impact(from_position: Vector3) -> void:
 	_impacts[slot] = Vector4(direction.x, direction.y, direction.z, 0.0)
 	_active_count = mini(_active_count + 1, MAX_IMPACTS)
 	_activity = 1.0
+	_update_visibility()
 
 
 func flash(strength: float = 1.0) -> void:
 	_flash = maxf(_flash, strength)
+	_update_visibility()
 
 
 func _exit_tree() -> void:
 	detach()
+
+
+## Invisible shells are not drawn at all (about 40 extra meshes otherwise).
+func _update_visibility() -> void:
+	var show: bool = _idle_alpha > 0.0 or _active_count > 0 or _flash > 0.0 or _activity > 0.0
+	if show == _shown:
+		return
+	_shown = show
+	for shell: MeshInstance3D in _shells:
+		if is_instance_valid(shell):
+			shell.visible = show
 
 
 func _process(delta_s: float) -> void:
@@ -112,6 +130,7 @@ func _process(delta_s: float) -> void:
 	_material.set_shader_parameter(&"impact_count", live)
 	_material.set_shader_parameter(&"flash", _flash)
 	_material.set_shader_parameter(&"activity", _activity)
+	_update_visibility()
 
 
 ## Adds a shell to every mesh under `node`.

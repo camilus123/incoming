@@ -97,3 +97,64 @@ The cause is outside the game. The game sets no frame limit and V-Sync is off du
 **Confirmed by Marko on 2026-11-22: it was the frame rate cap in AMD Adrenalin.** With the cap on, the game cannot exceed 119 fps on this PC, so measure with it off.
 
 Useful for measuring: `tools\run_demo.ps1 -Stage 3 -God -Seconds 45 --preset=high`, plus `"--demo-frame-log=C:\temp\frames.txt"` for every frame time. The PERF line now includes the preset and the median.
+
+## M7 (2026-11-22): benchmark mode and the performance pass
+
+### The benchmark
+
+`tools\run_benchmark.ps1` (or `--benchmark` on the command line) plays `data/stages/benchmark.json` with the automatic gunner for 70 s and writes a JSON file: summary, a per-second timeline (fps, enemies on the field, draw calls, nodes) and every frame time in order. The fight is far heavier than any real stage: three waves with 300 drones, 18 interceptors, a carrier, the Dreadnought and more, about 115 enemies in the air at once. The turret cannot die, so whole swarms ram it, which is the worst case for effects. The same seed gives the same fight each run.
+
+```
+.\tools\run_benchmark.ps1 -Preset high -OutDir C:\temp\bench
+```
+
+Turn off any frame rate cap in the graphics driver first (see the M6 entry).
+
+### Results (reference PC, 3440×1440, Vulkan, V-Sync off)
+
+| Preset | Average fps | Median fps | 1 % low | Worst frame |
+|---|---|---|---|---|
+| Low (FSR 2 performance) | 469 | 477 | 285 | 4.8 ms |
+| Medium (FSR 2 balanced) | 424 | 443 | 261 | 5.1 ms |
+| High (FSR 2 quality) | 367 | 380 | 237 | 7.6 ms |
+| Ultra (FSR 2 native) | 257 | 260 | 204 | 5.9 ms |
+
+Target for High: at least 165 average and 120 for the 1 % lows. **Met on every preset, Ultra included**, in a fight several times heavier than stage 10.
+
+### What the pass changed, in the order it was measured
+
+Ultra, the benchmark, same PC:
+
+| Step | Average fps | 1 % low | Worst frame |
+|---|---|---|---|
+| Start of M7 | 203 | 52 | 34 ms |
+| Fire and smoke skipped for explosions at the camera | 250 | 163 | 34 ms |
+| Swarm MultiMesh, manager loop, pooling, target registry | 252 | 195 | 31 ms |
+| Idle shield not drawn, glow shader prewarmed | 257 | 204 | 5.9 ms |
+
+1. **Particles at the camera were the whole problem.** The timeline showed 250 fps with 116 enemies in the air and 50 to 80 fps a few seconds later, while the enemy count was *falling*: the drones were ramming the turret. Switching effects off one at a time found the cause: fire and smoke puffs from explosions a few metres from the camera. Their material fades them out that close, but each still covered most of the screen, hundreds at a time. Explosions within 30 m of the camera now show debris only.
+2. **Swarm drones** have no model of their own any more. One MultiMesh per model draws the whole swarm, and the enemy manager advances all members in one loop. On Low, where the CPU is the limit, the 1 % low went from 221 to 268 fps.
+3. **Pooling:** destroyed swarm drones and enemy projectiles are kept and reused after a 1.5 s rest. Big ships are still created per spawn (a handful per stage).
+4. **No group lookups in hot loops:** proximity fuses, splash damage, lock-on and beam chains read `CombatTarget.registry` instead of asking the scene tree for a new array each call. The hit-shape distance assist runs about 8 times a second per enemy instead of every frame.
+5. **The one long frame per stage** (30 to 35 ms, first seen in M6) was the renderer building the shader of shield bubbles and weak point markers the first time one was drawn. Two pin-sized ones are now drawn during the stage intro.
+6. **An idle shield is not drawn.** Since the shield became invisible until hit, its full-screen shader was running for nothing.
+
+### Checked against the list in spec section 9
+
+| Technique | State |
+|---|---|
+| Pooling: projectiles, missiles, effects | done since M1 to M6 (fixed pools, MultiMesh batches) |
+| Pooling: enemies | swarm enemies and enemy projectiles; big ships are not pooled |
+| Pooling: decals, audio players | the game has neither yet (audio is M8) |
+| Hitscan by raycast, fast projectiles by ray sweep | done since M1 and M5 |
+| Swarms as MultiMesh with a lightweight manager | done |
+| Physics layers | enemies and their projectiles are query-only areas that test against nothing |
+| LOD and visibility ranges | Godot's automatic mesh LOD is on for all imported models. No hand-set visibility ranges: enemies must stay visible out to 4 km and the placeholder models have about 100 triangles each. Particle effects have a view distance per preset. Revisit with final art |
+| No per-frame allocations in hot loops | group lookups removed; reused DamageInfo and ray query objects since M1 |
+| Caps on particle systems | per preset (`max_active_particle_systems`, `particle_density`) |
+| Benchmark mode | done |
+
+### Still open
+
+- Low on mid-range hardware (GTX 1660 / RX 6600 class) remains an estimate; it cannot be measured on this PC. Low renders at half resolution with no SSAO, reflections or volumetric fog, and the CPU side alone holds 285 fps at the 1 % low here.
+- DirectX 12 gave lower 1 % lows than Vulkan in one stage 10 run (158 against 194 fps). Not investigated.

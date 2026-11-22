@@ -2,6 +2,17 @@
 
 Updated at every merge to `main`.
 
+## M7: Performance pass (2026-11-22)
+
+- Benchmark mode: `tools\run_benchmark.ps1` or `--benchmark` plays a scripted fight with about 115 enemies at once and writes average fps, median, 1 % lows, a per-second timeline and every frame time to a JSON file.
+- Explosions right at the camera no longer draw fire and smoke over the whole screen (1 % low on Ultra in the benchmark: 52 to 163 fps from this alone).
+- Swarm drones are drawn as one MultiMesh and advanced by the enemy manager in one loop.
+- Destroyed swarm drones and enemy projectiles are pooled and reused.
+- Fuses, splash damage, lock-on and beam chains read a target registry instead of asking the scene tree for a group every call.
+- The one long frame per stage (30 to 35 ms) is gone; an idle shield is no longer drawn.
+- Result on the reference PC, benchmark at 3440×1440: Ultra 257 fps average and 204 fps 1 % low; High 367 and 237.
+- 10 new unit tests (134 in total).
+
 ## M6: Graphics pass (2026-11-22)
 
 - A frontier world built from data (`config/environments.json`): physical sky with day, dusk and night per stage, sun or moonlight with cascaded shadows, distance and volumetric fog, generated dunes and mountains, a ringed gas giant, a moon and a star field.

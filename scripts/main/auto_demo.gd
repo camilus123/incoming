@@ -47,7 +47,8 @@ var _second_left_s: float = 1.0
 var _second_script_ms: float = 0.0
 var _enemy_manager: EnemyManager
 var _frame_log_path: String = ""
-const HITCH_USEC: int = 50000
+## Frames longer than this are listed with the time they happened.
+const HITCH_USEC: int = 20000
 var _hitches: PackedStringArray = []
 var _fixed_look: Vector2 = Vector2.ZERO
 var _power_timer_s: float = 0.0
@@ -268,7 +269,7 @@ func _finish() -> void:
 			if log_file != null:
 				for frame_ms: float in _frame_times_ms:
 					log_file.store_line("%.3f" % frame_ms)
-		# Frames longer than 50 ms, as "time:duration" (the first 20).
+		# Frames longer than 20 ms, as "time:duration" (the first 20).
 		print("HITCHES count=%d %s" % [_hitches.size(), " ".join(_hitches.slice(0, 20))])
 	get_tree().quit()
 
