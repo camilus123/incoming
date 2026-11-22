@@ -43,7 +43,6 @@ var _kill_left_s: float = 0.0
 var _message: String = ""
 var _message_left_s: float = 0.0
 var _time_s: float = 0.0
-var _show_debug: bool = false
 ## Reload bar of the alternate weapon: it stays on screen, full, once the
 ## weapon is ready again, and "READY" flashes for a moment.
 var _alternate_reloading: bool = false
@@ -60,7 +59,6 @@ func _ready() -> void:
 	EventBus.shield_hit.connect(func(_amount: float, _remaining: float) -> void: _shield_flash = 1.0)
 	EventBus.power_split_changed.connect(func(_share: float) -> void: _power_pulse = 1.0)
 	EventBus.shield_broken.connect(_on_ui_message.bind("SHIELDS DOWN"))
-	_show_debug = OS.get_cmdline_user_args().has("--debug-hud")
 
 
 func _process(delta_s: float) -> void:
@@ -107,7 +105,9 @@ func _draw() -> void:
 	_draw_hull()
 	_draw_power_gauge(centre)
 	_draw_messages(centre)
-	if OS.is_debug_build() and _show_debug:
+	if Input.is_action_pressed(&"show_intel") and _stages != null and _enemies != null and not get_tree().paused:
+		_draw_intel(centre)
+	if OS.is_debug_build() and DebugMenu.show_stats:
 		_draw_debug()
 
 
@@ -309,9 +309,6 @@ func _draw_bar(rect: Rect2, fraction: float, color: Color) -> void:
 
 
 func _draw_messages(centre: Vector2) -> void:
-	if get_tree().paused:
-		_text(Vector2(centre.x, centre.y - 140.0), "PAUSED", 34, COLOR_MAIN, HORIZONTAL_ALIGNMENT_CENTER)
-		_text(Vector2(centre.x, centre.y - 108.0), "Esc to resume", 16, COLOR_DIM.lightened(0.3), HORIZONTAL_ALIGNMENT_CENTER)
 	if _message_left_s > 0.0:
 		var color: Color = COLOR_WARN
 		color.a = clampf(_message_left_s, 0.0, 1.0)
@@ -326,10 +323,52 @@ func _draw_debug() -> void:
 		"data: " + GameData.last_report.summary(),
 		_power_debug_line(),
 		_weapon_debug_line(),
-		"preset: %s   F1 hide   F3 next preset   F5 reload data" % Graphics.preset_id,
+		"preset: %s   F1 hide   F3 next preset   F4 debug menu   F5 reload data" % Graphics.preset_id,
 	]
 	for index: int in lines.size():
 		_text(Vector2(48.0, 96.0 + index * 18.0), lines[index], 13, COLOR_DIM.lightened(0.4), HORIZONTAL_ALIGNMENT_LEFT)
+
+
+## Held Tab: this stage so far, and what is in the air with its strengths.
+func _draw_intel(centre: Vector2) -> void:
+	var stats: StageStats = _stages.stats
+	var counts: Dictionary = {}
+	for enemy: Enemy in _enemies.get_enemies():
+		counts[enemy.enemy_id] = int(counts.get(enemy.enemy_id, 0)) + 1
+	var ids: Array = counts.keys()
+	ids.sort()
+	var panel: Rect2 = Rect2(centre + Vector2(-430.0, -300.0), Vector2(860.0, 250.0 + ids.size() * 26.0))
+	draw_rect(panel, Color(COLOR_PANEL, 0.85))
+	draw_rect(panel, COLOR_DIM, false, 1.0)
+	var left: float = panel.position.x + 30.0
+	var y: float = panel.position.y + 44.0
+	_text(Vector2(left, y), "STAGE %d  %s" % [_stages.stage_number, str(_stages.stage_data.get("display_name", "")).to_upper()], 22, COLOR_MAIN, HORIZONTAL_ALIGNMENT_LEFT)
+	_text(Vector2(panel.end.x - 30.0, y), str(GameState.get_difficulty().get("display_name", "")).to_upper(), 14, COLOR_DIM.lightened(0.3), HORIZONTAL_ALIGNMENT_RIGHT)
+	var facts: Array[Array] = [
+		["TIME", "%d:%02d" % [int(stats.time_s) / 60, int(stats.time_s) % 60]],
+		["KILLS", "%d" % stats.kills],
+		["ACCURACY", "%d %%" % roundi(stats.accuracy_percent())],
+		["INTERCEPTS", "%d" % stats.intercepts],
+		["BOUNTY", "%d cr" % stats.bounty],
+		["SHIELD BROKEN", "yes" if stats.shield_broken else "no"],
+	]
+	y += 40.0
+	for index: int in facts.size():
+		var x: float = left + 134.0 * index
+		_text(Vector2(x, y), facts[index][0], 11, COLOR_DIM.lightened(0.25), HORIZONTAL_ALIGNMENT_LEFT)
+		_text(Vector2(x, y + 22.0), facts[index][1], 18, COLOR_MAIN, HORIZONTAL_ALIGNMENT_LEFT)
+	y += 70.0
+	var columns: Array[Array] = [["IN THE AIR", 0.0], ["COUNT", 250.0], ["HULL", 340.0], ["ARMOUR", 440.0], ["SHIELD", 540.0], ["BOUNTY", 640.0]]
+	for column: Array in columns:
+		_text(Vector2(left + float(column[1]), y), column[0], 11, COLOR_DIM.lightened(0.25), HORIZONTAL_ALIGNMENT_LEFT)
+	if ids.is_empty():
+		_text(Vector2(left, y + 28.0), "Nothing yet.", 15, COLOR_DIM.lightened(0.3), HORIZONTAL_ALIGNMENT_LEFT)
+	for id: String in ids:
+		y += 26.0
+		var data: Dictionary = GameData.loader.get_entry("enemies", id)
+		var cells: Array = [str(data.get("display_name", id)), "%d" % counts[id], "%d" % data.get("hp", 0), "%d" % data.get("armour", 0), "%d" % data.get("shield", 0), "%d cr" % data.get("credit_bounty", 0)]
+		for index: int in cells.size():
+			_text(Vector2(left + float(columns[index][1]), y), cells[index], 15, COLOR_MAIN, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 ## Draws text anchored at its baseline; alignment is relative to `at`.
@@ -342,12 +381,6 @@ func _text(at: Vector2, text: String, font_size: int, color: Color, alignment: H
 		origin.x -= text_width
 	draw_string(_font, origin + Vector2(1.0, 1.5), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(COLOR_SHADOW, COLOR_SHADOW.a * color.a))
 	draw_string(_font, origin, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, color)
-
-
-func _unhandled_key_input(event: InputEvent) -> void:
-	var key: InputEventKey = event as InputEventKey
-	if key != null and key.pressed and not key.echo and key.keycode == KEY_F1 and OS.is_debug_build():
-		_show_debug = not _show_debug
 
 
 func _on_target_hit(_slot: StringName, killed: bool) -> void:

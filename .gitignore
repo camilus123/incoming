@@ -11,6 +11,8 @@
 # Godot-specific leftovers
 *.translation
 export_credentials.cfg
+# Written by the renderer option in the settings menu
+/override.cfg
 
 # Editor / OS noise
 .vscode/

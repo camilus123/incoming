@@ -61,7 +61,10 @@ const DEFAULTS: Dictionary = {
 	BINDINGS: {},
 }
 
-var _values: Dictionary = DEFAULTS.duplicate()
+## While true nothing is written to disk (automated tests).
+var read_only: bool = false
+
+var _values: Dictionary = DEFAULTS.duplicate(true)
 
 
 func _ready() -> void:
@@ -96,6 +99,8 @@ func load_settings() -> void:
 
 
 func save_settings() -> void:
+	if read_only:
+		return
 	var file: ConfigFile = ConfigFile.new()
 	for key: String in _values:
 		var parts: PackedStringArray = key.split("/")

@@ -31,6 +31,8 @@ func _ready() -> void:
 			wanted = argument.trim_prefix("--preset=")
 	set_preset(wanted)
 	EventBus.data_reloaded.connect(func(_report: DataReport) -> void: set_preset(preset_id))
+	UserSettings.changed.connect(_on_setting_changed)
+	apply_window_settings()
 
 
 ## Ids of all presets, in the order of the data file.
@@ -86,6 +88,25 @@ func apply() -> void:
 	RenderingServer.directional_shadow_atlas_set_size(int(SHADOW_ATLAS_SIZE.get(shadows, 4096)), true)
 	RenderingServer.directional_soft_shadow_filter_set_quality(SHADOW_FILTER.get(shadows, RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM))
 	changed.emit()
+
+
+## Fullscreen, V-Sync and the frame rate limit from the player's settings.
+## Automated runs (demo, benchmark, tests) set their own and are left alone.
+func apply_window_settings() -> void:
+	var arguments: PackedStringArray = OS.get_cmdline_user_args()
+	if DisplayServer.get_name() == "headless" or arguments.has("--auto-demo") or arguments.has("--benchmark"):
+		return
+	# A window asked for on the command line stays a window.
+	if not OS.get_cmdline_args().has("--windowed") and not OS.get_cmdline_args().has("-w"):
+		var fullscreen: bool = UserSettings.get_value(UserSettings.FULLSCREEN)
+		get_window().mode = Window.MODE_FULLSCREEN if fullscreen else Window.MODE_WINDOWED
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if bool(UserSettings.get_value(UserSettings.VSYNC)) else DisplayServer.VSYNC_DISABLED)
+	Engine.max_fps = maxi(0, int(UserSettings.get_value(UserSettings.MAX_FPS)))
+
+
+func _on_setting_changed(key: String) -> void:
+	if key in [UserSettings.FULLSCREEN, UserSettings.VSYNC, UserSettings.MAX_FPS]:
+		apply_window_settings()
 
 
 func _presets() -> Dictionary:

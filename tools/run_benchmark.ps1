@@ -11,6 +11,8 @@ param(
     [string]$OutDir = '',
     [string]$Driver = '',
     [switch]$Windowed,
+    # Automated runs are silent unless this is given.
+    [switch]$Sound,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$GameArgs = @()
 )
@@ -21,6 +23,7 @@ if (-not $Windowed) { $godotArgs += '--fullscreen' }
 $godotArgs += @('++', '--benchmark')
 if ($Preset) { $godotArgs += "--preset=$Preset" }
 if ($OutDir) { $godotArgs += "--benchmark-out=$OutDir" }
+if (-not $Sound) { $godotArgs += '--mute' }
 $godotArgs += @($GameArgs | Where-Object { $_ -ne '++' })
 
 & (Join-Path $PSScriptRoot 'godot.ps1') @godotArgs

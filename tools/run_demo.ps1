@@ -8,6 +8,8 @@ param(
     [int]$Seconds = 20,
     [string]$ScreenshotDir = '',
     [switch]$Windowed,
+    # Automated runs are silent unless this is given.
+    [switch]$Sound,
     [int]$Stage = 1,
     [switch]$God,
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -19,6 +21,7 @@ if (-not $Windowed) { $godotArgs += '--fullscreen' }
 $godotArgs += @('++', '--auto-demo', "--demo-seconds=$Seconds", "--stage=$Stage")
 if ($God) { $godotArgs += '--god' }
 if ($ScreenshotDir) { $godotArgs += "--screenshot-dir=$ScreenshotDir" }
+if (-not $Sound) { $godotArgs += '--mute' }
 $godotArgs += @($GameArgs | Where-Object { $_ -ne '++' })
 
 & (Join-Path $PSScriptRoot 'godot.ps1') @godotArgs
