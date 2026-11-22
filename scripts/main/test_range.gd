@@ -2,6 +2,8 @@ extends PlayScene
 ## Test range: the turret and static target dummies placed from
 ## data/config/test_range.json. A debug scene for trying weapons; run it with
 ##   .\tools\godot.ps1 res://scenes/main/test_range.tscn
+## and pick any weapons with
+##   .\tools\godot.ps1 res://scenes/main/test_range.tscn ++ --primary=railgun --alternate=flak_barrage
 
 @onready var _targets: Node3D = $Targets
 
@@ -10,6 +12,11 @@ func _ready() -> void:
 	# The range is a sandbox: a fresh, unsaved run with the starting loadout.
 	GameState.persistent = false
 	GameState.new_run()
+	# Any weapon can be tried here: ++ --primary=chain_gun --alternate=emp_burst
+	for argument: String in OS.get_cmdline_user_args():
+		for slot: String in GameState.SLOTS:
+			if argument.begins_with("--%s=" % slot):
+				GameState.loadout[slot] = argument.trim_prefix("--%s=" % slot)
 	($Turret as Turret).apply_player_state()
 	super._ready()
 	_spawn_dummies()

@@ -13,11 +13,12 @@ extends Node
 ##   --demo-speed=X          run the game X times faster (for quick checks, not for fps)
 ##   --demo-power            step the power split every 2 s and print its effects
 ##   --demo-look=YAW,PITCH   hold this aim instead of tracking targets (for screenshots)
+##   --demo-shot-times=A,B   when to take screenshots, in seconds
 
 const WARMUP_S: float = 2.0
 const AIM_SPEED_DEG_S: float = 160.0
 const DWELL_S: float = 1.3
-const SCREENSHOT_TIMES_S: PackedFloat32Array = [3.0, 6.5, 10.0]
+var SCREENSHOT_TIMES_S: PackedFloat32Array = [3.0, 6.5, 10.0]
 
 var turret: Turret
 
@@ -32,6 +33,8 @@ var _last_tick_usec: int = 0
 var _finished: bool = false
 var _stop_after_stage: int = 0
 var _cycle_power: bool = false
+var _hits: Dictionary = {}   # slot -> hits
+var _kills: Dictionary = {}  # slot -> kills
 var _has_fixed_look: bool = false
 var _fixed_look: Vector2 = Vector2.ZERO
 var _power_timer_s: float = 0.0
@@ -44,6 +47,10 @@ func _ready() -> void:
 			_duration_s = argument.trim_prefix("--demo-seconds=").to_float()
 		elif argument.begins_with("--demo-speed="):
 			Engine.time_scale = maxf(0.1, argument.trim_prefix("--demo-speed=").to_float())
+		elif argument.begins_with("--demo-shot-times="):
+			SCREENSHOT_TIMES_S = PackedFloat32Array()
+			for value: String in argument.trim_prefix("--demo-shot-times=").split(","):
+				SCREENSHOT_TIMES_S.append(value.to_float())
 		elif argument.begins_with("--demo-look="):
 			var angles: PackedStringArray = argument.trim_prefix("--demo-look=").split(",")
 			if angles.size() == 2:
@@ -59,6 +66,10 @@ func _ready() -> void:
 	_last_tick_usec = Time.get_ticks_usec()
 	EventBus.stage_completed.connect(_on_stage_ended.bind("COMPLETE"))
 	_cycle_power = OS.get_cmdline_user_args().has("--demo-power")
+	EventBus.target_hit.connect(func(slot: StringName, killed: bool) -> void:
+		_hits[slot] = int(_hits.get(slot, 0)) + 1
+		if killed:
+			_kills[slot] = int(_kills.get(slot, 0)) + 1)
 	if OS.get_cmdline_user_args().has("--demo-log-damage"):
 		EventBus.hull_damaged.connect(func(amount: float, remaining: float) -> void: print("DAMAGE t=%.1f amount=%.1f hull=%.0f" % [_time_s, amount, remaining]))
 	EventBus.turret_destroyed.connect(_on_stage_ended.bind(0, "GAME_OVER"))
@@ -105,12 +116,21 @@ func _track_targets(delta_s: float) -> void:
 	if target == null:
 		turret.set_trigger(Turret.SLOT_PRIMARY, false)
 		return
-	var wanted: Vector2 = turret.get_aim_angles_to(target.get_aim_point())
+	# Projectile weapons need lead: aim where the target will be.
+	var aim_point: Vector3 = target.get_aim_point()
+	var primary: Weapon = turret.get_weapon(Turret.SLOT_PRIMARY)
+	if primary != null and primary.data.has("projectile"):
+		var speed: float = (primary.data["projectile"] as Dictionary).get("speed_mps", 300.0)
+		var origin: Vector3 = turret.get_aim_transform().origin
+		for step: int in 2:
+			aim_point = target.get_aim_point() + target.velocity * (origin.distance_to(aim_point) / speed)
+	var wanted: Vector2 = turret.get_aim_angles_to(aim_point)
 	var step: float = AIM_SPEED_DEG_S * delta_s
 	var yaw_error: float = wanted.x - turret.aim.yaw_deg
 	var pitch_error: float = wanted.y - turret.aim.pitch_deg
 	turret.aim.apply_input(clampf(yaw_error, -step, step), clampf(pitch_error, -step, step))
-	turret.set_trigger(Turret.SLOT_PRIMARY, absf(yaw_error) < 0.3 and absf(pitch_error) < 0.3)
+	# The trigger is let go briefly every 1.5 s so charge weapons get to fire.
+	turret.set_trigger(Turret.SLOT_PRIMARY, absf(yaw_error) < 0.3 and absf(pitch_error) < 0.3 and fmod(_time_s, 1.5) < 1.3)
 
 
 ## In a stage: the closest live threat inside the aim arc. On the test range
@@ -129,6 +149,8 @@ func _pick_target() -> CombatTarget:
 	var origin: Vector3 = turret.get_aim_transform().origin
 	var best: CombatTarget = null
 	var best_distance: float = INF
+	# Anything within striking range comes first, then weak points, then the rest.
+	const URGENT_M: float = 1000.0
 	for node: Node in targets:
 		var target: CombatTarget = node as CombatTarget
 		if target == null or not target.is_alive():
@@ -136,7 +158,9 @@ func _pick_target() -> CombatTarget:
 		var angles: Vector2 = turret.get_aim_angles_to(target.get_aim_point())
 		if angles.x < turret.aim.yaw_min_deg or angles.x > turret.aim.yaw_max_deg or angles.y < turret.aim.pitch_min_deg or angles.y > turret.aim.pitch_max_deg:
 			continue
-		var distance: float = origin.distance_squared_to(target.get_aim_point())
+		var distance: float = origin.distance_to(target.get_aim_point())
+		if distance > URGENT_M:
+			distance += 100000.0 if not target is WeakPoint else 50000.0
 		if distance < best_distance:
 			best_distance = distance
 			best = target
@@ -188,6 +212,9 @@ func _save_screenshot(file_name: String) -> void:
 func _finish() -> void:
 	_finished = true
 	await _save_screenshot("demo_edge")
+	print("WEAPONS primary_hits=%d primary_kills=%d alternate_hits=%d alternate_kills=%d" % [
+		int(_hits.get(Turret.SLOT_PRIMARY, 0)), int(_kills.get(Turret.SLOT_PRIMARY, 0)),
+		int(_hits.get(Turret.SLOT_ALTERNATE, 0)), int(_kills.get(Turret.SLOT_ALTERNATE, 0))])
 	var window_size: Vector2i = get_tree().root.size
 	if _frame_times_ms.is_empty():
 		print("PERF no frames recorded")

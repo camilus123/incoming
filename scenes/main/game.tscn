@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/main/game.gd" id="1_game"]
 [ext_resource type="PackedScene" path="res://scenes/environment/frontier_basic.tscn" id="2_env"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/director/stage_manager.gd" id="7_stages"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop.tscn" id="9_shop"]
+[ext_resource type="Script" path="res://scripts/weapons/projectile_system.gd" id="99_projectiles"]
 
 [node name="Game" type="Node3D"]
 script = ExtResource("1_game")
@@ -17,6 +18,9 @@ script = ExtResource("1_game")
 
 [node name="CombatFx" type="Node3D" parent="."]
 script = ExtResource("3_fx")
+
+[node name="ProjectileSystem" type="Node3D" parent="."]
+script = ExtResource("99_projectiles")
 
 [node name="MissileSystem" type="Node3D" parent="."]
 script = ExtResource("4_missiles")

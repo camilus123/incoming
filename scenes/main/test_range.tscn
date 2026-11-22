@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main/test_range.gd" id="1_range"]
 [ext_resource type="PackedScene" path="res://scenes/environment/frontier_basic.tscn" id="2_env"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/weapons/missile_system.gd" id="4_missiles"]
 [ext_resource type="Script" path="res://scripts/turret/turret.gd" id="5_turret"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/weapons/projectile_system.gd" id="99_projectiles"]
 
 [node name="TestRange" type="Node3D"]
 script = ExtResource("1_range")
@@ -14,6 +15,9 @@ script = ExtResource("1_range")
 
 [node name="CombatFx" type="Node3D" parent="."]
 script = ExtResource("3_fx")
+
+[node name="ProjectileSystem" type="Node3D" parent="."]
+script = ExtResource("99_projectiles")
 
 [node name="MissileSystem" type="Node3D" parent="."]
 script = ExtResource("4_missiles")

@@ -80,8 +80,10 @@ func _draw() -> void:
 	_draw_crosshair(centre, primary)
 	if primary != null:
 		_draw_heat_arc(centre, primary, -1.0)
+		_draw_charge(centre, primary, 34.0)
 	if alternate != null:
 		_draw_heat_arc(centre, alternate, 1.0)
+		_draw_charge(centre, alternate, 40.0)
 		_draw_alternate_status(centre, alternate)
 		_draw_locks(alternate)
 	_draw_hit_markers(centre)
@@ -341,9 +343,14 @@ func _draw_threats(centre: Vector2) -> void:
 	var flags: Dictionary = GameState.get_hud_flags()
 	_show_health_bars = flags.get("enemy_health_bars", false)
 	var warn_projectiles: bool = flags.get("projectile_warnings", false)
+	var lead_speed: float = _lead_speed() if flags.get("lead_indicators", false) else 0.0
 	for enemy: Enemy in _enemies.get_enemies():
 		if enemy.is_alive():
 			arrows += _draw_threat(camera, view, screen, centre, enemy, COLOR_WARN, arrows)
+			for weak_point: WeakPoint in enemy.get_weak_points():
+				_draw_weak_point(camera, screen, weak_point)
+			if lead_speed > 0.0:
+				_draw_lead(camera, screen, enemy, lead_speed)
 	var incoming: bool = false
 	for projectile: EnemyProjectile in _enemies.get_projectiles():
 		if projectile.is_alive():
@@ -429,3 +436,52 @@ func _weapon_debug_line() -> String:
 	var damage: float = float(weapon.data.get("damage", 0.0)) * weapon.get_damage_scale()
 	var rate: float = float(weapon.data.get("fire_rate", 0.0)) * weapon.get_rate_scale()
 	return "primary: %.1f dmg x %.1f /s = %.0f dps   cooling x%.2f" % [damage, rate, damage * rate, weapon.get_rate_scale()]
+
+## Charge ring around the crosshair: railgun charge, beam ramp, barrel spin.
+func _draw_charge(centre: Vector2, weapon: Weapon, radius: float) -> void:
+	var charge: float = weapon.get_charge_fraction()
+	if charge <= 0.01:
+		return
+	var color: Color = COLOR_WEAPON if charge < 1.0 else Color.WHITE
+	draw_arc(centre, radius, -PI * 0.5, -PI * 0.5 + TAU * charge, 40, color, 2.5, true)
+
+
+## A white diamond on each weak point of a large enemy.
+func _draw_weak_point(camera: Camera3D, screen: Rect2, weak_point: WeakPoint) -> void:
+	if not is_instance_valid(weak_point) or not weak_point.is_alive() or camera.is_position_behind(weak_point.global_position):
+		return
+	var point: Vector2 = camera.unproject_position(weak_point.global_position)
+	if not screen.has_point(point):
+		return
+	for corner: int in 4:
+		draw_line(point + Vector2.UP.rotated(corner * PI * 0.5) * 9.0, point + Vector2.UP.rotated((corner + 1) * PI * 0.5) * 9.0, Color(1, 1, 1, 0.9), 2.0, true)
+	draw_circle(point, 2.0, Color(1, 1, 1, 0.9))
+
+
+## Muzzle speed of the primary weapon if it fires projectiles with travel
+## time, else 0 (instant-hit weapons need no lead).
+func _lead_speed() -> float:
+	var weapon: Weapon = _turret.get_weapon(Turret.SLOT_PRIMARY)
+	if weapon == null or not weapon.data.has("projectile"):
+		return 0.0
+	return (weapon.data["projectile"] as Dictionary).get("speed_mps", 0.0)
+
+
+## Targeting Computer: a small circle where to aim so a projectile meets the
+## enemy, joined to the enemy by a thin line.
+func _draw_lead(camera: Camera3D, screen: Rect2, enemy: Enemy, projectile_speed: float) -> void:
+	if enemy.velocity.length_squared() < 4.0:
+		return
+	var origin: Vector3 = camera.global_position
+	var lead_point: Vector3 = enemy.global_position
+	# Two refinement steps are plenty at these speeds.
+	for step: int in 2:
+		lead_point = enemy.global_position + enemy.velocity * (origin.distance_to(lead_point) / projectile_speed)
+	if camera.is_position_behind(lead_point) or camera.is_position_behind(enemy.global_position):
+		return
+	var lead: Vector2 = camera.unproject_position(lead_point)
+	var at: Vector2 = camera.unproject_position(enemy.global_position)
+	if not screen.has_point(lead) or lead.distance_to(at) < 6.0:
+		return
+	draw_line(at, lead, Color(COLOR_MAIN, 0.4), 1.0, true)
+	draw_arc(lead, 6.0, 0.0, TAU, 16, COLOR_MAIN, 1.5, true)
