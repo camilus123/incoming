@@ -14,6 +14,7 @@ var _projectiles: Array[EnemyProjectile] = []
 var _turret: Turret
 var _fx: CombatFx
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _glow_material: ShaderMaterial
 
 
 func _enter_tree() -> void:
@@ -23,16 +24,19 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	_rng.randomize()
 	_fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
+	_glow_material = ShaderMaterial.new()
+	_glow_material.shader = GameData.assets.load_asset("vfx.shader.glow_unlit") as Shader
 
 
 ## Spawns one enemy of the given type. Returns null if the type is unknown.
-func spawn_enemy(enemy_id: String, at: Vector3, wave_index: int = 0) -> Enemy:
+## `scale` may hold `hp` and `damage` multipliers (boss scaling).
+func spawn_enemy(enemy_id: String, at: Vector3, wave_index: int = 0, scale: Dictionary = {}) -> Enemy:
 	var enemy_data: Dictionary = GameData.loader.get_entry("enemies", enemy_id)
 	if enemy_data.is_empty():
 		push_warning("EnemyManager: unknown enemy \"%s\"" % enemy_id)
 		return null
 	var enemy: Enemy = Enemy.new()
-	enemy.setup(enemy_data, self, _get_turret(), difficulty)
+	enemy.setup(enemy_data, self, _get_turret(), difficulty, scale)
 	enemy.wave_index = wave_index
 	add_child(enemy)
 	enemy.global_position = at
@@ -80,6 +84,31 @@ func get_projectiles() -> Array[EnemyProjectile]:
 
 func get_fx() -> CombatFx:
 	return _fx
+
+
+## A faint bubble shown around an enemy that is covered by a shield projector.
+func make_shield_bubble(radius_m: float) -> MeshInstance3D:
+	return _make_glow_sphere(radius_m, Color(0.4, 0.8, 1.0, 0.12), 2.0)
+
+
+## A bright core that marks a weak point.
+func make_weak_point_marker(radius_m: float) -> MeshInstance3D:
+	return _make_glow_sphere(radius_m, Color(1.0, 0.85, 0.3, 0.8), 3.0)
+
+
+func _make_glow_sphere(radius_m: float, tint: Color, intensity: float) -> MeshInstance3D:
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = radius_m
+	sphere.height = radius_m * 2.0
+	sphere.radial_segments = 16
+	sphere.rings = 8
+	sphere.material = _glow_material
+	var instance: MeshInstance3D = MeshInstance3D.new()
+	instance.mesh = sphere
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	instance.set_instance_shader_parameter(&"tint", tint)
+	instance.set_instance_shader_parameter(&"intensity", intensity)
+	return instance
 
 
 ## A new spawn point in front of the turret for an enemy starting another pass.

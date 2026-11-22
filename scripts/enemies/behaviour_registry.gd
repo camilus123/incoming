@@ -8,6 +8,11 @@ const MODULES: Dictionary = {
 	"approach_kamikaze": preload("res://scripts/enemies/behaviours/approach_kamikaze.gd"),
 	"strafe": preload("res://scripts/enemies/behaviours/strafe.gd"),
 	"level_pass": preload("res://scripts/enemies/behaviours/level_pass.gd"),
+	"hover_shoot": preload("res://scripts/enemies/behaviours/hover_shoot.gd"),
+	"orbit_drop": preload("res://scripts/enemies/behaviours/orbit_drop.gd"),
+	"spawn_children": preload("res://scripts/enemies/behaviours/spawn_children.gd"),
+	"shield_allies": preload("res://scripts/enemies/behaviours/shield_allies.gd"),
+	"phases": preload("res://scripts/enemies/behaviours/phases.gd"),
 }
 
 

@@ -77,7 +77,7 @@ func get_state_time() -> float:
 func get_stage_data(number: int) -> Dictionary:
 	var data: Dictionary = GameData.loader.get_entry("stages", "stage_%02d" % number)
 	if data.is_empty():
-		data = WaveDirector.procedural_stage(number, GameData.loader.get_config("director"), GameData.loader.get_category("enemies"))
+		data = WaveDirector.procedural_stage(number, GameData.loader.get_config("director"), GameData.loader.get_category("enemies"), GameData.loader.get_category("stages").size())
 	return data
 
 
@@ -168,13 +168,34 @@ func _retry_from_save() -> void:
 
 
 func _buy_everything_affordable() -> void:
+	# Weapons first, then core systems, then shields: a build that can kill things.
+	var order: Array[String] = GameState.tree.get_node_ids().duplicate()
+	var priority: Callable = func(id: String) -> int:
+		var branch: String = GameState.tree.get_node(id).get("branch", "")
+		return 0 if branch.begins_with("primary") else (1 if branch == "alternate" else (2 if branch == "core" else 3))
+	order.sort_custom(func(a: String, b: String) -> bool: return priority.call(a) < priority.call(b))
 	var bought: bool = true
 	while bought:
 		bought = false
-		for id: String in GameState.tree.get_node_ids():
+		for id: String in order:
 			if GameState.buy(id):
 				bought = true
 	GameState.repair_hull()
+	# Use what was bought: the most expensive owned weapon in each slot.
+	for slot: String in GameState.SLOTS:
+		var best: String = ""
+		var best_cost: int = -1
+		for id: String in GameState.purchased:
+			for effect: Dictionary in GameState.tree.get_node(id).get("effects", []):
+				var weapon_id: String = effect.get("unlock", "")
+				# The bot cannot judge lead or time a charge the way a player can, so it
+				# sticks to weapons it can simply hold on target.
+				var is_slow: bool = slot == "primary" and GameData.loader.get_entry("weapons", weapon_id).get("archetype", "") in ["projectile", "airburst", "charge_pierce"]
+				if GameState.can_equip(slot, weapon_id) and not is_slow and GameState.tree.get_cost(id) > best_cost:
+					best = weapon_id
+					best_cost = GameState.tree.get_cost(id)
+		if not best.is_empty():
+			GameState.equip(slot, best)
 
 
 func _update_waves(delta_s: float) -> void:
@@ -188,7 +209,7 @@ func _update_waves(delta_s: float) -> void:
 	_spawn_clock_s += delta_s
 	while not _spawn_queue.is_empty() and float(_spawn_queue[0]["time_s"]) <= _spawn_clock_s:
 		var entry: Dictionary = _spawn_queue.pop_front()
-		_enemies.spawn_enemy(entry["enemy"], entry["position"], wave_index)
+		_enemies.spawn_enemy(entry["enemy"], entry["position"], wave_index, entry["scale"])
 	if not _spawn_queue.is_empty():
 		return
 
@@ -218,8 +239,15 @@ func _begin_wave() -> void:
 	var spread_m: float = _director.get("group_spread_m", 70.0)
 	var min_altitude_m: float = _director.get("min_spawn_altitude_m", 40.0)
 	var time_s: float = 0.0
+	var stage_scale: Dictionary = stage_data.get("enemy_scale", {})
 	for group: Dictionary in WaveDirector.resolve_wave(wave, stage_number, _stage_budget, enemies, _rng):
 		var enemy: Dictionary = enemies[group["enemy"]]
+		# A group's own scale (bosses) multiplies with the stage's (endless mode).
+		var group_scale: Dictionary = group.get("scale", {})
+		var scale: Dictionary = {
+			"hp": float(stage_scale.get("hp", 1.0)) * float(group_scale.get("hp", 1.0)),
+			"damage": float(stage_scale.get("damage", 1.0)) * float(group_scale.get("damage", 1.0)),
+		}
 		var region: Dictionary = WaveDirector.spawn_region(group, stage_data, enemy, _director)
 		var point: Vector3 = WaveDirector.random_point(region, _rng)
 		var centre: Vector3 = origin + _turret.global_transform.basis * TurretAim.direction_from(point.x, point.y) * point.z
@@ -227,7 +255,7 @@ func _begin_wave() -> void:
 			var offset: Vector3 = Vector3(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-0.5, 0.5), _rng.randf_range(-1.0, 1.0)) * spread_m
 			var position: Vector3 = centre + (offset if int(group["count"]) > 1 else Vector3.ZERO)
 			position.y = maxf(position.y, min_altitude_m)
-			_spawn_queue.append({"enemy": group["enemy"], "position": position, "time_s": time_s})
+			_spawn_queue.append({"enemy": group["enemy"], "position": position, "time_s": time_s, "scale": scale})
 			time_s += interval_s
 	_wave_spawned_count = _spawn_queue.size()
 	EventBus.wave_started.emit(stage_number, wave_index + 1)

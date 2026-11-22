@@ -1,11 +1,15 @@
 class_name Enemy
 extends CombatTarget
-## One enemy craft. Its stats, behaviours and attacks all come from its data
-## file (data/enemies/*.json); this class only runs them.
+## One enemy craft. Its stats, behaviours, attacks, hit shapes and weak points
+## all come from its data file (data/enemies/*.json); this class only runs them.
 ##
 ## Movement: behaviour modules set `velocity`, the enemy moves and faces the
-## way it flies. Attacks: a behaviour calls `try_attack(type)`; multi-shot
-## attacks are then played out over time here.
+## way it flies (or the turret, if a module asks for that). Attacks: a
+## behaviour calls `try_attack()`; multi-shot attacks are played out over time
+## here. Weak points are separate targets attached to the enemy.
+
+## Enemy beams and bolts are drawn up to this distance from the turret.
+const IMPACT_STANDOFF_M: float = 13.0
 
 var data: Dictionary = {}
 var enemy_id: String = ""
@@ -13,25 +17,40 @@ var wave_index: int = 0
 var speed_mps: float = 0.0
 ## True while the enemy is out of the fight between two passes.
 var away: bool = false
-## Multiplier on all damage this enemy deals (difficulty).
+## Multiplier on all damage this enemy deals (difficulty, boss scaling).
 var damage_multiplier: float = 1.0
+## Behaviour modules that launch other enemies check this (boss phases, hangars).
+var spawn_enabled: bool = true
+## Hovering craft keep their nose on the turret instead of their flight path.
+var face_turret: bool = false
+## Capital ships turn slowly on the spot, so every side (and every weak
+## point) faces the turret sooner or later. Degrees per second; 0 = off.
+var rotate_deg_s: float = 0.0
 
 var _manager: EnemyManager
 var _turret: Turret
 var _behaviours: Array[EnemyBehaviour] = []
 var _behaviour_params: Array[Dictionary] = []
 var _visual: Node3D
-var _hurtbox: Hurtbox
+var _hurtboxes: Array[Hurtbox] = []
+var _weak_points: Array[WeakPoint] = []
 var _hardpoint: Node3D
 var _cooldowns: PackedFloat32Array = []
+var _disabled_attacks: Dictionary = {}  # attack id -> true
 var _sequence_attack: Dictionary = {}
 var _sequence_left: int = 0
 var _sequence_timer_s: float = 0.0
 var _stagger_left_s: float = 0.0
+var _base_max_shield: float = 0.0
+var _granted_shield_left_s: float = 0.0
+var _granted_regen_per_s: float = 0.0
+var _shield_bubble: MeshInstance3D
+var _rotation_rad: float = 0.0
 
 
 ## Builds the enemy from its data. Called once, before it enters the tree.
-func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, difficulty: Dictionary) -> void:
+## `scale` may hold `hp` and `damage` multipliers (boss scaling in endless mode).
+func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, difficulty: Dictionary, scale: Dictionary = {}) -> void:
 	data = enemy_data
 	enemy_id = enemy_data["id"]
 	name = enemy_id
@@ -39,20 +58,44 @@ func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, diffic
 	_turret = turret
 	speed_mps = enemy_data["speed_mps"]
 	target_radius_m = enemy_data.get("hitbox_radius_m", 2.0)
-	damage_multiplier = difficulty.get("enemy_damage_mult", 1.0)
+	damage_multiplier = float(difficulty.get("enemy_damage_mult", 1.0)) * float(scale.get("damage", 1.0))
+	spawn_enabled = enemy_data.get("spawn_enabled", true)
 	stats = TargetStats.from_data(enemy_data)
-	stats.max_hp *= float(difficulty.get("enemy_hp_mult", 1.0))
+	var hp_scale: float = float(difficulty.get("enemy_hp_mult", 1.0)) * float(scale.get("hp", 1.0))
+	stats.max_hp *= hp_scale
 	stats.hp = stats.max_hp
+	stats.max_shield *= float(scale.get("hp", 1.0))
+	stats.shield = stats.max_shield
+	_base_max_shield = stats.max_shield
 
 	var scene: PackedScene = GameData.assets.load_asset(enemy_data.get("model", "")) as PackedScene
 	_visual = scene.instantiate() if scene != null else _fallback_visual()
 	_visual.scale = Vector3.ONE * float(enemy_data.get("model_scale", 1.0))
 	add_child(_visual)
 	_hardpoint = _visual.find_child("Hardpoint_0", true, false) as Node3D
-	_hurtbox = Hurtbox.create_sphere(self, target_radius_m)
-	add_child(_hurtbox)
 
-	_cooldowns.resize((enemy_data.get("attacks", []) as Array).size())
+	# Hit shapes: one sphere by default, or the list in "hitboxes" for big ships.
+	var hitboxes: Array = enemy_data.get("hitboxes", [])
+	if hitboxes.is_empty():
+		_add_hurtbox(Vector3.ZERO, target_radius_m)
+	for hitbox: Dictionary in hitboxes:
+		var offset: Array = hitbox.get("offset", [0.0, 0.0, 0.0])
+		_add_hurtbox(Vector3(offset[0], offset[1], offset[2]), hitbox.get("radius_m", target_radius_m))
+
+	for weak_point_data: Dictionary in enemy_data.get("weak_points", []):
+		var weak_point: WeakPoint = WeakPoint.new()
+		weak_point.setup(weak_point_data, self, hp_scale)
+		add_child(weak_point)
+		var socket: Node3D = _visual.find_child(str(weak_point_data.get("socket", "")), true, false) as Node3D
+		var offset: Array = weak_point_data.get("offset", [0.0, 0.0, 0.0])
+		weak_point.position = socket.position * _visual.scale.x if socket != null else Vector3(offset[0], offset[1], offset[2])
+		_weak_points.append(weak_point)
+
+	var attacks: Array = enemy_data.get("attacks", [])
+	_cooldowns.resize(attacks.size())
+	for attack: Dictionary in attacks:
+		if not attack.get("enabled", true):
+			_disabled_attacks[attack["id"]] = true
 	for behaviour_id: String in enemy_data.get("behaviours", []):
 		var behaviour_data: Dictionary = GameData.loader.get_entry("behaviours", behaviour_id)
 		var behaviour: EnemyBehaviour = BehaviourRegistry.create(behaviour_data) if not behaviour_data.is_empty() else null
@@ -71,6 +114,7 @@ func _process(delta_s: float) -> void:
 	super._process(delta_s)
 	if stats.is_dead():
 		return
+	_update_granted_shield(delta_s)
 	for index: int in _cooldowns.size():
 		_cooldowns[index] = maxf(0.0, _cooldowns[index] - delta_s)
 	if _stagger_left_s > 0.0:
@@ -84,12 +128,19 @@ func _process(delta_s: float) -> void:
 		if not is_inside_tree() or is_queued_for_deletion():
 			return
 	_update_attack_sequence(delta_s)
-	_hurtbox.apply_distance_assist(global_position.distance_to(get_turret_point()))
-	if velocity.length_squared() > 0.01:
-		global_position += velocity * delta_s
-		var direction: Vector3 = velocity.normalized()
-		var up: Vector3 = Vector3.UP if absf(direction.y) < 0.99 else Vector3.RIGHT
-		global_transform = Transform3D(Basis.looking_at(direction, up), global_position)
+	var distance: float = global_position.distance_to(get_turret_point())
+	for hurtbox: Hurtbox in _hurtboxes:
+		hurtbox.apply_distance_assist(distance)
+	global_position += velocity * delta_s
+	if rotate_deg_s != 0.0:
+		_rotation_rad += deg_to_rad(rotate_deg_s) * delta_s
+		global_transform = Transform3D(Basis(Vector3.UP, _rotation_rad), global_position)
+		return
+	var facing: Vector3 = (get_turret_point() - global_position) if face_turret else velocity
+	if facing.length_squared() > 0.01:
+		facing = facing.normalized()
+		var up: Vector3 = Vector3.UP if absf(facing.y) < 0.99 else Vector3.RIGHT
+		global_transform = Transform3D(Basis.looking_at(facing, up), global_position)
 
 
 func is_alive() -> bool:
@@ -97,7 +148,21 @@ func is_alive() -> bool:
 
 
 func get_hit_radius() -> float:
-	return _hurtbox.radius_m
+	return _hurtboxes[0].radius_m if not _hurtboxes.is_empty() else target_radius_m
+
+
+## True if the enemy's data lists this tag (e.g. "drone" for EMP stuns).
+func has_tag(tag: String) -> bool:
+	return (data.get("tags", []) as Array).has(tag)
+
+
+## The enemy's weak points that are still intact.
+func get_weak_points() -> Array[WeakPoint]:
+	return _weak_points
+
+
+func get_manager() -> EnemyManager:
+	return _manager
 
 
 ## The point on the turret that enemies fly at and shoot at.
@@ -123,23 +188,23 @@ func steer_towards(point: Vector3, delta_s: float) -> void:
 	velocity = current * speed_mps
 
 
-## Starts the first attack of the given type whose cooldown has run out.
-## Returns true if an attack started.
+## Starts the first enabled attack of the given type whose cooldown has run
+## out. Returns true if an attack started.
 func try_attack(attack_type: String) -> bool:
-	if _sequence_left > 0:
-		return false
-	var attacks: Array = data.get("attacks", [])
-	for index: int in attacks.size():
-		var attack: Dictionary = attacks[index]
-		if attack["type"] != attack_type or _cooldowns[index] > 0.0:
-			continue
-		_cooldowns[index] = attack.get("cooldown_s", 1.0)
-		_sequence_attack = attack
-		_sequence_left = attack.get("count", 1)
-		_sequence_timer_s = 0.0
-		_update_attack_sequence(0.0)
-		return true
-	return false
+	return _try_attack_where(func(attack: Dictionary) -> bool: return attack["type"] == attack_type)
+
+
+## Starts the attack with the given id if it is enabled and ready.
+func try_attack_id(attack_id: String) -> bool:
+	return _try_attack_where(func(attack: Dictionary) -> bool: return attack["id"] == attack_id)
+
+
+## Switches an attack on or off (weak points and boss phases use this).
+func set_attack_enabled(attack_id: String, enabled: bool) -> void:
+	if enabled:
+		_disabled_attacks.erase(attack_id)
+	else:
+		_disabled_attacks[attack_id] = true
 
 
 ## True while a multi-shot attack is still playing out.
@@ -155,17 +220,48 @@ func get_attack_range(attack_type: String) -> float:
 	return 0.0
 
 
-## Knocks the enemy out of control for a while (Phase Pulse, later EMP).
+## Knocks the enemy out of control for a while (Phase Pulse, EMP).
 func stagger(seconds: float) -> void:
 	_stagger_left_s = maxf(_stagger_left_s, seconds)
 	_sequence_left = 0
+
+
+## A nearby shield projector covers this enemy: its shield is topped up to at
+## least `amount` and regenerates while the cover lasts. Must be renewed.
+func grant_shield(amount: float, regen_per_s: float, duration_s: float) -> void:
+	if _granted_shield_left_s <= 0.0 and stats.shield < amount:
+		stats.shield = amount
+	_granted_shield_left_s = duration_s
+	_granted_regen_per_s = regen_per_s
+	stats.max_shield = maxf(_base_max_shield, amount)
+
+
+## Removes the enemy's own shield for good (its generators were destroyed).
+func disable_shield() -> void:
+	_base_max_shield = 0.0
+	stats.max_shield = 0.0
+	stats.shield = 0.0
+	stats.shield_regen_per_s = 0.0
+
+
+## Flares: returns true if a missile aimed at this enemy loses its lock.
+func try_flare() -> bool:
+	var chance: float = (data.get("countermeasures", {}) as Dictionary).get("flare_chance", 0.0)
+	if chance <= 0.0 or randf() >= chance:
+		return false
+	var fx: CombatFx = _manager.get_fx()
+	if fx != null:
+		for flare: int in 3:
+			fx.flash(global_position + Vector3(randf_range(-12.0, 12.0), randf_range(-12.0, 4.0), randf_range(-12.0, 12.0)), 0.5, 3.0, Color(1.0, 0.9, 0.6), 0.6, 6.0)
+	return true
 
 
 ## Takes the enemy out of the fight (hidden, cannot be hit) or brings it back.
 func set_away(is_away: bool) -> void:
 	away = is_away
 	visible = not is_away
-	_hurtbox.set_enabled(not is_away)
+	for hurtbox: Hurtbox in _hurtboxes:
+		hurtbox.set_enabled(not is_away)
 
 
 ## Puts the enemy at a fresh spawn point in front and restarts its behaviours.
@@ -183,11 +279,64 @@ func self_destruct() -> void:
 	queue_free()
 
 
+## Called by a weak point when it is destroyed: applies its own effect and,
+## if it was the last of its group, the group's effect.
+func on_weak_point_destroyed(weak_point: WeakPoint) -> void:
+	_weak_points.erase(weak_point)
+	_apply_weak_point_effect(weak_point.data.get("effect", {}))
+	var group: String = weak_point.data.get("group", "")
+	if group.is_empty():
+		return
+	for other: WeakPoint in _weak_points:
+		if other.data.get("group", "") == group:
+			return
+	var groups: Dictionary = data.get("weak_point_groups", {})
+	_apply_weak_point_effect((groups.get(group, {}) as Dictionary).get("when_all_destroyed", {}))
+
+
+func _apply_weak_point_effect(effect: Dictionary) -> void:
+	if effect.is_empty() or stats.is_dead():
+		return
+	if effect.get("disable_shield", false):
+		disable_shield()
+	if effect.get("disable_spawn", false):
+		spawn_enabled = false
+	for attack_id: Variant in effect.get("disable_attacks", []):
+		set_attack_enabled(str(attack_id), false)
+	if effect.has("speed_mult"):
+		speed_mps *= float(effect["speed_mult"])
+	if effect.has("message"):
+		EventBus.ui_message.emit(effect["message"])
+	var damage: float = effect.get("damage_to_owner", 0.0)
+	if damage > 0.0:
+		# Internal damage ignores shields and armour.
+		stats.hp = maxf(1.0, stats.hp - damage)
+
+
 func _on_killed() -> void:
 	_explode()
+	for weak_point: WeakPoint in _weak_points.duplicate():
+		weak_point.queue_free()
 	EventBus.enemy_killed.emit(StringName(enemy_id), int(data.get("credit_bounty", 0)))
 	_manager.notify_enemy_gone(self, true)
 	queue_free()
+
+
+func _try_attack_where(matches: Callable) -> bool:
+	if _sequence_left > 0:
+		return false
+	var attacks: Array = data.get("attacks", [])
+	for index: int in attacks.size():
+		var attack: Dictionary = attacks[index]
+		if _cooldowns[index] > 0.0 or _disabled_attacks.has(attack["id"]) or not matches.call(attack):
+			continue
+		_cooldowns[index] = attack.get("cooldown_s", 1.0)
+		_sequence_attack = attack
+		_sequence_left = attack.get("count", 1)
+		_sequence_timer_s = 0.0
+		_update_attack_sequence(0.0)
+		return true
+	return false
 
 
 func _update_attack_sequence(delta_s: float) -> void:
@@ -213,11 +362,39 @@ func _perform(attack: Dictionary) -> void:
 			if fx != null:
 				var color_values: Array = attack.get("color", [1.0, 0.3, 0.2])
 				var color: Color = Color(color_values[0], color_values[1], color_values[2])
-				var impact: Vector3 = get_turret_point() + Vector3(randf_range(-2.0, 2.0), randf_range(-1.0, 1.5), randf_range(-2.0, 2.0))
-				fx.tracer(origin, impact, color, 0.25, 0.09, 5.0)
-				fx.flash(impact, 0.4, 1.6, color, 0.12, 5.0)
+				# The shot ends a little short of the turret (where a shield would stop it):
+				# a thick beam drawn right up to the camera would fill the whole view.
+				var target_point: Vector3 = get_turret_point() + Vector3(randf_range(-2.0, 2.0), randf_range(-1.0, 1.5), randf_range(-2.0, 2.0))
+				var impact: Vector3 = target_point + (origin - target_point).normalized() * IMPACT_STANDOFF_M
+				var width: float = attack.get("width_m", 0.25)
+				fx.tracer(origin, impact, color, width, 0.09, 5.0)
+				# A small spark only: the shield ripple and the damage frame show the hit.
+				fx.flash(impact, 0.1, 0.35 + width * 0.3, color, 0.08, 4.0)
 		"guided_bomb":
-			_manager.spawn_projectile(attack, origin + Vector3.DOWN * 2.0, velocity, damage)
+			var spread: Vector3 = Vector3(randf_range(-1.0, 1.0), randf_range(-0.3, 1.0), randf_range(-1.0, 1.0)) * float(attack.get("launch_spread_mps", 0.0))
+			_manager.spawn_projectile(attack, origin + Vector3.DOWN * 2.0, velocity + spread, damage)
+
+
+func _update_granted_shield(delta_s: float) -> void:
+	if _granted_shield_left_s > 0.0:
+		_granted_shield_left_s -= delta_s
+		stats.shield = minf(stats.max_shield, stats.shield + _granted_regen_per_s * delta_s)
+		if _granted_shield_left_s <= 0.0:
+			stats.max_shield = _base_max_shield
+			stats.shield = minf(stats.shield, _base_max_shield)
+	var covered: bool = _granted_shield_left_s > 0.0 and stats.shield > 0.0
+	if covered and _shield_bubble == null:
+		_shield_bubble = _manager.make_shield_bubble(target_radius_m * 1.4)
+		add_child(_shield_bubble)
+	if _shield_bubble != null:
+		_shield_bubble.visible = covered
+
+
+func _add_hurtbox(offset: Vector3, radius_m: float) -> void:
+	var hurtbox: Hurtbox = Hurtbox.create_sphere(self, radius_m)
+	hurtbox.position = offset
+	add_child(hurtbox)
+	_hurtboxes.append(hurtbox)
 
 
 func _explode() -> void:
