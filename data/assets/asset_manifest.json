@@ -152,6 +152,30 @@
     "vfx.shader.glow_unlit": {
       "path": "res://assets/vfx/glow_unlit.gdshader",
       "type": "vfx"
+    },
+    "vfx.shader.terrain": {
+      "path": "res://assets/vfx/terrain.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.sky_body": {
+      "path": "res://assets/vfx/sky_body.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.glow_static": {
+      "path": "res://assets/vfx/glow_static.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.stars": {
+      "path": "res://assets/vfx/stars.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.sky_ring": {
+      "path": "res://assets/vfx/sky_ring.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.screen_effects": {
+      "path": "res://assets/vfx/screen_effects.gdshader",
+      "type": "vfx"
     }
   }
 }

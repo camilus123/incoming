@@ -40,5 +40,9 @@ signal ui_message(text: String)
 
 ## Economy.
 signal credits_changed(total: int)
+## Sky, sun, fog or the graphics preset changed (the viewmodel copies the environment).
+signal environment_changed()
+## Any explosion (for lens effects and, later, sound).
+signal explosion(at: Vector3, radius_m: float)
 
 @warning_ignore_restore("unused_signal")

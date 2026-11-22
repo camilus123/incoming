@@ -156,6 +156,61 @@ Power split between shields and weapons. `weapon_share = 1 − shield_share`.
 | `effect_view_distance_m` | Effects beyond this distance are not drawn |
 | `max_active_particle_systems`, `max_decals` | Caps |
 
+Two more preset fields were added in M6: `viewmodel_msaa` (0, 2, 4 or 8 samples for the turret and guns, which are drawn by their own camera) and `screen_effects` (chromatic aberration, lens dirt and the shield ripple).
+
+What each field switches:
+
+| Field | Effect |
+|---|---|
+| `render_scale`, `upscaler` | 3D resolution as a fraction of the window, scaled up with `none` (bilinear), `fsr1` or `fsr2` |
+| `antialiasing` | `none`, `fxaa` or `taa`. With `fsr2` TAA is left off, because FSR 2 has its own |
+| `shadows` | `off`, `low` (2 cascades, 60 m), `medium` (4 cascades, 120 m), `high` (250 m), `ultra` (450 m, 8k shadow map) |
+| `gi` | `off`, `ssil` (screen-space indirect light) or `sdfgi` |
+| `ssao`, `ssr`, `volumetric_fog`, `glow` | on or off |
+| `particle_density` | share of the particles of every explosion, spark burst and trail (1 = full, up to 1.5) |
+| `effect_view_distance_m` | particle effects further away than this are skipped (big explosions are seen from further) |
+| `max_active_particle_systems` | size of the particle pools (160 is the reference) |
+| `max_decals` | reserved; the game has no decals yet |
+
+Pick a preset with `--preset=<id>` on the command line, with `video/graphics_preset` in `user://settings.cfg`, or cycle with F3 in debug builds. The settings menu arrives in M8.
+
+## config/environments.json
+
+The world around the turret. Angles: azimuth 0 is straight ahead of the turret, positive to the right; elevation is degrees above the horizon.
+
+| Field | Meaning |
+|---|---|
+| `default_time` | time of day used outside stages (test range) and for unknown ids |
+| `tonemap` | `linear`, `reinhard`, `filmic`, `aces` or `agx` |
+| `terrain` | `radius_m`, `flat_radius_m` (level ground around the turret), `dune_height_m`, `mountain_start_m`, `mountain_full_m`, `mountain_height_m`, `seed`, `sand_color`, `rock_color`. Shape changes need a restart |
+| `sky_bodies` | planets and moons: `id`, `azimuth_deg`, `elevation_deg`, `angular_diameter_deg`, `color_a`, `color_b`, `bands` (0 = moon, more = gas giant with that many cloud bands), optional `ring` `{ inner, outer, tilt_deg, color }` (radii in planet radii) |
+| `times` | one entry per time of day, see below |
+
+A stage picks an entry of `times` with its `time_of_day` field. Each entry:
+
+```json
+"dusk": {
+  "sun": { "azimuth_deg": 52.0, "elevation_deg": 5.0, "color": [1.0, 0.62, 0.36], "energy": 1.2 },
+  "sky": { "rayleigh": 2.6, "rayleigh_color": [0.24, 0.36, 0.68], "mie": 0.02, "mie_color": [0.95, 0.5, 0.3],
+           "turbidity": 6.0, "energy": 1.0, "ground_color": [0.22, 0.15, 0.12], "stars": 0.35 },
+  "ambient_energy": 3.0,
+  "exposure": 1.1,
+  "fog": { "density": 0.00008, "color": [0.85, 0.5, 0.36], "sky_affect": 0.25,
+           "volumetric_density": 0.0005, "volumetric_albedo": [1.0, 0.75, 0.6] },
+  "turret_ambient": { "color": [0.85, 0.5, 0.4], "energy": 2.2 },
+  "sky_body_light": { "azimuth_deg": 95.0, "elevation_deg": -5.0 },
+  "sky_body_brightness": 0.9,
+  "sky_body_dark_side": 0.35
+}
+```
+
+- `sun` is the one directional light. At night it is the moonlight.
+- `sky` feeds the physical sky; `stars` is the brightness of the star field (0 = none).
+- `turret_ambient` lights the turret and guns, which are drawn by their own camera without the sky.
+- `sky_body_light` is where the light on planets and moons comes from. To see a body lit, the light must come from roughly behind the viewer. `sky_body_dark_side` is how solid the unlit side is (0 by day, when it vanishes into the sky; 1 at night).
+
+Colours and angles reload with F5. To add a time of day, add an entry and add its id to the `time_of_day` list in `schemas/stage.schema.json`.
+
 ## assets/asset_manifest.json
 
 Maps asset IDs to files. See `ASSETS.md`.

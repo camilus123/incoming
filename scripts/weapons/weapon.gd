@@ -21,6 +21,11 @@ var ammo: int = UNLIMITED_AMMO
 var _context: WeaponContext
 var _model: Node3D
 var _muzzles: Array[Node3D] = []
+## Shell ejection socket ("Eject_0"); only kinetic weapons use it.
+var _eject: Node3D
+## Glow laid over the barrels as the weapon heats up.
+var _heat_glow: StandardMaterial3D
+var _shown_heat: float = -1.0
 var _next_muzzle: int = 0
 var _kick_m: float = 0.0
 var _kick_recover_per_s: float = 14.0
@@ -101,9 +106,21 @@ func get_lock_progress() -> float:
 func _process(delta_s: float) -> void:
 	heat.tick(delta_s, get_rate_scale())
 	_update_weapon(delta_s)
+	_update_heat_glow()
 	if _model != null and _kick_m > 0.0:
 		_kick_m = lerpf(_kick_m, 0.0, 1.0 - exp(-_kick_recover_per_s * delta_s))
 		_model.position.z = _kick_m
+
+
+## Barrels glow dull red to orange as heat builds, brightest when overheated.
+func _update_heat_glow() -> void:
+	if _heat_glow == null:
+		return
+	var level: float = heat.heat * heat.heat
+	if absf(level - _shown_heat) < 0.01:
+		return
+	_shown_heat = level
+	_heat_glow.albedo_color = Color(1.0, 0.25 + 0.35 * level, 0.05, level * 0.85)
 
 
 ## Archetype hook: one-time preparation after the model exists.
@@ -134,6 +151,8 @@ func _apply_shot_feedback() -> void:
 	_kick_m = minf(_kick_m + _feel("recoil_kick_m", 0.0), 0.3)
 	_context.rig.add_recoil(_feel("recoil_pitch_deg", 0.0))
 	_context.rig.add_shake(_feel("shake", 0.0))
+	if _eject != null and _context.fx != null:
+		_context.fx.shell(_eject.global_transform, _context.rig.get_viewmodel_layers())
 	EventBus.weapon_fired.emit(slot)
 	if heat.overheated:
 		EventBus.weapon_overheated.emit(slot)
@@ -176,6 +195,7 @@ func _hitscan_shot(direction: Vector3, damage: float, tracer_width_m: float, tra
 		_context.fx.flash(muzzle, 0.05, 0.22, _tracer_color, 0.05, 6.0)
 		if not hit.is_empty():
 			_context.fx.flash(end, 0.3, _visual("impact_radius_m", 2.0), _tracer_color, 0.12, 5.0)
+			_context.fx.sparks(end, -direction)
 	return end
 
 
@@ -227,3 +247,14 @@ func _build_model() -> void:
 		fallback.position = Vector3(0.0, 0.0, -1.0)
 		_model.add_child(fallback)
 		_muzzles.append(fallback)
+	if str(data.get("damage_type", "")) == "kinetic":
+		_eject = _model.find_child("Eject_0", true, false) as Node3D
+	var barrels: Array[Node] = _model.find_children("Barrel*", "MeshInstance3D", true, false)
+	if not barrels.is_empty():
+		_heat_glow = StandardMaterial3D.new()
+		_heat_glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_heat_glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_heat_glow.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_heat_glow.albedo_color = Color(1.0, 0.3, 0.05, 0.0)
+		for barrel: Node in barrels:
+			(barrel as MeshInstance3D).material_overlay = _heat_glow

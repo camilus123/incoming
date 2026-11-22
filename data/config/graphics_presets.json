@@ -16,7 +16,9 @@
       "particle_density": 0.4,
       "effect_view_distance_m": 1500.0,
       "max_active_particle_systems": 48,
-      "max_decals": 16
+      "max_decals": 16,
+      "viewmodel_msaa": 0,
+      "screen_effects": false
     },
     "medium": {
       "display_name": "Medium",
@@ -32,7 +34,9 @@
       "particle_density": 0.7,
       "effect_view_distance_m": 2500.0,
       "max_active_particle_systems": 96,
-      "max_decals": 32
+      "max_decals": 32,
+      "viewmodel_msaa": 2,
+      "screen_effects": true
     },
     "high": {
       "display_name": "High",
@@ -48,7 +52,9 @@
       "particle_density": 1.0,
       "effect_view_distance_m": 4000.0,
       "max_active_particle_systems": 160,
-      "max_decals": 64
+      "max_decals": 64,
+      "viewmodel_msaa": 4,
+      "screen_effects": true
     },
     "ultra": {
       "display_name": "Ultra",
@@ -64,7 +70,9 @@
       "particle_density": 1.5,
       "effect_view_distance_m": 6000.0,
       "max_active_particle_systems": 256,
-      "max_decals": 128
+      "max_decals": 128,
+      "viewmodel_msaa": 4,
+      "screen_effects": true
     }
   }
 }

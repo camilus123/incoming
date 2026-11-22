@@ -4,6 +4,12 @@ extends EnemyBehaviour
 ## Parameters: impact_distance_m, trail_length_s, trail_color [r, g, b].
 
 
+func _on_setup() -> void:
+	var fx: CombatFx = enemy.get_manager().get_fx()
+	if fx != null and not enemy.has_node("ReentryTrail"):
+		enemy.add_child(fx.make_reentry_trail(enemy.target_radius_m))
+
+
 func tick(_delta_s: float) -> void:
 	var to_turret: Vector3 = enemy.get_turret_point() - enemy.global_position
 	var distance: float = to_turret.length()

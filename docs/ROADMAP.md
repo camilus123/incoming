@@ -10,8 +10,8 @@
 | M3 Shields and power | Shield system and dome VFX, power split | Done |
 | M4 Economy, shop and tech tree | Rewards, shop UI, tech tree, loadout, saving | Done |
 | M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | Done |
-| M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | In progress |
-| M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | |
+| M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | Done, awaiting approval |
+| M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | Next |
 | M8 Polish | Audio, settings, menus, Windows export | |
 
 ## Later (designed for, not built)
@@ -21,3 +21,4 @@
 - **Story:** stage briefings and setting text are data, so a campaign narrative can be added without code changes.
 - **ADS/zoom:** an optional zoom key, possibly unlocked by an upgrade.
 - **Respec refund:** set `economy.json: respec_refund_ratio` back to 0.75 when testing is over.
+- **Graphics left over from M6:** heat distortion on beams, orbital debris, decals, real PBR texture sets for terrain and hulls.

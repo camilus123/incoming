@@ -17,6 +17,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Input.use_accumulated_input = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	var lens: ScreenEffects = ScreenEffects.new()
+	lens.name = "ScreenEffects"
+	add_child(lens)
 	var arguments: PackedStringArray = OS.get_cmdline_user_args()
 	if arguments.has("--god"):
 		_turret.invulnerable = true
@@ -46,6 +49,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(ACTION_PAUSE) and (_can_pause() or get_tree().paused):
 		_set_paused(not get_tree().paused)
 		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo and (event as InputEventKey).keycode == KEY_F3 and OS.is_debug_build():
+		Graphics.cycle_preset()
+		EventBus.ui_message.emit("Graphics preset: %s" % Graphics.get_value("display_name", Graphics.preset_id))
 	elif event.is_action_pressed(ACTION_CAMERA_TOGGLE) and OS.is_debug_build():
 		EventBus.ui_message.emit("Third-person camera: coming soon")
 
