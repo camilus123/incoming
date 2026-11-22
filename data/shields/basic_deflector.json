@@ -8,6 +8,8 @@
     "style": "dome",
     "dome_radius_m": 14.0,
     "conformal_offset_m": 0.06,
-    "color": [0.3, 0.8, 1.0]
+    "color": [0.3, 0.8, 1.0],
+    "low_color": [1.0, 0.42, 0.08],
+    "idle_alpha": 0.0
   }
 }

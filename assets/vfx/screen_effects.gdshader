@@ -42,7 +42,7 @@ void fragment() {
 		float ring = smoothstep(0.28, 0.0, abs(distance_from_centre - ripple_phase * 0.9));
 		uv += normalize(centred + vec2(0.0001)) * wave * ring * ripple * 0.012;
 	}
-	vec2 shift = centred * aberration * 0.02 * (0.3 + distance_from_centre * 1.6);
+	vec2 shift = centred * aberration * 0.007 * (0.3 + distance_from_centre * 1.6);
 	vec3 color;
 	color.r = texture(screen_texture, uv + shift).r;
 	color.g = texture(screen_texture, uv).g;

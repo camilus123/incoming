@@ -23,7 +23,12 @@ void vertex() {
 		// Grows from the start size to full size; collapses to nothing when over.
 		VERTEX *= mix(1.0, INSTANCE_CUSTOM.z, remaining * remaining) * step(0.0001, remaining);
 	}
-	glow = vec4(COLOR.rgb * INSTANCE_CUSTOM.w, COLOR.a * remaining);
+	// A big fireball right at the camera (something rammed the turret) is faded,
+	// so it cannot white out the screen. Small flashes and thin tracers are not.
+	float size = length(MODEL_MATRIX[0].xyz);
+	float distance_to_camera = length((MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz);
+	float near_fade = mix(1.0, smoothstep(6.0, 40.0, distance_to_camera), smoothstep(2.0, 6.0, size));
+	glow = vec4(COLOR.rgb * INSTANCE_CUSTOM.w, COLOR.a * remaining * near_fade);
 }
 
 void fragment() {

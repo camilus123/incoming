@@ -81,5 +81,5 @@ func _on_explosion(at: Vector3, radius_m: float) -> void:
 	var apparent: float = radius_m / maxf(camera.global_position.distance_to(at), 1.0)
 	if apparent < 0.04:
 		return
-	_dirt = minf(0.6, _dirt + apparent * 2.0)
-	_aberration = minf(1.0, _aberration + apparent * 1.5)
+	_dirt = minf(0.22, _dirt + apparent * 0.5)
+	_aberration = minf(0.6, _aberration + apparent * 0.8)

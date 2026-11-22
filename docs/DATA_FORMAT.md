@@ -158,6 +158,8 @@ Power split between shields and weapons. `weapon_share = 1 − shield_share`.
 
 Two more preset fields were added in M6: `viewmodel_msaa` (0, 2, 4 or 8 samples for the turret and guns, which are drawn by their own camera) and `screen_effects` (chromatic aberration, lens dirt and the shield ripple).
 
+All four presets use FSR 2 for both upscaling and anti-aliasing, with the usual quality steps: Ultra at native resolution (1.0), High at quality (0.67), Medium at balanced (0.59), Low at performance (0.5). Godot 4.7.2 only offers bilinear, FSR 1 and FSR 2 on Windows; FSR 3 and FSR 4 are not in the engine. The default preset is Ultra.
+
 What each field switches:
 
 | Field | Effect |
@@ -406,6 +408,8 @@ One file per shield configuration. The turret's starting shield is `default_load
 | `visuals.dome_radius_m` | Size of the dome (dome style only) |
 | `visuals.conformal_offset_m` | How far the shell floats above the hull (conformal style only) |
 | `visuals.color` | Colour of the shield effect |
+
+Shield look (M6 follow-up): the shield is invisible while nothing hits it. A hit shows the whole lattice for about a second, with a ripple at the impact. Its colour blends from `visuals.color` at full charge to `visuals.low_color` (default orange-red) when nearly drained. `visuals.idle_alpha` (0 to 1, default 0) brings back a faint always-visible lattice.
 
 ## techtree/tree.json
 

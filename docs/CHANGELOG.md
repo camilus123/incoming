@@ -13,6 +13,7 @@ Updated at every merge to `main`.
 - `run_demo.ps1` passes extra options on to the game; new demo options `--demo-frame-log`, `--time=<id>`.
 - The Plasma Cannon bolt is twice as large.
 - 9 new unit tests (124 in total).
+- After review: the shield is invisible until hit and turns from blue to orange-red as it drains; all presets use FSR 2 (native, quality, balanced, performance) and Ultra is the default; lens effects toned down.
 
 ## M5: Content pass (2026-11-22)
 
