@@ -161,16 +161,47 @@ def build():
     save('stage_complete', concat(*[shaped(tone(0.14 if i < 3 else 0.5, f), 0.004, 1.4) for i, f in enumerate([523, 659, 784, 1047])]), 0.55)
     save('stage_failed', concat(*[shaped(tone(0.28 if i < 2 else 0.8, f, 'saw'), 0.004, 1.3) for i, f in enumerate([330, 262, 196])]), 0.5)
 
-    # --- music: a slow dark pad, loops cleanly ------------------------------
-    seconds = 24.0
+    save('music_ambient', ambient_music(), 0.8)
+
+
+def ambient_music():
+    """A slow four-chord pad (A minor, F, C, G), 32 s, that loops without a seam.
+
+    Each chord swells in and out over its 8 s slot and overlaps its
+    neighbours; the overlap wraps around the end of the file, so the last
+    chord fades into the first. Notes sit between 110 and 660 Hz with a few
+    harmonics, so the pad is audible on small speakers and headphones too.
+    (The first version was a 55 Hz drone that most speakers could not play.)
+    """
+    seconds = 32.0
     n = int(RATE * seconds)
-    pad = [0.0] * n
-    for f, g, wobble in [(55, 1.0, 1), (82.5, 0.6, 2), (110.25, 0.45, 3), (164.75, 0.25, 1), (220.5, 0.12, 2)]:
-        cycles = round(f * seconds)
-        for i in range(n):
-            swell = 0.6 + 0.4 * math.sin(2.0 * math.pi * wobble * i / n)
-            pad[i] += g * swell * math.sin(2.0 * math.pi * cycles * i / n)
-    save('music_ambient', pad, 0.45)
+    out = [0.0] * n
+    slot = n // 4
+    overlap = int(RATE * 2.5)
+    chords = [
+        [110.0, 220.0, 261.63, 329.63, 440.0],   # A minor
+        [87.31, 174.61, 220.0, 261.63, 349.23],  # F
+        [130.81, 196.0, 261.63, 329.63, 392.0],  # C
+        [98.0, 196.0, 246.94, 293.66, 392.0],    # G
+    ]
+    harmonics = [(1, 1.0), (2, 0.35), (3, 0.18), (4, 0.08)]
+    span = slot + 2 * overlap
+    window = [math.sin(math.pi * i / span) ** 2 for i in range(span)]
+    for index, chord in enumerate(chords):
+        start = index * slot - overlap
+        for note_index, f in enumerate(chord):
+            # Bass a little softer, the top a little softer still.
+            level = 0.7 if note_index == 0 else (0.55 if note_index == len(chord) - 1 else 1.0)
+            detune = 1.0 + 0.0015 * (note_index - 2)
+            for multiple, weight in harmonics:
+                w = 2.0 * math.pi * f * multiple * detune / RATE
+                amp = level * weight
+                for i in range(span):
+                    out[(start + i) % n] += amp * window[i] * math.sin(w * i)
+    # A slow breath over the whole loop (whole cycles, so it loops cleanly).
+    for i in range(n):
+        out[i] *= 0.8 + 0.2 * math.sin(2.0 * math.pi * 2.0 * i / n)
+    return out
 
 
 if __name__ == '__main__':
