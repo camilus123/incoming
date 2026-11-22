@@ -94,6 +94,6 @@ Every earlier entry in this file shows a 1 % low just under 120 fps, whatever th
 
 The cause is outside the game. The game sets no frame limit and V-Sync is off during the demo. 119 fps is half of the 240 Hz of the display, which is typical of a driver feature (for example Radeon Chill, Frame Rate Target Control or frame generation pacing) or of another program holding the frame rate down. **The earlier numbers in this file are therefore lower bounds**, measured partly with that limiter active: the M5 figures of 160 fps for stages 9 and 10 were the limiter, not the game.
 
-If the game ever seems stuck at 119 fps on this PC, check the Radeon software for a frame rate cap or Chill.
+**Confirmed by Marko on 2026-11-22: it was the frame rate cap in AMD Adrenalin.** With the cap on, the game cannot exceed 119 fps on this PC, so measure with it off.
 
 Useful for measuring: `tools\run_demo.ps1 -Stage 3 -God -Seconds 45 --preset=high`, plus `"--demo-frame-log=C:\temp\frames.txt"` for every frame time. The PERF line now includes the preset and the median.
