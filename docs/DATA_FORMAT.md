@@ -488,7 +488,7 @@ More attack fields: `enabled` (false = switched on later by a boss phase), `widt
 
 | Module | What it does | Parameters |
 |---|---|---|
-| `hover_shoot` | Flies to a standoff range, hovers facing the turret, sidesteps, fires its attacks | `hover_distance_m`, `sidestep_distance_m`, `sidestep_interval_s`, `attacks` (ids; empty = all), `rotate_deg_s` (slow turn on the spot so every side faces the turret) |
+| `hover_shoot` | Flies to a standoff range, hovers facing the turret, sidesteps, fires its attacks | `hover_distance_m`, `sidestep_distance_m`, `sidestep_interval_s`, `attacks` (ids; empty = all), `rotate_deg_s` (slow turn on the spot so every side faces the turret), `patrol` `{ width_m, depth_m, bob_m, turn_rate_deg_s }` (once in position, cruise a loop in front of the turret at the ship's `speed_mps`; replaces hovering) |
 | `orbit_drop` | Falls straight at the turret with a re-entry trail | `impact_distance_m`, `trail_length_s`, `trail_color` |
 | `spawn_children` | Launches other enemies at intervals while `spawn_enabled` | `enemy`, `count`, `interval_s`, `first_delay_s`, `max_alive`, `spread_m` |
 | `shield_allies` | Covers allies in range with a regenerating shield | `radius_m`, `ally_shield`, `regen_per_s` |

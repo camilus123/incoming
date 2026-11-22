@@ -8,7 +8,9 @@ extends Weapon
 ## - `auto_distribute` (Swarm Missiles): press the trigger and the salvo spreads
 ##   itself over every target near the crosshair.
 ## - `player_guided` (Seeker Torpedo): press to launch one missile, then keep
-##   the trigger held to steer it with the crosshair.
+##   the trigger held to guide it: it homes on the target nearest the crosshair
+##   (inside `lock_cone_deg`), or flies to where the crosshair points if there
+##   is none. Released, it keeps homing on the last target it was given.
 ##
 ## Missiles use a per-stage ammo stock, not reactor power.
 
@@ -49,6 +51,8 @@ func _update_weapon(delta_s: float) -> void:
 		if trigger_held and not _was_held and ready:
 			if _homing("auto_distribute", false):
 				_locks = _collect_targets()
+			elif _homing("player_guided", false):
+				_designate()
 			_start_salvo()
 		_steer_guided_missile()
 	else:
@@ -172,9 +176,24 @@ func _steer_guided_missile() -> void:
 	if not _context.missiles.is_flying(_steered_missile):
 		_steered_missile = -1
 		return
-	if trigger_held:
+	if not trigger_held:
+		return
+	_designate()
+	if not _locks.is_empty():
+		_context.missiles.set_target(_steered_missile, _locks[0])
+	else:
+		_context.missiles.set_target(_steered_missile, null)
 		var along: float = (_context.missiles.get_missile_position(_steered_missile) - _context.aim_origin).dot(_context.aim_direction)
 		_context.missiles.steer(_steered_missile, _context.aim_origin + _context.aim_direction * (maxf(along, 0.0) + STEER_LEAD_M))
+
+
+## Marks the target nearest the crosshair for the guided missile (shown as a
+## lock on the HUD), or clears the mark if nothing is close to the crosshair.
+func _designate() -> void:
+	_locks.clear()
+	var candidate: CombatTarget = _find_lock_candidate()
+	if candidate != null:
+		_locks.append(candidate)
 
 
 ## Missiles this salvo can fire: the salvo size, limited by the ammo left.

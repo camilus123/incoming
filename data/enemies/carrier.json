@@ -37,7 +37,7 @@
   "shield": 500.0,
   "shield_regen_per_s": 15.0,
   "shield_regen_delay_s": 5.0,
-  "speed_mps": 15.0,
+  "speed_mps": 28.0,
   "turn_rate_deg_s": 10.0,
   "behaviours": [
     "carrier_hover",

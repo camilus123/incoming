@@ -35,8 +35,8 @@
     ]
   },
   "projectile": {
-    "speed_mps": 500.0,
-    "lifetime_s": 5.0,
+    "speed_mps": 900.0,
+    "lifetime_s": 3.3,
     "proximity_fuse_m": 15.0,
     "size_m": 0.6,
     "length_m": 1.5,

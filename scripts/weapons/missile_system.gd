@@ -84,6 +84,12 @@ func steer(handle: int, point: Vector3) -> void:
 		_missiles[handle].steer_point = point
 
 
+## Gives a flying missile a (new) target to home on; null makes it fly straight.
+func set_target(handle: int, target: CombatTarget) -> void:
+	if handle >= 0 and handle < _missiles.size() and _missiles[handle].active:
+		_missiles[handle].target = target
+
+
 ## True while the missile with this handle is still flying.
 func is_flying(handle: int) -> bool:
 	return handle >= 0 and handle < _missiles.size() and _missiles[handle].active

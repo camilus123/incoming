@@ -173,13 +173,18 @@ func _update_shot(shot: Shot, delta_s: float, space: PhysicsDirectSpaceState3D) 
 		else:
 			_detonate(shot, hit["position"], hurtbox)
 			return
+	var previous_position: Vector3 = shot.position
 	shot.position = next_position
 
 	# Proximity fuse (flak): burst as soon as any target is close enough.
+	# Checked along the whole step, so fast shells cannot skip past a target.
 	var fuse_m: float = block.get("proximity_fuse_m", 0.0)
-	if fuse_m > 0.0 and shot.age_s > 0.05 and _target_within(shot.position, fuse_m):
-		_detonate(shot, shot.position, null)
-		return
+	if fuse_m > 0.0 and shot.age_s > 0.05:
+		var burst_at: Vector3 = _fuse_point(previous_position, next_position, fuse_m)
+		if burst_at.is_finite():
+			shot.position = burst_at
+			_detonate(shot, burst_at, null)
+			return
 	if shot.age_s >= float(block.get("lifetime_s", 4.0)):
 		# Shells with a blast burst at the end of their range; slugs just vanish.
 		if float(block.get("splash_radius_m", 0.0)) > 0.0 or not shot.mode.is_empty():
@@ -311,12 +316,21 @@ func _update_well(zone: Zone, delta_s: float) -> bool:
 	return false
 
 
-func _target_within(at: Vector3, distance_m: float) -> bool:
+## The point on the step `from`..`to` nearest to a target that is within
+## `distance_m` of it, or Vector3.INF if no target is that close.
+func _fuse_point(from: Vector3, to: Vector3, distance_m: float) -> Vector3:
+	var step: Vector3 = to - from
+	var length_squared: float = step.length_squared()
 	for node: Node in get_tree().get_nodes_in_group(CombatTarget.GROUP):
 		var target: CombatTarget = node as CombatTarget
-		if target != null and target.is_alive() and at.distance_to(target.get_aim_point()) - target.target_radius_m <= distance_m:
-			return true
-	return false
+		if target == null or not target.is_alive():
+			continue
+		var aim_point: Vector3 = target.get_aim_point()
+		var along: float = clampf((aim_point - from).dot(step) / length_squared, 0.0, 1.0) if length_squared > 0.0 else 1.0
+		var nearest: Vector3 = from + step * along
+		if nearest.distance_to(aim_point) - target.target_radius_m <= distance_m:
+			return nearest
+	return Vector3.INF
 
 
 func _take_free() -> Shot:

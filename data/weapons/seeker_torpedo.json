@@ -1,5 +1,5 @@
 {
-  "_comment": "Press to launch one huge torpedo, then keep the trigger held to steer it with the crosshair.",
+  "_comment": "Press to launch one huge torpedo, then keep the trigger held to guide it: it homes on the target nearest the crosshair, or flies to where you point.",
   "id": "seeker_torpedo",
   "display_name": "Seeker Torpedo",
   "archetype": "homing",
@@ -35,20 +35,21 @@
       0.2
     ],
     "projectile_model": "model.projectile.torpedo",
-    "impact_radius_m": 40.0
+    "impact_radius_m": 55.0
   },
   "homing": {
     "salvo_size": 1,
-    "reload_s": 10.0,
+    "reload_s": 6.0,
     "launch_interval_s": 0.1,
     "player_guided": true,
-    "launch_speed_mps": 40.0,
-    "speed_mps": 130.0,
-    "acceleration_mps2": 60.0,
-    "turn_rate_deg_s": 45.0,
+    "launch_speed_mps": 80.0,
+    "speed_mps": 240.0,
+    "acceleration_mps2": 160.0,
+    "turn_rate_deg_s": 90.0,
     "arm_delay_s": 0.3,
     "lifetime_s": 40.0,
-    "proximity_fuse_m": 10.0,
-    "splash_radius_m": 40.0
+    "proximity_fuse_m": 20.0,
+    "splash_radius_m": 55.0,
+    "lock_cone_deg": 5.0
   }
 }

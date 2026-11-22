@@ -1,5 +1,5 @@
 {
-  "_comment": "The dreadnought holds at long range and fires every enabled attack.",
+  "_comment": "The dreadnought closes to long range, then cruises a wide loop in front of the turret, firing every enabled attack.",
   "id": "boss_hover",
   "module": "hover_shoot",
   "params": {
@@ -8,6 +8,11 @@
       2200.0
     ],
     "sidestep_distance_m": 0.0,
-    "rotate_deg_s": 5.0
+    "patrol": {
+      "width_m": 900.0,
+      "depth_m": 350.0,
+      "bob_m": 60.0,
+      "turn_rate_deg_s": 15.0
+    }
   }
 }

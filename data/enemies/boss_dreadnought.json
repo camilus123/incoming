@@ -6,23 +6,23 @@
     "capital",
     "boss"
   ],
-  "hitbox_radius_m": 45.0,
+  "hitbox_radius_m": 90.0,
   "hitboxes": [
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -280.0
+      ],
+      "radius_m": 90.0
+    },
     {
       "offset": [
         0.0,
         0.0,
         -140.0
       ],
-      "radius_m": 45.0
-    },
-    {
-      "offset": [
-        0.0,
-        0.0,
-        -70.0
-      ],
-      "radius_m": 45.0
+      "radius_m": 90.0
     },
     {
       "offset": [
@@ -30,15 +30,7 @@
         0.0,
         0.0
       ],
-      "radius_m": 45.0
-    },
-    {
-      "offset": [
-        0.0,
-        0.0,
-        70.0
-      ],
-      "radius_m": 45.0
+      "radius_m": 90.0
     },
     {
       "offset": [
@@ -46,7 +38,15 @@
         0.0,
         140.0
       ],
-      "radius_m": 45.0
+      "radius_m": 90.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        280.0
+      ],
+      "radius_m": 90.0
     }
   ],
   "hp": 8000.0,
@@ -54,7 +54,7 @@
   "shield": 2000.0,
   "shield_regen_per_s": 40.0,
   "shield_regen_delay_s": 5.0,
-  "speed_mps": 10.0,
+  "speed_mps": 45.0,
   "turn_rate_deg_s": 5.0,
   "spawn_enabled": false,
   "behaviours": [
@@ -122,21 +122,21 @@
       "id": "shield_gen_0",
       "group": "shield_generators",
       "hp": 400.0,
-      "radius_m": 16.0,
+      "radius_m": 28.0,
       "socket": "WeakPoint_ShieldGen_0"
     },
     {
       "id": "shield_gen_1",
       "group": "shield_generators",
       "hp": 400.0,
-      "radius_m": 16.0,
+      "radius_m": 28.0,
       "socket": "WeakPoint_ShieldGen_1"
     },
     {
       "id": "turret_0",
       "group": "turrets",
       "hp": 250.0,
-      "radius_m": 12.0,
+      "radius_m": 22.0,
       "socket": "WeakPoint_Turret_0",
       "effect": {
         "damage_to_owner": 400.0
@@ -146,7 +146,7 @@
       "id": "turret_1",
       "group": "turrets",
       "hp": 250.0,
-      "radius_m": 12.0,
+      "radius_m": 22.0,
       "socket": "WeakPoint_Turret_1",
       "effect": {
         "damage_to_owner": 400.0
@@ -156,7 +156,7 @@
       "id": "turret_2",
       "group": "turrets",
       "hp": 250.0,
-      "radius_m": 12.0,
+      "radius_m": 22.0,
       "socket": "WeakPoint_Turret_2",
       "effect": {
         "damage_to_owner": 400.0
@@ -166,7 +166,7 @@
       "id": "turret_3",
       "group": "turrets",
       "hp": 250.0,
-      "radius_m": 12.0,
+      "radius_m": 22.0,
       "socket": "WeakPoint_Turret_3",
       "effect": {
         "damage_to_owner": 400.0
@@ -176,7 +176,7 @@
       "id": "engine_0",
       "group": "engines",
       "hp": 350.0,
-      "radius_m": 15.0,
+      "radius_m": 26.0,
       "socket": "WeakPoint_Engine_0",
       "effect": {
         "damage_to_owner": 600.0
@@ -186,7 +186,7 @@
       "id": "engine_1",
       "group": "engines",
       "hp": 350.0,
-      "radius_m": 15.0,
+      "radius_m": 26.0,
       "socket": "WeakPoint_Engine_1",
       "effect": {
         "damage_to_owner": 600.0
@@ -196,7 +196,7 @@
       "id": "engine_2",
       "group": "engines",
       "hp": 350.0,
-      "radius_m": 15.0,
+      "radius_m": 26.0,
       "socket": "WeakPoint_Engine_2",
       "effect": {
         "damage_to_owner": 600.0
@@ -250,11 +250,12 @@
     ]
   },
   "death_effect": {
-    "radius_m": 220.0,
+    "radius_m": 420.0,
     "color": [
       1.0,
       0.6,
       0.3
     ]
-  }
+  },
+  "model_scale": 2.0
 }

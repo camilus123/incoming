@@ -17,6 +17,7 @@ const HEAT_RADIUS: float = 52.0
 const HIT_MARKER_S: float = 0.14
 const KILL_MARKER_S: float = 0.35
 const MESSAGE_S: float = 2.5
+const READY_FLASH_S: float = 1.5
 const MAX_EDGE_INDICATORS: int = 14
 const EDGE_MARGIN: float = 70.0
 
@@ -34,6 +35,10 @@ var _kill_left_s: float = 0.0
 var _message: String = ""
 var _message_left_s: float = 0.0
 var _time_s: float = 0.0
+## Reload bar of the alternate weapon: it stays on screen, full, once the
+## weapon is ready again, and "READY" flashes for a moment.
+var _alternate_reloading: bool = false
+var _alternate_ready_at_s: float = -100.0
 
 
 func _ready() -> void:
@@ -141,10 +146,21 @@ func _draw_alternate_status(centre: Vector2, weapon: Weapon) -> void:
 		var color: Color = COLOR_MAIN if weapon.ammo > 0 else COLOR_ALERT
 		_text(anchor, "%d" % weapon.ammo, 18, color, HORIZONTAL_ALIGNMENT_LEFT)
 	var reload: float = weapon.get_reload_fraction()
+	var bar: Rect2 = Rect2(anchor + Vector2(0.0, 8.0), Vector2(54.0, 4.0))
 	if reload > 0.0:
-		var bar: Rect2 = Rect2(anchor + Vector2(0.0, 8.0), Vector2(54.0, 4.0))
+		_alternate_reloading = true
 		draw_rect(bar, COLOR_DIM)
 		draw_rect(Rect2(bar.position, Vector2(bar.size.x * (1.0 - reload), bar.size.y)), COLOR_WARN)
+	else:
+		if _alternate_reloading:
+			_alternate_reloading = false
+			_alternate_ready_at_s = _time_s
+		var since_ready_s: float = _time_s - _alternate_ready_at_s
+		if since_ready_s < READY_FLASH_S and weapon.has_ammo():
+			draw_rect(bar, COLOR_MAIN)
+			# Blinks three times, then stays away until the next reload.
+			if fmod(since_ready_s, READY_FLASH_S / 3.0) < READY_FLASH_S / 6.0:
+				_text(anchor + Vector2(0.0, 32.0), "READY", 16, Color.WHITE, HORIZONTAL_ALIGNMENT_LEFT)
 	var progress: float = weapon.get_lock_progress()
 	if progress > 0.0:
 		draw_arc(centre, 26.0, -PI * 0.5, -PI * 0.5 + TAU * progress, 32, COLOR_LOCK, 2.0, true)

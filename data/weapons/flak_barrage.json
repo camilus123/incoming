@@ -36,8 +36,8 @@
     ]
   },
   "projectile": {
-    "speed_mps": 450.0,
-    "lifetime_s": 3.2,
+    "speed_mps": 900.0,
+    "lifetime_s": 2.0,
     "splash_radius_m": 8.0,
     "proximity_fuse_m": 8.0,
     "pellets": 10,

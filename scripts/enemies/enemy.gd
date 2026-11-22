@@ -26,6 +26,14 @@ var face_turret: bool = false
 ## Capital ships turn slowly on the spot, so every side (and every weak
 ## point) faces the turret sooner or later. Degrees per second; 0 = off.
 var rotate_deg_s: float = 0.0
+## Set by a behaviour that steers the ship's heading itself (`yaw_rad`).
+var hold_heading: bool = false
+## Heading around the up axis while `hold_heading` or `rotate_deg_s` is used.
+var yaw_rad: float:
+	get:
+		return _rotation_rad
+	set(value):
+		_rotation_rad = value
 
 var _manager: EnemyManager
 var _turret: Turret
@@ -132,7 +140,7 @@ func _process(delta_s: float) -> void:
 	for hurtbox: Hurtbox in _hurtboxes:
 		hurtbox.apply_distance_assist(distance)
 	global_position += velocity * delta_s
-	if rotate_deg_s != 0.0:
+	if rotate_deg_s != 0.0 or hold_heading:
 		_rotation_rad += deg_to_rad(rotate_deg_s) * delta_s
 		global_transform = Transform3D(Basis(Vector3.UP, _rotation_rad), global_position)
 		return

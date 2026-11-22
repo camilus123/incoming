@@ -149,7 +149,7 @@ Marko pointed out that looking up, the dome looked like a tunnel going up for ev
 - **Shield Frigate:** covers allies within 320 m with a 60-point regenerating shield; its projector is a weak point that ends the cover and its own shield.
 - **Gunship flares:** each missile aimed at it has a 50 % chance to lose its lock.
 - **Drop pods** fall from 3 to 4 km at 250 m/s and count as enemies (bounty, must be destroyed or they hit for 60).
-- **Seeker Torpedo:** press to launch, hold to steer it along the crosshair line, release to let it fly straight.
+- **Seeker Torpedo:** press to launch, hold to guide: it homes on the target nearest the crosshair (within `lock_cone_deg`, shown as a lock) or flies along the crosshair line if there is none; released, it keeps homing on its last target. (Changed after the M5 play test: pure manual steering was too hard to hit with.)
 - **Swarm Missiles:** one press; 16 missiles spread over every target within 30° of the crosshair.
 - **EMP Burst** strips shields of everything in 130 m and stuns enemies tagged `drone` for 4 s. It needs enemy shields or drones to be worth it.
 - **Singularity Charge** pulls enemies under 1,000 hp; big ships only take the implosion.
