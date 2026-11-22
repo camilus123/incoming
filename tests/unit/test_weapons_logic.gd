@@ -89,6 +89,14 @@ func test_armour_never_removes_more_than_the_minimum_fraction() -> void:
 	assert_almost_eq(stats.hp, 99.1, 0.0001)
 
 
+func test_continuous_damage_meets_armour_per_second_not_per_tick() -> void:
+	# A 70 dps beam in ten ticks against armour 30 should do 40 per second.
+	var stats: TargetStats = _stats({"hp": 1000.0, "armour": 30.0})
+	for tick: int in 10:
+		DamageCalc.apply(7.0, "energy", 0.0, stats, RULES, 0.1)
+	assert_almost_eq(stats.hp, 960.0, 0.001)
+
+
 func test_resistance_reduces_hull_damage() -> void:
 	var stats: TargetStats = _stats({"hp": 100.0, "resistances": {"explosive": 0.25}})
 	DamageCalc.apply(40.0, "explosive", 0.0, stats, RULES)

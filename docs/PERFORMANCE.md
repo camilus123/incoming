@@ -59,3 +59,14 @@ Stage 3, fullscreen 3440×1440, god mode (drones ram the turret constantly, so t
 | conformal | 144 | 111 |
 
 Idle on the test range both styles are equal (218 and 226 fps). Under fire the conformal skin is unexpectedly expensive. Experiments ruled out the per-frame uniform updates (158 fps without them) and viewmodel MSAA (160 fps with it off); the cost comes from having the overlay on the roughly 40 turret meshes at all during the stage. **To investigate in M7** (candidates: overlay draw calls interacting with the explosion lights on the viewmodel layer, merging the placeholder model into fewer meshes).
+
+## M5 (2026-11-22)
+
+Automated demo, 60 s, fullscreen 3440×1440, V-Sync off, god mode, starting loadout.
+
+| Stage | Average fps | 1 % low | Worst frame |
+|---|---|---|---|
+| 9 (carrier launching drones, escorts) | 160 | 111 | 11.4 ms |
+| 10 (Dreadnought, frigate, escorts) | 160 | 112 | 9.5 ms |
+
+Both are just under the targets (165 average, 120 for the 1 % lows). Nothing is pooled on the enemy side yet and every drone is its own node; that, the per-frame group lookups in the projectile system, and the HUD redraw are the first things for M7.

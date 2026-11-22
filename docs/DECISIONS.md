@@ -138,3 +138,31 @@ Basic Deflector and Bastion use the dome; Flicker uses the conformal shell (`fli
 ## 2026-11-22: dome lattice mapping (Marko)
 
 Marko pointed out that looking up, the dome looked like a tunnel going up for ever. The hex lattice was mapped by longitude and latitude, which squeezes every cell into the pole. It now uses a stereographic projection centred overhead: cells are regular hexagons everywhere and only grow gently towards the ground, so the dome reads as a bubble around the turret.
+
+## 2026-11-22: M5 decisions (Claude)
+
+- **Weapon stats are first guesses** aimed at these sustained damage levels: starting weapons about 70 dps, first-tier unlocks 120 to 180, second tier 180 to 270, top tier higher but with a catch (heat, charge time, ammo). They need Marko's hands to tune.
+- **Armour works per second on continuous damage.** A beam deals damage in 0.1 s ticks; with flat armour per hit a 70 dps beam would do almost nothing to any armoured target. Each tick now meets only its share of the armour (`DamageInfo.armour_factor`).
+- **Weak points are their own targets.** They have their own hp (no armour by default), can be locked by missiles, and a shot whose line passes through one hits it even when the hull's hit shape surrounds it. Destroying them deals internal damage to the owner that ignores shields and armour, so going for weak points is the fast way through a capital ship.
+- **Dreadnought:** two shield generators (both gone: no shield), four turrets (all gone: no turret guns), three engines (all gone: no beam sweep and a large hit to the hull). Phases at 66 % hull (missile walls) and 33 % (drone launches). It holds at about 2 km.
+- **Carrier:** launches 6 drones every 10 s until all four hangar bays are destroyed.
+- **Shield Frigate:** covers allies within 320 m with a 60-point regenerating shield; its projector is a weak point that ends the cover and its own shield.
+- **Gunship flares:** each missile aimed at it has a 50 % chance to lose its lock.
+- **Drop pods** fall from 3 to 4 km at 250 m/s and count as enemies (bounty, must be destroyed or they hit for 60).
+- **Seeker Torpedo:** press to launch, hold to steer it along the crosshair line, release to let it fly straight.
+- **Swarm Missiles:** one press; 16 missiles spread over every target within 30° of the crosshair.
+- **EMP Burst** strips shields of everything in 130 m and stuns enemies tagged `drone` for 4 s. It needs enemy shields or drones to be worth it.
+- **Singularity Charge** pulls enemies under 1,000 hp; big ships only take the implosion.
+- **Intercept bonus is capped** at 30 per stage: missile boats and the boss fire without end, and shooting their missiles down forever would be a credit farm.
+- **Endless mode:** enemies gain 3 % hp and 2 % damage per stage past stage 10; every fifth stage has a Dreadnought with 1.5× the hull and 1.25× the damage of the previous one, and half the usual escort budget.
+- **Generic Mk II / Mk III modifiers** apply to all weapons because every archetype reads `damage` and `heat.per_shot` (per second for beams).
+
+## 2026-11-22: M5 balance notes (Claude)
+
+Checked with the self-playing demo, which is only a rough guide (it never misses with instant-hit weapons and cannot use charge or slow projectile weapons well):
+
+- Stages 1 to 9 clear from a normal run, and stage 5's Dreadnought falls to a 7,000-credit build.
+- Stage 10 was cleared only with shield and hull upgrades. A weapons-only build loses: the Dreadnought, a Shield Frigate and interceptors together out-damage the basic 100-point shield. This is meant to reward mixed builds but needs a human verdict.
+- First versions were much harsher and were toned down: the Dreadnought now only fires inside 2,400 m (it used to open fire the moment it appeared), its beam and turret damage were roughly halved, both boss stages have smaller escorts with longer gaps between waves, gunships fire every 5 s instead of 3.5 s, and stage 8 has one gunship fewer.
+- Capital ships (Dreadnought, Carrier) turn slowly on the spot once in position, so every weak point faces the turret in turn. Weak points behind the hull are protected until then.
+- Enemy beams are drawn to 13 m from the turret, not into the camera, and their impact spark is small. A 1.6 m wide boss beam ending at the camera filled the screen.

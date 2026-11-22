@@ -9,8 +9,8 @@
 | M2 Enemies and stages | Enemy base, 3 behaviours, drones/interceptors/bombers, wave director, stages 1 to 3, hull and game over | Done |
 | M3 Shields and power | Shield system and dome VFX, power split | Done |
 | M4 Economy, shop and tech tree | Rewards, shop UI, tech tree, loadout, saving | Done |
-| M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | Next |
-| M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | |
+| M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | Done, awaiting approval |
+| M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | Next |
 | M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | |
 | M8 Polish | Audio, settings, menus, Windows export | |
 

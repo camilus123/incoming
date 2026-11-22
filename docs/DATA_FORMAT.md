@@ -98,6 +98,7 @@ Power split between shields and weapons. `weapon_share = 1 − shield_share`.
 | `speed_bonus.full_bonus_ratio` | Full bonus when clear time ≤ par × this |
 | `speed_bonus.zero_bonus_ratio` | No bonus when clear time ≥ par × this (linear in between) |
 | `intercept_bonus` | Credits per enemy missile, bomb or pod shot down |
+| `intercept_bonus_max_count` | At most this many intercepts are paid per stage |
 | `respec_refund_ratio` | Share of a node's cost refunded on respec (0 to 1) |
 | `hull_repair.cost_per_point` | Credits per hull point repaired |
 
@@ -220,7 +221,7 @@ One file per weapon. To add a weapon that uses an existing archetype, add a file
 
 | Field | Meaning |
 |---|---|
-| `archetype` | `hitscan_pulse`, `beam`, `projectile`, `airburst`, `charge_pierce`, `spinup`, `homing`, `area_pulse`. Implemented so far: `hitscan_pulse`, `homing` (the validator warns about the others) |
+| `archetype` | `hitscan_pulse`, `beam`, `projectile`, `airburst`, `charge_pierce`, `spinup`, `homing`, `area_pulse`. Each needs its own data block, described below |
 | `damage_type` | `energy`, `kinetic` or `explosive` |
 | `allowed_slots` | `primary`, `alternate` or both |
 | `uses_power` | Whether the power split scales this weapon. Missiles use `false` |
@@ -446,6 +447,58 @@ Run `.\tools\validate_data.ps1` (it checks references, cycles and unreachable no
 ## Saves
 
 The run is saved as JSON in `user://saves/run.json` (on Windows: `%APPDATA%\Godot\app_userdata\INCOMING\saves\`) every time the armoury opens. Fields: `save_version`, `stage`, `credits`, `purchased` (node ids in order of purchase), `loadout`, `hull`, `statistics`. Nodes and weapons that no longer exist are dropped on load. `SaveSystem.migrate()` is where older versions get upgraded.
+
+### Archetype blocks
+
+Besides the common fields, each archetype reads one block of its own. The validator reports a missing block.
+
+| Archetype | Block | Fields |
+|---|---|---|
+| `hitscan_pulse` | none | Uses `damage`, `fire_rate`, `spread_deg` |
+| `spinup` | `spinup` | `fire_rate_min`, `spinup_s`, `spindown_s`. The top rate is `fire_rate` |
+| `projectile`, `airburst` | `projectile` | `speed_mps`, `lifetime_s`, `gravity_mps2`, `drag`, `splash_radius_m`, `proximity_fuse_m` (burst near a target), `pellets`, `cone_deg`, `pierce`, `size_m`, `length_m`, `on_detonate` (`""`, `emp`, `singularity`) |
+| `beam` | `beam` | `ramp_time_s`, `ramp_max_multiplier`, `pierce` (-1 = everything), `chain_targets`, `chain_range_m`, `width_m`. For beams `damage` is per second and `heat.per_shot` is per second |
+| `charge_pierce` | `charge` | `charge_time_s`, `min_charge_fraction`, `max_pierce` (-1 = everything), `cooldown_s`, optional `trail` `{ duration_s, dps, radius_m }` |
+| `area_pulse` | `projectile` + `area_pulse` | The shell flies as a projectile; the pulse has `radius_m`, `strip_shields`, `stun_s`, `stun_tags` (enemy tags it stuns), `cooldown_s` |
+| `homing` | `homing` | See the table above, plus `auto_distribute` (press to fire, the salvo spreads itself), `player_guided` (hold to steer one missile), `launch_spread_deg` |
+
+A projectile with `on_detonate: "singularity"` also needs a `singularity` block: `duration_s`, `pull_radius_m`, `pull_speed_mps`, `max_pull_hp` (heavier enemies do not move), `implode_radius_m`.
+
+Power split: energy weapons scale `damage`; other powered weapons scale fire rate, charge speed and cooling; weapons with `uses_power: false` are unaffected.
+
+Armour and continuous damage: beams and lingering trails deal damage in ticks, and each tick meets only the matching share of the target's armour, so armour works per second for them.
+
+### More enemy fields (large enemies)
+
+| Field | Meaning |
+|---|---|
+| `tags` | Free labels, e.g. `drone` (stunned by the EMP Burst) |
+| `hitboxes` | List of `{ offset: [x, y, z], radius_m }` spheres for long ships instead of the single `hitbox_radius_m` sphere |
+| `weak_points` | List of destructible subsystems, see below |
+| `weak_point_groups` | `{ group: { when_all_destroyed: effect } }` |
+| `spawn_enabled` | Whether its `spawn_children` behaviour starts switched on |
+| `countermeasures.flare_chance` | Chance (0 to 1) that a missile aimed at it loses its lock |
+| `spawn.yaw_deg` | Optional `[min, max]` bearing for this type |
+
+A weak point: `id`, `hp`, `armour`, `radius_m`, `group`, `socket` (a node name in the model) or `offset`, and an `effect`. Effects (for a single weak point, or for a group once all its members are gone): `disable_shield`, `disable_spawn`, `disable_attacks: [attack ids]`, `speed_mult`, `damage_to_owner`, `message`. Shots that pass through a weak point on the near side hit it even where the hull's hit shape surrounds it; a weak point behind the hull is protected until the ship turns.
+
+More attack fields: `enabled` (false = switched on later by a boss phase), `width_m` (thickness of a `hitscan_burst` beam), `launch_spread_mps` (scatter of launched missiles).
+
+### More behaviour modules
+
+| Module | What it does | Parameters |
+|---|---|---|
+| `hover_shoot` | Flies to a standoff range, hovers facing the turret, sidesteps, fires its attacks | `hover_distance_m`, `sidestep_distance_m`, `sidestep_interval_s`, `attacks` (ids; empty = all), `rotate_deg_s` (slow turn on the spot so every side faces the turret) |
+| `orbit_drop` | Falls straight at the turret with a re-entry trail | `impact_distance_m`, `trail_length_s`, `trail_color` |
+| `spawn_children` | Launches other enemies at intervals while `spawn_enabled` | `enemy`, `count`, `interval_s`, `first_delay_s`, `max_alive`, `spread_m` |
+| `shield_allies` | Covers allies in range with a regenerating shield | `radius_m`, `ally_shield`, `regen_per_s` |
+| `phases` | Changes the enemy as its hull drops | `phases`: list of `{ below_hp_fraction, enable_attacks, disable_attacks, enable_spawn, speed_mult, message }` |
+
+### Boss stages and endless mode
+
+- A stage with `"boss": true` is a boss stage (for display). The boss itself is just a group in a wave; a group may carry `"scale": { "hp": 1.5, "damage": 1.25 }`.
+- `director.json` → `procedural.enemy_hp_growth_per_stage` / `enemy_damage_growth_per_stage`: how much tougher all enemies get for every stage beyond the authored ones.
+- `procedural.boss`: `enemy` (the boss type), `every` (boss stage interval), `escort_budget_share`, `hp_growth_per_boss`, `damage_growth_per_boss`, `first_scaled_stage`.
 
 ## Planned formats
 

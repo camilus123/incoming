@@ -338,10 +338,16 @@ func test_special_effects_are_collected_and_implemented() -> void:
 	assert_eq(listed, from_registry)
 
 
-func test_nodes_for_weapons_of_a_later_build_cannot_be_bought() -> void:
+func test_bought_weapons_can_be_equipped_in_their_slot_only() -> void:
 	GameState.credits = 99999
-	assert_eq(GameState.get_node_state("chain_gun"), GameState.STATE_UNAVAILABLE)
-	assert_false(GameState.buy("chain_gun"))
+	assert_true(GameState.buy("chain_gun"))
+	assert_true(GameState.get_owned_weapons().has("chain_gun"))
+	assert_true(GameState.equip("primary", "chain_gun"))
+	assert_false(GameState.equip("alternate", "chain_gun"), "a primary weapon does not fit the alternate slot")
+	assert_false(GameState.equip("primary", "railgun"), "not owned")
+	# Refunding the weapon puts the default back in the slot.
+	assert_true(GameState.refund("chain_gun"))
+	assert_eq(GameState.loadout["primary"], "pulse_laser")
 
 
 func test_hull_repair_costs_credits_and_can_be_partial() -> void:
