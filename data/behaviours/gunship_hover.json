@@ -1,0 +1,16 @@
+{
+  "_comment": "Hovers at medium range, sidesteps every few seconds and fires its attacks.",
+  "id": "gunship_hover",
+  "module": "hover_shoot",
+  "params": {
+    "hover_distance_m": [
+      650.0,
+      900.0
+    ],
+    "sidestep_distance_m": 140.0,
+    "sidestep_interval_s": [
+      3.0,
+      6.0
+    ]
+  }
+}

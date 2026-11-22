@@ -1,0 +1,54 @@
+{
+  "_comment": "Press to launch one huge torpedo, then keep the trigger held to steer it with the crosshair.",
+  "id": "seeker_torpedo",
+  "display_name": "Seeker Torpedo",
+  "archetype": "homing",
+  "damage_type": "explosive",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": false,
+  "ammo_per_stage": 6,
+  "damage": 600.0,
+  "fire_rate": 1.0,
+  "range_m": 6000.0,
+  "armour_pierce": 15.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.2,
+    "cooling_per_s": 0.25,
+    "cooling_delay_s": 0.5,
+    "overheat_unlock": 0.4
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.8,
+    "recoil_kick_m": 0.25,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.35
+  },
+  "visuals": {
+    "model": "model.weapon.torpedo_rail",
+    "crosshair": "cross",
+    "tracer_color": [
+      1.0,
+      0.45,
+      0.2
+    ],
+    "projectile_model": "model.projectile.torpedo",
+    "impact_radius_m": 40.0
+  },
+  "homing": {
+    "salvo_size": 1,
+    "reload_s": 10.0,
+    "launch_interval_s": 0.1,
+    "player_guided": true,
+    "launch_speed_mps": 40.0,
+    "speed_mps": 130.0,
+    "acceleration_mps2": 60.0,
+    "turn_rate_deg_s": 45.0,
+    "arm_delay_s": 0.3,
+    "lifetime_s": 40.0,
+    "proximity_fuse_m": 10.0,
+    "splash_radius_m": 40.0
+  }
+}

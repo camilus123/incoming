@@ -1,0 +1,60 @@
+{
+  "id": "stage_06",
+  "stage": 6,
+  "display_name": "Shield Wall",
+  "briefing": "A frigate is shielding the attack wave. Kill its projector or the frigate itself.",
+  "time_of_day": "day",
+  "par_time_s": 150.0,
+  "spawn_yaw_deg": [
+    -70.0,
+    70.0
+  ],
+  "waves": [
+    {
+      "delay_s": 1.0,
+      "groups": [
+        {
+          "enemy": "shield_frigate",
+          "count": 1
+        },
+        {
+          "enemy": "interceptor",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "budget_share": 0.35,
+      "enemies": [
+        "drone_swarmer",
+        "interceptor",
+        "bomber"
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "groups": [
+        {
+          "enemy": "drop_pod",
+          "count": 3
+        }
+      ],
+      "budget_share": 0.3,
+      "enemies": [
+        "missile_boat",
+        "drone_swarmer"
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "budget_share": 0.35,
+      "enemies": [
+        "drone_swarmer",
+        "interceptor",
+        "bomber",
+        "missile_boat"
+      ]
+    }
+  ]
+}

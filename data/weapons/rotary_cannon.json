@@ -1,0 +1,45 @@
+{
+  "_comment": "Bigger rounds than the Chain Gun and a slower spin-up.",
+  "id": "rotary_cannon",
+  "display_name": "Rotary Cannon",
+  "archetype": "spinup",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 14.0,
+  "fire_rate": 18.0,
+  "range_m": 4500.0,
+  "armour_pierce": 14.0,
+  "spread_deg": 0.2,
+  "heat": {
+    "per_shot": 0.011,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.4,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.1,
+    "recoil_kick_m": 0.05,
+    "recoil_recover_per_s": 18.0,
+    "shake": 0.07
+  },
+  "visuals": {
+    "model": "model.weapon.rotary_cannon",
+    "crosshair": "cross",
+    "tracer_color": [
+      1.0,
+      0.85,
+      0.4
+    ],
+    "tracer_width_m": 0.11,
+    "tracer_life_s": 0.06,
+    "impact_radius_m": 1.8
+  },
+  "spinup": {
+    "fire_rate_min": 4.0,
+    "spinup_s": 2.0,
+    "spindown_s": 1.2
+  }
+}

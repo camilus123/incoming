@@ -1,0 +1,43 @@
+{
+  "_comment": "Very fast slugs with no drop. Kinetic: reactor power changes its fire rate and cooling.",
+  "id": "coilgun",
+  "display_name": "Coilgun",
+  "archetype": "projectile",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 60.0,
+  "fire_rate": 2.5,
+  "range_m": 6000.0,
+  "armour_pierce": 10.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.07,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.4,
+    "recoil_kick_m": 0.15,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.15
+  },
+  "visuals": {
+    "model": "model.weapon.coilgun",
+    "crosshair": "cross",
+    "tracer_color": [
+      0.4,
+      0.6,
+      1.0
+    ]
+  },
+  "projectile": {
+    "speed_mps": 1500.0,
+    "lifetime_s": 4.0,
+    "size_m": 0.18,
+    "length_m": 8.0
+  }
+}

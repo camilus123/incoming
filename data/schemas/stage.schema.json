@@ -1,13 +1,47 @@
 {
   "type": "object",
   "fields": {
-    "id": { "type": "string", "required": true, "non_empty": true },
-    "stage": { "type": "int", "required": true, "min": 1 },
-    "display_name": { "type": "string", "default": "" },
-    "briefing": { "type": "string", "default": "" },
-    "time_of_day": { "type": "string", "enum": ["day", "dusk", "night"], "default": "day" },
-    "par_time_s": { "type": "number", "min": 1.0, "default": 90.0 },
-    "spawn_yaw_deg": { "type": "array", "min_items": 2, "items": { "type": "number", "min": -180.0, "max": 180.0 } },
+    "id": {
+      "type": "string",
+      "required": true,
+      "non_empty": true
+    },
+    "stage": {
+      "type": "int",
+      "required": true,
+      "min": 1
+    },
+    "display_name": {
+      "type": "string",
+      "default": ""
+    },
+    "briefing": {
+      "type": "string",
+      "default": ""
+    },
+    "time_of_day": {
+      "type": "string",
+      "enum": [
+        "day",
+        "dusk",
+        "night"
+      ],
+      "default": "day"
+    },
+    "par_time_s": {
+      "type": "number",
+      "min": 1.0,
+      "default": 90.0
+    },
+    "spawn_yaw_deg": {
+      "type": "array",
+      "min_items": 2,
+      "items": {
+        "type": "number",
+        "min": -180.0,
+        "max": 180.0
+      }
+    },
     "waves": {
       "type": "array",
       "required": true,
@@ -15,24 +49,85 @@
       "items": {
         "type": "object",
         "fields": {
-          "delay_s": { "type": "number", "min": 0.0, "default": 3.0 },
-          "budget_share": { "type": "number", "min": 0.0, "max": 10.0, "default": 0.0 },
-          "enemies": { "type": "array", "default": [], "items": { "type": "string", "non_empty": true } },
+          "delay_s": {
+            "type": "number",
+            "min": 0.0,
+            "default": 3.0
+          },
+          "budget_share": {
+            "type": "number",
+            "min": 0.0,
+            "max": 10.0,
+            "default": 0.0
+          },
+          "enemies": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "string",
+              "non_empty": true
+            }
+          },
           "groups": {
             "type": "array",
             "default": [],
             "items": {
               "type": "object",
               "fields": {
-                "enemy": { "type": "string", "required": true, "non_empty": true },
-                "count": { "type": "int", "required": true, "min": 1 },
+                "enemy": {
+                  "type": "string",
+                  "required": true,
+                  "non_empty": true
+                },
+                "count": {
+                  "type": "int",
+                  "required": true,
+                  "min": 1
+                },
                 "spawn": {
                   "type": "object",
                   "default": {},
                   "fields": {
-                    "yaw_deg": { "type": "array", "min_items": 2, "items": { "type": "number", "min": -180.0, "max": 180.0 } },
-                    "pitch_deg": { "type": "array", "min_items": 2, "items": { "type": "number", "min": -5.0, "max": 90.0 } },
-                    "distance_m": { "type": "array", "min_items": 2, "items": { "type": "number", "min": 50.0 } }
+                    "yaw_deg": {
+                      "type": "array",
+                      "min_items": 2,
+                      "items": {
+                        "type": "number",
+                        "min": -180.0,
+                        "max": 180.0
+                      }
+                    },
+                    "pitch_deg": {
+                      "type": "array",
+                      "min_items": 2,
+                      "items": {
+                        "type": "number",
+                        "min": -5.0,
+                        "max": 90.0
+                      }
+                    },
+                    "distance_m": {
+                      "type": "array",
+                      "min_items": 2,
+                      "items": {
+                        "type": "number",
+                        "min": 50.0
+                      }
+                    }
+                  }
+                },
+                "scale": {
+                  "type": "object",
+                  "default": {},
+                  "fields": {
+                    "hp": {
+                      "type": "number",
+                      "min": 0.01
+                    },
+                    "damage": {
+                      "type": "number",
+                      "min": 0.0
+                    }
                   }
                 }
               }
@@ -40,6 +135,10 @@
           }
         }
       }
+    },
+    "boss": {
+      "type": "bool",
+      "default": false
     }
   }
 }

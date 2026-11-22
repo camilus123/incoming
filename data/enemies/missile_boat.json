@@ -1,0 +1,66 @@
+{
+  "id": "missile_boat",
+  "display_name": "Missile Boat",
+  "model": "model.enemy.missile_boat",
+  "tags": [
+    "standoff"
+  ],
+  "hitbox_radius_m": 9.0,
+  "hp": 180.0,
+  "armour": 4.0,
+  "shield": 60.0,
+  "shield_regen_per_s": 6.0,
+  "shield_regen_delay_s": 4.0,
+  "speed_mps": 35.0,
+  "turn_rate_deg_s": 40.0,
+  "behaviours": [
+    "standoff_missiles"
+  ],
+  "attacks": [
+    {
+      "id": "missile_salvo",
+      "type": "guided_bomb",
+      "damage_type": "explosive",
+      "damage": 20.0,
+      "count": 3,
+      "interval_s": 0.4,
+      "cooldown_s": 8.0,
+      "range_m": 1600.0,
+      "launch_spread_mps": 25.0,
+      "projectile": {
+        "model": "model.projectile.enemy_missile",
+        "hp": 12.0,
+        "hitbox_radius_m": 2.0,
+        "speed_mps": 90.0,
+        "max_speed_mps": 230.0,
+        "acceleration_mps2": 60.0,
+        "blast_radius_m": 8.0
+      }
+    }
+  ],
+  "credit_bounty": 50,
+  "threat_cost": 22,
+  "first_stage": 4,
+  "group_size": [
+    1,
+    2
+  ],
+  "spawn": {
+    "pitch_deg": [
+      10.0,
+      30.0
+    ],
+    "distance_m": [
+      1900.0,
+      2500.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 18.0,
+    "color": [
+      1.0,
+      0.5,
+      0.2
+    ]
+  }
+}

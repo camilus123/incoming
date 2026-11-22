@@ -1,0 +1,76 @@
+{
+  "id": "shield_frigate",
+  "display_name": "Shield Frigate",
+  "model": "model.enemy.shield_frigate",
+  "tags": [
+    "capital"
+  ],
+  "hitbox_radius_m": 22.0,
+  "hp": 600.0,
+  "armour": 10.0,
+  "shield": 400.0,
+  "shield_regen_per_s": 15.0,
+  "shield_regen_delay_s": 4.0,
+  "speed_mps": 25.0,
+  "turn_rate_deg_s": 20.0,
+  "behaviours": [
+    "frigate_hover",
+    "frigate_shield"
+  ],
+  "attacks": [
+    {
+      "id": "ion_cannon",
+      "type": "hitscan_burst",
+      "damage_type": "energy",
+      "damage": 25.0,
+      "count": 1,
+      "cooldown_s": 7.0,
+      "range_m": 1700.0,
+      "color": [
+        0.5,
+        0.7,
+        1.0
+      ],
+      "width_m": 0.6
+    }
+  ],
+  "weak_points": [
+    {
+      "id": "shield_projector",
+      "hp": 220.0,
+      "radius_m": 7.0,
+      "socket": "WeakPoint_ShieldProjector",
+      "effect": {
+        "disable_shield": true,
+        "disable_spawn": true,
+        "damage_to_owner": 150.0,
+        "message": "SHIELD PROJECTOR DESTROYED"
+      }
+    }
+  ],
+  "credit_bounty": 120,
+  "threat_cost": 50,
+  "first_stage": 6,
+  "group_size": [
+    1,
+    1
+  ],
+  "spawn": {
+    "pitch_deg": [
+      12.0,
+      28.0
+    ],
+    "distance_m": [
+      2000.0,
+      2600.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 40.0,
+    "color": [
+      0.6,
+      0.8,
+      1.0
+    ]
+  }
+}

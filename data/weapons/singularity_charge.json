@@ -1,0 +1,52 @@
+{
+  "_comment": "Launches a charge that opens a gravity well for 4 s, pulls smaller enemies in, then implodes.",
+  "id": "singularity_charge",
+  "display_name": "Singularity Charge",
+  "archetype": "projectile",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": true,
+  "damage": 500.0,
+  "fire_rate": 0.05,
+  "range_m": 3000.0,
+  "armour_pierce": 20.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.6,
+    "cooling_per_s": 0.12,
+    "cooling_delay_s": 1.0,
+    "overheat_unlock": 0.2
+  },
+  "feel": {
+    "recoil_pitch_deg": 1.0,
+    "recoil_kick_m": 0.25,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.4
+  },
+  "visuals": {
+    "model": "model.weapon.singularity_launcher",
+    "crosshair": "circle",
+    "tracer_color": [
+      0.7,
+      0.4,
+      1.0
+    ]
+  },
+  "projectile": {
+    "speed_mps": 220.0,
+    "lifetime_s": 8.0,
+    "proximity_fuse_m": 20.0,
+    "size_m": 1.0,
+    "length_m": 1.0,
+    "on_detonate": "singularity"
+  },
+  "singularity": {
+    "duration_s": 4.0,
+    "pull_radius_m": 200.0,
+    "pull_speed_mps": 45.0,
+    "max_pull_hp": 1000.0,
+    "implode_radius_m": 100.0
+  }
+}

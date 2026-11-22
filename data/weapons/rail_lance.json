@@ -1,0 +1,46 @@
+{
+  "_comment": "A railgun for the alternate slot: a long charge and a long cooldown.",
+  "id": "rail_lance",
+  "display_name": "Rail Lance",
+  "archetype": "charge_pierce",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": true,
+  "damage": 450.0,
+  "fire_rate": 1.0,
+  "range_m": 8000.0,
+  "armour_pierce": 40.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.3,
+    "cooling_per_s": 0.25,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 1.4,
+    "recoil_kick_m": 0.3,
+    "recoil_recover_per_s": 8.0,
+    "shake": 0.5
+  },
+  "visuals": {
+    "model": "model.weapon.rail_lance",
+    "crosshair": "dot",
+    "tracer_color": [
+      0.4,
+      0.6,
+      1.0
+    ],
+    "tracer_width_m": 0.35,
+    "tracer_life_s": 0.35,
+    "impact_radius_m": 5.0
+  },
+  "charge": {
+    "charge_time_s": 1.2,
+    "min_charge_fraction": 0.5,
+    "max_pierce": 4,
+    "cooldown_s": 5.0
+  }
+}

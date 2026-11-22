@@ -1,0 +1,56 @@
+{
+  "_comment": "Press to launch 16 mini-missiles that spread themselves over the targets near the crosshair.",
+  "id": "swarm_missiles",
+  "display_name": "Swarm Missiles",
+  "archetype": "homing",
+  "damage_type": "explosive",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": false,
+  "ammo_per_stage": 96,
+  "damage": 22.0,
+  "fire_rate": 1.0,
+  "range_m": 4000.0,
+  "armour_pierce": 1.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.03,
+    "cooling_per_s": 0.25,
+    "cooling_delay_s": 0.5,
+    "overheat_unlock": 0.4
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.12,
+    "recoil_kick_m": 0.04,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.05
+  },
+  "visuals": {
+    "model": "model.weapon.swarm_pod",
+    "crosshair": "cross",
+    "tracer_color": [
+      1.0,
+      0.6,
+      0.25
+    ],
+    "projectile_model": "model.projectile.micro_missile",
+    "impact_radius_m": 6.0
+  },
+  "homing": {
+    "salvo_size": 16,
+    "reload_s": 8.0,
+    "launch_interval_s": 0.05,
+    "lock_cone_deg": 30.0,
+    "auto_distribute": true,
+    "launch_spread_deg": 8.0,
+    "launch_speed_mps": 70.0,
+    "speed_mps": 340.0,
+    "acceleration_mps2": 450.0,
+    "turn_rate_deg_s": 150.0,
+    "arm_delay_s": 0.2,
+    "lifetime_s": 12.0,
+    "proximity_fuse_m": 3.0,
+    "splash_radius_m": 6.0
+  }
+}

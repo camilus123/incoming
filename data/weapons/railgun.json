@@ -1,0 +1,46 @@
+{
+  "_comment": "Hold to charge for 0.8 s, release to fire through up to 5 targets. Damage scales with the charge.",
+  "id": "railgun",
+  "display_name": "Railgun",
+  "archetype": "charge_pierce",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 320.0,
+  "fire_rate": 1.0,
+  "range_m": 8000.0,
+  "armour_pierce": 30.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.2,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.2,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 1.2,
+    "recoil_kick_m": 0.3,
+    "recoil_recover_per_s": 8.0,
+    "shake": 0.45
+  },
+  "visuals": {
+    "model": "model.weapon.railgun",
+    "crosshair": "dot",
+    "tracer_color": [
+      0.4,
+      0.6,
+      1.0
+    ],
+    "tracer_width_m": 0.3,
+    "tracer_life_s": 0.3,
+    "impact_radius_m": 4.0
+  },
+  "charge": {
+    "charge_time_s": 0.8,
+    "min_charge_fraction": 0.35,
+    "max_pierce": 5,
+    "cooldown_s": 0.4
+  }
+}

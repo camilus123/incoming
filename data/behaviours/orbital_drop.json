@@ -1,0 +1,14 @@
+{
+  "_comment": "Falls straight at the turret from orbit with a re-entry trail.",
+  "id": "orbital_drop",
+  "module": "orbit_drop",
+  "params": {
+    "impact_distance_m": 8.0,
+    "trail_length_s": 0.35,
+    "trail_color": [
+      1.0,
+      0.55,
+      0.2
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "Slow approach to a far standoff position.",
+  "id": "carrier_hover",
+  "module": "hover_shoot",
+  "params": {
+    "hover_distance_m": [
+      1600.0,
+      2000.0
+    ],
+    "sidestep_distance_m": 0.0,
+    "rotate_deg_s": 5.0
+  }
+}

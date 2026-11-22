@@ -1,17 +1,157 @@
 {
   "_comment": "Maps asset IDs to files. Game code only uses the IDs. To swap an asset, change its path here. See docs/ASSETS.md.",
   "assets": {
-    "model.turret.base": { "path": "res://assets/models/turret/turret_base.glb", "type": "model" },
-    "model.weapon.pulse_laser": { "path": "res://assets/models/weapons/pulse_laser.glb", "type": "model" },
-    "model.weapon.missile_pod": { "path": "res://assets/models/weapons/missile_pod.glb", "type": "model" },
-    "model.projectile.micro_missile": { "path": "res://assets/models/projectiles/micro_missile.glb", "type": "model" },
-    "model.target.dummy": { "path": "res://assets/models/targets/target_dummy.glb", "type": "model" },
-    "model.enemy.drone_swarmer": { "path": "res://assets/models/enemies/drone_swarmer.glb", "type": "model" },
-    "model.enemy.interceptor": { "path": "res://assets/models/enemies/interceptor.glb", "type": "model" },
-    "model.enemy.bomber": { "path": "res://assets/models/enemies/bomber.glb", "type": "model" },
-    "model.projectile.enemy_bomb": { "path": "res://assets/models/projectiles/enemy_bomb.glb", "type": "model" },
-    "vfx.shader.shield_dome": { "path": "res://assets/vfx/shield_dome.gdshader", "type": "vfx" },
-    "vfx.shader.shield_skin": { "path": "res://assets/vfx/shield_skin.gdshader", "type": "vfx" },
-    "vfx.shader.glow_unlit": { "path": "res://assets/vfx/glow_unlit.gdshader", "type": "vfx" }
+    "model.turret.base": {
+      "path": "res://assets/models/turret/turret_base.glb",
+      "type": "model"
+    },
+    "model.weapon.pulse_laser": {
+      "path": "res://assets/models/weapons/pulse_laser.glb",
+      "type": "model"
+    },
+    "model.weapon.missile_pod": {
+      "path": "res://assets/models/weapons/missile_pod.glb",
+      "type": "model"
+    },
+    "model.projectile.micro_missile": {
+      "path": "res://assets/models/projectiles/micro_missile.glb",
+      "type": "model"
+    },
+    "model.target.dummy": {
+      "path": "res://assets/models/targets/target_dummy.glb",
+      "type": "model"
+    },
+    "model.enemy.drone_swarmer": {
+      "path": "res://assets/models/enemies/drone_swarmer.glb",
+      "type": "model"
+    },
+    "model.enemy.interceptor": {
+      "path": "res://assets/models/enemies/interceptor.glb",
+      "type": "model"
+    },
+    "model.enemy.bomber": {
+      "path": "res://assets/models/enemies/bomber.glb",
+      "type": "model"
+    },
+    "model.projectile.enemy_bomb": {
+      "path": "res://assets/models/projectiles/enemy_bomb.glb",
+      "type": "model"
+    },
+    "model.weapon.beam_laser": {
+      "path": "res://assets/models/weapons/beam_laser.glb",
+      "type": "model"
+    },
+    "model.weapon.particle_lance": {
+      "path": "res://assets/models/weapons/particle_lance.glb",
+      "type": "model"
+    },
+    "model.weapon.plasma_repeater": {
+      "path": "res://assets/models/weapons/plasma_repeater.glb",
+      "type": "model"
+    },
+    "model.weapon.plasma_cannon": {
+      "path": "res://assets/models/weapons/plasma_cannon.glb",
+      "type": "model"
+    },
+    "model.weapon.chain_gun": {
+      "path": "res://assets/models/weapons/chain_gun.glb",
+      "type": "model"
+    },
+    "model.weapon.rotary_cannon": {
+      "path": "res://assets/models/weapons/rotary_cannon.glb",
+      "type": "model"
+    },
+    "model.weapon.autocannon": {
+      "path": "res://assets/models/weapons/autocannon.glb",
+      "type": "model"
+    },
+    "model.weapon.twin_autocannon": {
+      "path": "res://assets/models/weapons/twin_autocannon.glb",
+      "type": "model"
+    },
+    "model.weapon.coilgun": {
+      "path": "res://assets/models/weapons/coilgun.glb",
+      "type": "model"
+    },
+    "model.weapon.railgun": {
+      "path": "res://assets/models/weapons/railgun.glb",
+      "type": "model"
+    },
+    "model.weapon.hyper_rail": {
+      "path": "res://assets/models/weapons/hyper_rail.glb",
+      "type": "model"
+    },
+    "model.weapon.swarm_pod": {
+      "path": "res://assets/models/weapons/swarm_pod.glb",
+      "type": "model"
+    },
+    "model.weapon.torpedo_rail": {
+      "path": "res://assets/models/weapons/torpedo_rail.glb",
+      "type": "model"
+    },
+    "model.weapon.flak_barrage": {
+      "path": "res://assets/models/weapons/flak_barrage.glb",
+      "type": "model"
+    },
+    "model.weapon.emp_emitter": {
+      "path": "res://assets/models/weapons/emp_emitter.glb",
+      "type": "model"
+    },
+    "model.weapon.arc_projector": {
+      "path": "res://assets/models/weapons/arc_projector.glb",
+      "type": "model"
+    },
+    "model.weapon.rail_lance": {
+      "path": "res://assets/models/weapons/rail_lance.glb",
+      "type": "model"
+    },
+    "model.weapon.singularity_launcher": {
+      "path": "res://assets/models/weapons/singularity_launcher.glb",
+      "type": "model"
+    },
+    "model.enemy.missile_boat": {
+      "path": "res://assets/models/enemies/missile_boat.glb",
+      "type": "model"
+    },
+    "model.enemy.drop_pod": {
+      "path": "res://assets/models/enemies/drop_pod.glb",
+      "type": "model"
+    },
+    "model.enemy.shield_frigate": {
+      "path": "res://assets/models/enemies/shield_frigate.glb",
+      "type": "model"
+    },
+    "model.enemy.gunship": {
+      "path": "res://assets/models/enemies/gunship.glb",
+      "type": "model"
+    },
+    "model.enemy.carrier": {
+      "path": "res://assets/models/enemies/carrier.glb",
+      "type": "model"
+    },
+    "model.enemy.boss_dreadnought": {
+      "path": "res://assets/models/enemies/boss_dreadnought.glb",
+      "type": "model"
+    },
+    "model.projectile.enemy_missile": {
+      "path": "res://assets/models/projectiles/enemy_missile.glb",
+      "type": "model"
+    },
+    "model.projectile.torpedo": {
+      "path": "res://assets/models/projectiles/torpedo.glb",
+      "type": "model"
+    },
+    "vfx.shader.shield_dome": {
+      "path": "res://assets/vfx/shield_dome.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.shield_skin": {
+      "path": "res://assets/vfx/shield_skin.gdshader",
+      "type": "vfx"
+    },
+    "vfx.shader.glow_unlit": {
+      "path": "res://assets/vfx/glow_unlit.gdshader",
+      "type": "vfx"
+    }
   }
 }

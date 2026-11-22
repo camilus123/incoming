@@ -1,0 +1,44 @@
+{
+  "_comment": "A heavy beam that passes through every target on its line. Runs very hot.",
+  "id": "particle_lance",
+  "display_name": "Particle Lance",
+  "archetype": "beam",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 180.0,
+  "fire_rate": 1.0,
+  "range_m": 5000.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.3,
+    "cooling_per_s": 0.28,
+    "cooling_delay_s": 0.5,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.0,
+    "recoil_kick_m": 0.0,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.05
+  },
+  "visuals": {
+    "model": "model.weapon.particle_lance",
+    "crosshair": "dot",
+    "tracer_color": [
+      0.75,
+      0.55,
+      1.0
+    ],
+    "impact_radius_m": 3.5
+  },
+  "beam": {
+    "ramp_time_s": 1.5,
+    "ramp_max_multiplier": 1.6,
+    "pierce": -1,
+    "width_m": 0.45
+  }
+}

@@ -1,25 +1,6 @@
 {
   "_comment": "The tech tree (spec section 4). Everything here is data: nodes, costs, prerequisites, exclusive groups, effects and positions in the shop. See docs/DATA_FORMAT.md.",
-  "planned_weapons": [
-    "beam_laser",
-    "particle_lance",
-    "plasma_repeater",
-    "plasma_cannon",
-    "chain_gun",
-    "rotary_cannon",
-    "autocannon",
-    "twin_autocannon",
-    "coilgun",
-    "railgun",
-    "hyper_rail",
-    "swarm_missiles",
-    "seeker_torpedo",
-    "flak_barrage",
-    "emp_burst",
-    "arc_projector",
-    "rail_lance",
-    "singularity_charge"
-  ],
+  "planned_weapons": [],
   "branches": {
     "shield_core": {
       "display_name": "Shield",

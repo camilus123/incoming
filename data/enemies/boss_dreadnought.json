@@ -1,0 +1,260 @@
+{
+  "id": "boss_dreadnought",
+  "display_name": "Dreadnought",
+  "model": "model.enemy.boss_dreadnought",
+  "tags": [
+    "capital",
+    "boss"
+  ],
+  "hitbox_radius_m": 45.0,
+  "hitboxes": [
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -140.0
+      ],
+      "radius_m": 45.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -70.0
+      ],
+      "radius_m": 45.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "radius_m": 45.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        70.0
+      ],
+      "radius_m": 45.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        140.0
+      ],
+      "radius_m": 45.0
+    }
+  ],
+  "hp": 8000.0,
+  "armour": 30.0,
+  "shield": 2000.0,
+  "shield_regen_per_s": 40.0,
+  "shield_regen_delay_s": 5.0,
+  "speed_mps": 10.0,
+  "turn_rate_deg_s": 5.0,
+  "spawn_enabled": false,
+  "behaviours": [
+    "boss_hover",
+    "boss_phases",
+    "boss_launch"
+  ],
+  "attacks": [
+    {
+      "id": "beam_sweep",
+      "type": "hitscan_burst",
+      "damage_type": "energy",
+      "damage": 2.0,
+      "count": 20,
+      "interval_s": 0.08,
+      "cooldown_s": 20.0,
+      "range_m": 2400.0,
+      "color": [
+        0.9,
+        0.3,
+        1.0
+      ],
+      "width_m": 1.6
+    },
+    {
+      "id": "turret_guns",
+      "type": "hitscan_burst",
+      "damage_type": "kinetic",
+      "damage": 8.0,
+      "count": 3,
+      "interval_s": 0.25,
+      "cooldown_s": 8.0,
+      "range_m": 2400.0,
+      "color": [
+        1.0,
+        0.7,
+        0.3
+      ],
+      "width_m": 0.5
+    },
+    {
+      "id": "missile_wall",
+      "type": "guided_bomb",
+      "damage_type": "explosive",
+      "damage": 20.0,
+      "count": 6,
+      "interval_s": 0.2,
+      "cooldown_s": 15.0,
+      "range_m": 2400.0,
+      "enabled": false,
+      "launch_spread_mps": 60.0,
+      "projectile": {
+        "model": "model.projectile.enemy_missile",
+        "hp": 14.0,
+        "hitbox_radius_m": 2.0,
+        "speed_mps": 90.0,
+        "max_speed_mps": 230.0,
+        "acceleration_mps2": 60.0,
+        "blast_radius_m": 9.0
+      }
+    }
+  ],
+  "weak_points": [
+    {
+      "id": "shield_gen_0",
+      "group": "shield_generators",
+      "hp": 400.0,
+      "radius_m": 16.0,
+      "socket": "WeakPoint_ShieldGen_0"
+    },
+    {
+      "id": "shield_gen_1",
+      "group": "shield_generators",
+      "hp": 400.0,
+      "radius_m": 16.0,
+      "socket": "WeakPoint_ShieldGen_1"
+    },
+    {
+      "id": "turret_0",
+      "group": "turrets",
+      "hp": 250.0,
+      "radius_m": 12.0,
+      "socket": "WeakPoint_Turret_0",
+      "effect": {
+        "damage_to_owner": 400.0
+      }
+    },
+    {
+      "id": "turret_1",
+      "group": "turrets",
+      "hp": 250.0,
+      "radius_m": 12.0,
+      "socket": "WeakPoint_Turret_1",
+      "effect": {
+        "damage_to_owner": 400.0
+      }
+    },
+    {
+      "id": "turret_2",
+      "group": "turrets",
+      "hp": 250.0,
+      "radius_m": 12.0,
+      "socket": "WeakPoint_Turret_2",
+      "effect": {
+        "damage_to_owner": 400.0
+      }
+    },
+    {
+      "id": "turret_3",
+      "group": "turrets",
+      "hp": 250.0,
+      "radius_m": 12.0,
+      "socket": "WeakPoint_Turret_3",
+      "effect": {
+        "damage_to_owner": 400.0
+      }
+    },
+    {
+      "id": "engine_0",
+      "group": "engines",
+      "hp": 350.0,
+      "radius_m": 15.0,
+      "socket": "WeakPoint_Engine_0",
+      "effect": {
+        "damage_to_owner": 600.0
+      }
+    },
+    {
+      "id": "engine_1",
+      "group": "engines",
+      "hp": 350.0,
+      "radius_m": 15.0,
+      "socket": "WeakPoint_Engine_1",
+      "effect": {
+        "damage_to_owner": 600.0
+      }
+    },
+    {
+      "id": "engine_2",
+      "group": "engines",
+      "hp": 350.0,
+      "radius_m": 15.0,
+      "socket": "WeakPoint_Engine_2",
+      "effect": {
+        "damage_to_owner": 600.0
+      }
+    }
+  ],
+  "weak_point_groups": {
+    "shield_generators": {
+      "when_all_destroyed": {
+        "disable_shield": true,
+        "message": "DREADNOUGHT SHIELDS DOWN"
+      }
+    },
+    "turrets": {
+      "when_all_destroyed": {
+        "disable_attacks": [
+          "turret_guns"
+        ],
+        "message": "DREADNOUGHT TURRETS SILENCED"
+      }
+    },
+    "engines": {
+      "when_all_destroyed": {
+        "disable_attacks": [
+          "beam_sweep"
+        ],
+        "damage_to_owner": 1200.0,
+        "message": "DREADNOUGHT REACTOR CRIPPLED"
+      }
+    }
+  },
+  "credit_bounty": 1500,
+  "threat_cost": 0,
+  "first_stage": 5,
+  "group_size": [
+    1,
+    1
+  ],
+  "spawn": {
+    "yaw_deg": [
+      -8.0,
+      8.0
+    ],
+    "pitch_deg": [
+      14.0,
+      20.0
+    ],
+    "distance_m": [
+      2700.0,
+      3000.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 220.0,
+    "color": [
+      1.0,
+      0.6,
+      0.3
+    ]
+  }
+}

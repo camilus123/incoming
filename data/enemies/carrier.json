@@ -1,0 +1,122 @@
+{
+  "id": "carrier",
+  "display_name": "Carrier",
+  "model": "model.enemy.carrier",
+  "tags": [
+    "capital"
+  ],
+  "hitbox_radius_m": 20.0,
+  "hitboxes": [
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -38.0
+      ],
+      "radius_m": 20.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "radius_m": 20.0
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        38.0
+      ],
+      "radius_m": 20.0
+    }
+  ],
+  "hp": 2500.0,
+  "armour": 25.0,
+  "shield": 500.0,
+  "shield_regen_per_s": 15.0,
+  "shield_regen_delay_s": 5.0,
+  "speed_mps": 15.0,
+  "turn_rate_deg_s": 10.0,
+  "behaviours": [
+    "carrier_hover",
+    "carrier_launch"
+  ],
+  "attacks": [],
+  "weak_points": [
+    {
+      "id": "hangar_0",
+      "group": "hangars",
+      "hp": 250.0,
+      "radius_m": 9.0,
+      "socket": "WeakPoint_Hangar_0",
+      "effect": {
+        "damage_to_owner": 300.0
+      }
+    },
+    {
+      "id": "hangar_1",
+      "group": "hangars",
+      "hp": 250.0,
+      "radius_m": 9.0,
+      "socket": "WeakPoint_Hangar_1",
+      "effect": {
+        "damage_to_owner": 300.0
+      }
+    },
+    {
+      "id": "hangar_2",
+      "group": "hangars",
+      "hp": 250.0,
+      "radius_m": 9.0,
+      "socket": "WeakPoint_Hangar_2",
+      "effect": {
+        "damage_to_owner": 300.0
+      }
+    },
+    {
+      "id": "hangar_3",
+      "group": "hangars",
+      "hp": 250.0,
+      "radius_m": 9.0,
+      "socket": "WeakPoint_Hangar_3",
+      "effect": {
+        "damage_to_owner": 300.0
+      }
+    }
+  ],
+  "weak_point_groups": {
+    "hangars": {
+      "when_all_destroyed": {
+        "disable_spawn": true,
+        "message": "CARRIER HANGARS DESTROYED"
+      }
+    }
+  },
+  "credit_bounty": 400,
+  "threat_cost": 150,
+  "first_stage": 9,
+  "group_size": [
+    1,
+    1
+  ],
+  "spawn": {
+    "pitch_deg": [
+      14.0,
+      24.0
+    ],
+    "distance_m": [
+      2800.0,
+      3300.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 90.0,
+    "color": [
+      1.0,
+      0.55,
+      0.2
+    ]
+  }
+}

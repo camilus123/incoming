@@ -9,9 +9,18 @@
   "wave_clear_fraction": 0.25,
   "wave_timeout_s": 28.0,
   "default_spawn": {
-    "yaw_deg": [-60.0, 60.0],
-    "pitch_deg": [8.0, 40.0],
-    "distance_m": [1200.0, 2000.0]
+    "yaw_deg": [
+      -60.0,
+      60.0
+    ],
+    "pitch_deg": [
+      8.0,
+      40.0
+    ],
+    "distance_m": [
+      1200.0,
+      2000.0
+    ]
   },
   "procedural": {
     "waves_base": 3,
@@ -22,6 +31,16 @@
     "yaw_half_arc_per_stage_deg": 7.0,
     "yaw_half_arc_max_deg": 75.0,
     "par_time_base_s": 70.0,
-    "par_time_per_stage_s": 12.0
+    "par_time_per_stage_s": 12.0,
+    "enemy_hp_growth_per_stage": 0.03,
+    "enemy_damage_growth_per_stage": 0.02,
+    "boss": {
+      "enemy": "boss_dreadnought",
+      "every": 5,
+      "escort_budget_share": 0.5,
+      "hp_growth_per_boss": 1.5,
+      "damage_growth_per_boss": 1.25,
+      "first_scaled_stage": 10
+    }
   }
 }

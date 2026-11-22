@@ -1,0 +1,21 @@
+{
+  "_comment": "The dreadnought escalates as its hull drops.",
+  "id": "boss_phases",
+  "module": "phases",
+  "params": {
+    "phases": [
+      {
+        "below_hp_fraction": 0.66,
+        "enable_attacks": [
+          "missile_wall"
+        ],
+        "message": "DREADNOUGHT: MISSILE BATTERIES ONLINE"
+      },
+      {
+        "below_hp_fraction": 0.33,
+        "enable_spawn": true,
+        "message": "DREADNOUGHT: LAUNCHING DRONES"
+      }
+    ]
+  }
+}

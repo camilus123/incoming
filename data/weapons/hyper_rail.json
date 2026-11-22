@@ -1,0 +1,51 @@
+{
+  "_comment": "Pierces everything on its line and leaves an ionised trail that keeps damaging.",
+  "id": "hyper_rail",
+  "display_name": "Hyper-Rail",
+  "archetype": "charge_pierce",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 600.0,
+  "fire_rate": 1.0,
+  "range_m": 10000.0,
+  "armour_pierce": 60.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.28,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.2,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 1.8,
+    "recoil_kick_m": 0.4,
+    "recoil_recover_per_s": 7.0,
+    "shake": 0.6
+  },
+  "visuals": {
+    "model": "model.weapon.hyper_rail",
+    "crosshair": "dot",
+    "tracer_color": [
+      0.6,
+      0.85,
+      1.0
+    ],
+    "tracer_width_m": 0.5,
+    "tracer_life_s": 0.4,
+    "impact_radius_m": 6.0
+  },
+  "charge": {
+    "charge_time_s": 1.0,
+    "min_charge_fraction": 0.35,
+    "max_pierce": -1,
+    "cooldown_s": 0.6,
+    "trail": {
+      "duration_s": 3.0,
+      "dps": 60.0,
+      "radius_m": 6.0
+    }
+  }
+}

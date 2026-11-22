@@ -1,0 +1,13 @@
+{
+  "_comment": "Launches drone swarms while it has hangars left.",
+  "id": "carrier_launch",
+  "module": "spawn_children",
+  "params": {
+    "enemy": "drone_swarmer",
+    "count": 6,
+    "interval_s": 10.0,
+    "first_delay_s": 6.0,
+    "max_alive": 18,
+    "spread_m": 50.0
+  }
+}

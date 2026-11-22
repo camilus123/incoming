@@ -1,0 +1,74 @@
+{
+  "id": "stage_07",
+  "stage": 7,
+  "display_name": "Rain of Steel",
+  "briefing": "Drop pods from orbit, wave after wave. Look up.",
+  "time_of_day": "dusk",
+  "par_time_s": 150.0,
+  "spawn_yaw_deg": [
+    -75.0,
+    75.0
+  ],
+  "waves": [
+    {
+      "delay_s": 1.0,
+      "groups": [
+        {
+          "enemy": "drop_pod",
+          "count": 4
+        },
+        {
+          "enemy": "drone_swarmer",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "groups": [
+        {
+          "enemy": "drop_pod",
+          "count": 4
+        }
+      ],
+      "budget_share": 0.3,
+      "enemies": [
+        "interceptor",
+        "missile_boat"
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "groups": [
+        {
+          "enemy": "drop_pod",
+          "count": 5
+        },
+        {
+          "enemy": "shield_frigate",
+          "count": 1
+        }
+      ],
+      "budget_share": 0.3,
+      "enemies": [
+        "drone_swarmer",
+        "bomber"
+      ]
+    },
+    {
+      "delay_s": 5.0,
+      "groups": [
+        {
+          "enemy": "drop_pod",
+          "count": 5
+        }
+      ],
+      "budget_share": 0.4,
+      "enemies": [
+        "drone_swarmer",
+        "interceptor",
+        "missile_boat"
+      ]
+    }
+  ]
+}

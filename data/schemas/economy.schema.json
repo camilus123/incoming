@@ -23,6 +23,7 @@
       }
     },
     "intercept_bonus": { "type": "number", "min": 0, "default": 15 },
+    "intercept_bonus_max_count": { "type": "int", "min": 0, "default": 30 },
     "respec_refund_ratio": { "type": "number", "min": 0.0, "max": 1.0, "default": 1.0 },
     "hull_repair": {
       "type": "object",

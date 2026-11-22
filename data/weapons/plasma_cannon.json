@@ -1,0 +1,44 @@
+{
+  "_comment": "Big, slow plasma bolts with a large blast.",
+  "id": "plasma_cannon",
+  "display_name": "Plasma Cannon",
+  "archetype": "projectile",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 150.0,
+  "fire_rate": 1.2,
+  "range_m": 2500.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.16,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.6,
+    "recoil_kick_m": 0.2,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.25
+  },
+  "visuals": {
+    "model": "model.weapon.plasma_cannon",
+    "crosshair": "circle",
+    "tracer_color": [
+      0.45,
+      1.0,
+      0.55
+    ]
+  },
+  "projectile": {
+    "speed_mps": 200.0,
+    "lifetime_s": 12.0,
+    "splash_radius_m": 15.0,
+    "size_m": 1.2,
+    "length_m": 4.0
+  }
+}

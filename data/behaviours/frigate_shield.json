@@ -1,0 +1,10 @@
+{
+  "_comment": "Covers allies within its radius with a regenerating shield.",
+  "id": "frigate_shield",
+  "module": "shield_allies",
+  "params": {
+    "radius_m": 320.0,
+    "ally_shield": 60.0,
+    "regen_per_s": 12.0
+  }
+}

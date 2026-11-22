@@ -1,0 +1,64 @@
+{
+  "id": "gunship",
+  "display_name": "Gunship",
+  "model": "model.enemy.gunship",
+  "tags": [
+    "heavy"
+  ],
+  "hitbox_radius_m": 11.0,
+  "hp": 900.0,
+  "armour": 20.0,
+  "shield": 150.0,
+  "shield_regen_per_s": 8.0,
+  "shield_regen_delay_s": 5.0,
+  "speed_mps": 30.0,
+  "turn_rate_deg_s": 35.0,
+  "behaviours": [
+    "gunship_hover"
+  ],
+  "attacks": [
+    {
+      "id": "heavy_cannon",
+      "type": "hitscan_burst",
+      "damage_type": "kinetic",
+      "damage": 35.0,
+      "count": 1,
+      "cooldown_s": 5.0,
+      "range_m": 1200.0,
+      "color": [
+        1.0,
+        0.7,
+        0.3
+      ],
+      "width_m": 0.5
+    }
+  ],
+  "countermeasures": {
+    "flare_chance": 0.5
+  },
+  "credit_bounty": 150,
+  "threat_cost": 60,
+  "first_stage": 8,
+  "group_size": [
+    1,
+    2
+  ],
+  "spawn": {
+    "pitch_deg": [
+      8.0,
+      25.0
+    ],
+    "distance_m": [
+      1700.0,
+      2300.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 30.0,
+    "color": [
+      1.0,
+      0.5,
+      0.2
+    ]
+  }
+}
