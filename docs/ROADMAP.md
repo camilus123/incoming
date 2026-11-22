@@ -20,7 +20,6 @@
 - **Mods folder:** `AssetResolver` already supports override roots. Still needed: scanning a `mods/` folder next to the executable, runtime loading of external `.glb` (GLTFDocument) and images, and merging mod data files into `DataLoader`.
 - **Story:** stage briefings and setting text are data, so a campaign narrative can be added without code changes.
 - **ADS/zoom:** an optional zoom key, possibly unlocked by an upgrade.
-- **Respec refund:** still 100 % for testing; set `economy.json: respec_refund_ratio` to 0.75 for release.
 - **Audio:** recorded voice alerts, composed music, real sound effects in place of the generated ones.
 - **Gamepad support.**
 - **Graphics left over from M6:** heat distortion on beams, orbital debris, decals, real PBR texture sets for terrain and hulls.

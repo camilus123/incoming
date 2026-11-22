@@ -220,7 +220,8 @@ Checked with the self-playing demo, which is only a rough guide (it never misses
 - **Renderer option:** the engine chooses its driver before any script runs, so the settings menu writes the choice to `override.cfg` next to the executable and it applies at the next start. `--rendering-driver` on the command line still wins. Vulkan stays the default (it measured slightly better here).
 - **Debug keys** (F1 to F5) only exist in debug builds. The release build has none of them.
 - **The main menu is the first scene.** Command-line starts used by the tools (`--auto-demo`, `--benchmark`, `--stage=N`) skip it.
-- **Respec refund is still 100 %** (Marko's testing setting). The design value is 75 %; it is one number in `config/economy.json`.
+- **Respec refund stays at 100 %** (Marko, 2026-11-23: "keep the refund"). The original design value was 75 %; it is one number in `config/economy.json`.
+- **Music fix after the play test:** the first ambient track was a 55 Hz drone peaking around -25 dB, which most speakers and headphones cannot reproduce, so it sounded like no music at all. It is now a 32 s four-chord pad between 110 and 660 Hz with harmonics, and the Music bus default went from -10 to -4 dB (peaks about -13 to -18 dB).
 
 ### Not done in M8 (honest list)
 

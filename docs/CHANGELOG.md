@@ -12,6 +12,7 @@ Updated at every merge to `main`.
 - Debug menu (F4, debug builds): credits, skip stage, spawn an enemy, god mode, show hit shapes, stats overlay.
 - Windows export preset and `tools\export_windows.ps1`.
 - 17 new unit tests (151 in total).
+- After the play test: the ambient music was too low and too quiet to hear; it is now an audible four-chord pad.
 
 ## M7: Performance pass (2026-11-22)
 
