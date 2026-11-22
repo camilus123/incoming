@@ -2,6 +2,19 @@
 
 Updated at every merge to `main`.
 
+## M6: Graphics pass (2026-11-22)
+
+- A frontier world built from data (`config/environments.json`): physical sky with day, dusk and night per stage, sun or moonlight with cascaded shadows, distance and volumetric fog, generated dunes and mountains, a ringed gas giant, a moon and a star field.
+- Graphics presets Low, Medium, High and Ultra now do something: render scale with FSR 1 or FSR 2, TAA or FXAA, shadow quality, SSAO, SSIL or SDFGI, SSR, volumetric fog, glow, particle density, effect distance and pool sizes. `--preset=<id>` or F3 (debug) switches.
+- Particle effects: explosions with fire, smoke and debris, impact sparks, shell casings from kinetic guns, barrels that glow as they heat up, fire trails behind drop pods.
+- Lens effects: chromatic aberration on hull hits and near explosions, lens dirt on big blasts, a refraction ripple when the shield is hit. A preset switch and a setting turn them off.
+- HUD: backing panels and text shadows for readability against a bright sky, segmented shield and hull bars, a pulsing low-hull warning, a tidier stage strip. The developer read-out is hidden until F1.
+- Tracers, flashes and bolts are drawn as three MultiMesh pools instead of about 250 separate meshes.
+- `run_demo.ps1` passes extra options on to the game; new demo options `--demo-frame-log`, `--time=<id>`.
+- The Plasma Cannon bolt is twice as large.
+- 9 new unit tests (124 in total).
+- After review: the shield is invisible until hit and turns from blue to orange-red as it drains; all presets use FSR 2 (native, quality, balanced, performance) and Ultra is the default; lens effects toned down.
+
 ## M5: Content pass (2026-11-22)
 
 - Six new weapon archetypes: `projectile`, `airburst`, `beam`, `spinup`, `charge_pierce`, `area_pulse`; homing gained auto-distributing salvos and a player-steered torpedo.

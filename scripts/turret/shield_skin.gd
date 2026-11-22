@@ -18,6 +18,8 @@ const SHELL_META: StringName = &"shield_shell"
 const MAX_IMPACTS: int = 4
 const WAVE_LIFE_S: float = 0.6
 const FLASH_DECAY_PER_S: float = 2.5
+## How fast the whole shield fades out again after a hit.
+const ACTIVITY_DECAY_PER_S: float = 0.9
 ## Positions closer than this (in metres) count as the same corner.
 const WELD_GRID_M: float = 0.0005
 
@@ -28,6 +30,7 @@ var _offset_m: float = 0.06
 var _impacts: Array[Vector4] = []
 var _active_count: int = 0
 var _flash: float = 0.0
+var _activity: float = 0.0
 
 
 func _init() -> void:
@@ -45,6 +48,9 @@ func get_style() -> String:
 func configure(visuals: Dictionary) -> void:
 	var color: Array = visuals.get("color", [0.3, 0.8, 1.0])
 	_material.set_shader_parameter(&"shield_color", Color(color[0], color[1], color[2]))
+	var low: Array = visuals.get("low_color", [1.0, 0.42, 0.08])
+	_material.set_shader_parameter(&"low_color", Color(low[0], low[1], low[2]))
+	_material.set_shader_parameter(&"idle_alpha", visuals.get("idle_alpha", 0.0))
 	var offset_m: float = visuals.get("conformal_offset_m", 0.06)
 	if not is_equal_approx(offset_m, _offset_m):
 		_offset_m = offset_m
@@ -75,6 +81,7 @@ func add_impact(from_position: Vector3) -> void:
 	var slot: int = _active_count if _active_count < MAX_IMPACTS else 0
 	_impacts[slot] = Vector4(direction.x, direction.y, direction.z, 0.0)
 	_active_count = mini(_active_count + 1, MAX_IMPACTS)
+	_activity = 1.0
 
 
 func flash(strength: float = 1.0) -> void:
@@ -86,7 +93,7 @@ func _exit_tree() -> void:
 
 
 func _process(delta_s: float) -> void:
-	if _active_count == 0 and _flash <= 0.0:
+	if _active_count == 0 and _flash <= 0.0 and _activity <= 0.0:
 		return
 	var live: int = 0
 	for index: int in MAX_IMPACTS:
@@ -100,9 +107,11 @@ func _process(delta_s: float) -> void:
 			live += 1
 	_active_count = live
 	_flash = maxf(0.0, _flash - FLASH_DECAY_PER_S * delta_s)
+	_activity = maxf(0.0, _activity - ACTIVITY_DECAY_PER_S * delta_s)
 	_material.set_shader_parameter(&"impacts", _impacts)
 	_material.set_shader_parameter(&"impact_count", live)
 	_material.set_shader_parameter(&"flash", _flash)
+	_material.set_shader_parameter(&"activity", _activity)
 
 
 ## Adds a shell to every mesh under `node`.

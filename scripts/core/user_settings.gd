@@ -15,6 +15,10 @@ const INVERT_Y: String = "controls/invert_y"
 const TURRET_SMOOTHING_S: String = "controls/turret_smoothing_s"
 const FOV_HORIZONTAL_DEG: String = "video/fov_horizontal_deg"
 const SCREEN_SHAKE: String = "accessibility/screen_shake"
+## Id of a graphics preset; empty = the default of graphics_presets.json.
+const GRAPHICS_PRESET: String = "video/graphics_preset"
+## Chromatic aberration, lens dirt and shield distortion (also needs the preset to allow them).
+const SCREEN_EFFECTS: String = "video/screen_effects"
 
 const DEFAULTS: Dictionary = {
 	MOUSE_SENSITIVITY: 1.0,
@@ -23,6 +27,8 @@ const DEFAULTS: Dictionary = {
 	TURRET_SMOOTHING_S: -1.0,
 	FOV_HORIZONTAL_DEG: -1.0,
 	SCREEN_SHAKE: 1.0,
+	GRAPHICS_PRESET: "",
+	SCREEN_EFFECTS: true,
 }
 
 var _values: Dictionary = DEFAULTS.duplicate()

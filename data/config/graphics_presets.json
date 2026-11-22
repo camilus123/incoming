@@ -1,10 +1,10 @@
 {
-  "_comment": "Graphics presets (spec 8). First guesses; tuned with measurements in M6 and M7. 'custom' is built in the settings menu from these fields.",
-  "default": "high",
+  "_comment": "Graphics presets (spec 8). Every preset uses FSR 2 for upscaling and anti-aliasing: Ultra at native resolution, High at quality (0.67), Medium at balanced (0.59), Low at performance (0.5). Godot 4.7 has no FSR 3 or FSR 4.",
+  "default": "ultra",
   "presets": {
     "low": {
       "display_name": "Low",
-      "render_scale": 0.67,
+      "render_scale": 0.5,
       "upscaler": "fsr2",
       "antialiasing": "none",
       "shadows": "low",
@@ -16,11 +16,13 @@
       "particle_density": 0.4,
       "effect_view_distance_m": 1500.0,
       "max_active_particle_systems": 48,
-      "max_decals": 16
+      "max_decals": 16,
+      "viewmodel_msaa": 0,
+      "screen_effects": false
     },
     "medium": {
       "display_name": "Medium",
-      "render_scale": 0.77,
+      "render_scale": 0.59,
       "upscaler": "fsr2",
       "antialiasing": "none",
       "shadows": "medium",
@@ -32,13 +34,15 @@
       "particle_density": 0.7,
       "effect_view_distance_m": 2500.0,
       "max_active_particle_systems": 96,
-      "max_decals": 32
+      "max_decals": 32,
+      "viewmodel_msaa": 2,
+      "screen_effects": true
     },
     "high": {
       "display_name": "High",
-      "render_scale": 1.0,
-      "upscaler": "none",
-      "antialiasing": "taa",
+      "render_scale": 0.67,
+      "upscaler": "fsr2",
+      "antialiasing": "none",
       "shadows": "high",
       "gi": "ssil",
       "ssao": true,
@@ -48,13 +52,15 @@
       "particle_density": 1.0,
       "effect_view_distance_m": 4000.0,
       "max_active_particle_systems": 160,
-      "max_decals": 64
+      "max_decals": 64,
+      "viewmodel_msaa": 4,
+      "screen_effects": true
     },
     "ultra": {
       "display_name": "Ultra",
       "render_scale": 1.0,
-      "upscaler": "none",
-      "antialiasing": "taa",
+      "upscaler": "fsr2",
+      "antialiasing": "none",
       "shadows": "ultra",
       "gi": "sdfgi",
       "ssao": true,
@@ -64,7 +70,9 @@
       "particle_density": 1.5,
       "effect_view_distance_m": 6000.0,
       "max_active_particle_systems": 256,
-      "max_decals": 128
+      "max_decals": 128,
+      "viewmodel_msaa": 4,
+      "screen_effects": true
     }
   }
 }

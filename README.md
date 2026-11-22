@@ -19,6 +19,8 @@ Status: **M5 (content pass)**. All 20 weapons and 9 enemies are in. The game sta
 
 In the armoury: left click buys an upgrade, right click refunds it, drag pans the tree and the wheel zooms. F2 adds 1,000 credits in debug builds.
 | F5 (debug builds) | Reload all data files |
+| F1 (debug builds) | Show or hide the developer read-out (fps, aim, power and weapon numbers) |
+| F3 (debug builds) | Next graphics preset (Low, Medium, High, Ultra) |
 
 Sensitivity, invert Y, turret weight, FOV and screen shake are stored in `user://settings.cfg` (settings menu comes in M8).
 

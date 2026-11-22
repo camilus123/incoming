@@ -70,3 +70,30 @@ Automated demo, 60 s, fullscreen 3440×1440, V-Sync off, god mode, starting load
 | 10 (Dreadnought, frigate, escorts) | 160 | 112 | 9.5 ms |
 
 Both are just under the targets (165 average, 120 for the 1 % lows). Nothing is pooled on the enemy side yet and every drone is its own node; that, the per-frame group lookups in the projectile system, and the HUD redraw are the first things for M7.
+
+## M6 (2026-11-22)
+
+Automated demo, 45 s, fullscreen 3440×1440, V-Sync off, god mode, starting loadout. New since M5: the whole environment, particles, lens effects, and tracers, flashes and bolts as MultiMesh pools.
+
+| Stage | Preset | Average fps | Median fps | 1 % low | Worst frame |
+|---|---|---|---|---|---|
+| 3 (dusk, swarms) | Low | 593 | 603 | 435 | 7.9 ms |
+| 3 | Medium | 443 | 450 | 346 | 5.9 ms |
+| 3 | High | 347 | 346 | 271 | 7.0 ms |
+| 3 | Ultra | 291 | 294 | 233 | 5.8 ms |
+| 10 (night, Dreadnought) | Low | 575 | 587 | 401 | 34.5 ms |
+| 10 | Medium | 434 | 441 | 318 | 34.1 ms |
+| 10 | High | 343 | 345 | 257 | 35.2 ms |
+| 10 | Ultra | 291 | 296 | 217 | 36.2 ms |
+
+High is at about twice the target (165 average, 120 for the 1 % lows) in both stages. Stage 10 has one frame of about 35 ms in every run (first appearance of the Dreadnought); to look at in M7.
+
+### The "1 % low of 111 to 115 fps" of M1 to M5 was not the game
+
+Every earlier entry in this file shows a 1 % low just under 120 fps, whatever the scene. In M6 a frame-time log (`--demo-frame-log=<file>`) showed why: for long stretches every single frame took exactly 8.42 ms (119 fps), in a small window as much as in fullscreen and on Low as much as on High. That is a frame limiter, not load. It came and went between runs made minutes apart with identical code, and it was gone in all the runs in the table above.
+
+The cause is outside the game. The game sets no frame limit and V-Sync is off during the demo. 119 fps is half of the 240 Hz of the display, which is typical of a driver feature (for example Radeon Chill, Frame Rate Target Control or frame generation pacing) or of another program holding the frame rate down. **The earlier numbers in this file are therefore lower bounds**, measured partly with that limiter active: the M5 figures of 160 fps for stages 9 and 10 were the limiter, not the game.
+
+**Confirmed by Marko on 2026-11-22: it was the frame rate cap in AMD Adrenalin.** With the cap on, the game cannot exceed 119 fps on this PC, so measure with it off.
+
+Useful for measuring: `tools\run_demo.ps1 -Stage 3 -God -Seconds 45 --preset=high`, plus `"--demo-frame-log=C:\temp\frames.txt"` for every frame time. The PERF line now includes the preset and the median.

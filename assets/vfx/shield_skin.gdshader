@@ -7,6 +7,12 @@ render_mode unshaded, blend_add, cull_back, shadows_disabled, depth_draw_never;
 const int MAX_IMPACTS = 4;
 
 uniform vec4 shield_color : source_color = vec4(0.3, 0.8, 1.0, 1.0);
+// Colour when nearly drained; the shell blends towards it as the charge falls.
+uniform vec4 low_color : source_color = vec4(1.0, 0.42, 0.08, 1.0);
+// How visible the shell is with no hits at all (0 = invisible).
+uniform float idle_alpha = 0.0;
+// 1 right after a hit, falling to 0: shows the whole shell for a moment.
+uniform float activity = 0.0;
 // 0 = shield down, 1 = full.
 uniform float charge = 1.0;
 uniform float rest_alpha = 0.02;
@@ -61,9 +67,10 @@ void fragment() {
 		glow += exp(-wave_offset * wave_offset * 6.0) * (1.0 - age / wave_life);
 	}
 
-	float alpha = (rest_alpha * (0.25 + lattice) + rim * rim_alpha) * charge;
+	float presence = max(idle_alpha, activity) * step(0.001, charge);
+	float alpha = (rest_alpha * (0.25 + lattice) + rim * rim_alpha) * presence;
 	alpha += glow * (0.12 + 0.88 * lattice) * 0.5;
 	alpha += flash * (0.12 + 0.5 * lattice);
-	ALBEDO = shield_color.rgb * 1.6;
+	ALBEDO = mix(low_color.rgb, shield_color.rgb, smoothstep(0.1, 0.9, charge)) * 1.6;
 	ALPHA = clamp(alpha, 0.0, 1.0);
 }

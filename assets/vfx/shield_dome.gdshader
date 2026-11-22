@@ -1,15 +1,21 @@
-// Energy dome around the turret: a faint hex lattice that lights up in
-// ripples where it is hit. Additive and very transparent at rest, because the
-// player looks through it from the inside all the time.
+// Energy dome around the turret: a hex lattice that lights up in ripples where
+// it is hit. At rest it is invisible (`idle_alpha` 0); a hit makes the whole
+// lattice show for a moment. Its colour runs from `shield_color` at full
+// charge to `low_color` when nearly drained.
 shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, shadows_disabled, depth_draw_never;
 
 const int MAX_IMPACTS = 8;
 
 uniform vec4 shield_color : source_color = vec4(0.3, 0.8, 1.0, 1.0);
+uniform vec4 low_color : source_color = vec4(1.0, 0.42, 0.08, 1.0);
+// How visible the lattice is with no hits at all (0 = invisible).
+uniform float idle_alpha = 0.0;
+// 1 right after a hit, falling to 0: shows the whole lattice for a moment.
+uniform float activity = 0.0;
 // 0 = shield down, 1 = full.
 uniform float charge = 1.0;
-uniform float rest_alpha = 0.004;
+uniform float rest_alpha = 0.012;
 // Hexagon cells per radian of sky, measured straight overhead.
 uniform float hex_scale = 16.0;
 // Whole-dome flash when the shield breaks or comes back.
@@ -63,9 +69,10 @@ void fragment() {
 	}
 
 	float rim = pow(1.0 - abs(dot(NORMAL, VIEW)), 4.0);
-	float alpha = (rest_alpha * (0.3 + 2.5 * lattice) + rim * 0.01) * charge;
+	float presence = max(idle_alpha, activity) * step(0.001, charge);
+	float alpha = (rest_alpha * (0.3 + 2.5 * lattice) + rim * 0.01) * presence;
 	alpha += glow * (0.12 + 0.88 * lattice) * 0.4;
 	alpha += flash * (0.02 + 0.3 * lattice);
-	ALBEDO = shield_color.rgb * 2.2;
+	ALBEDO = mix(low_color.rgb, shield_color.rgb, smoothstep(0.1, 0.9, charge)) * 2.2;
 	ALPHA = clamp(alpha * ground_fade, 0.0, 1.0);
 }

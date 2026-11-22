@@ -14,6 +14,7 @@ extends Node
 ##   --demo-power            step the power split every 2 s and print its effects
 ##   --demo-look=YAW,PITCH   hold this aim instead of tracking targets (for screenshots)
 ##   --demo-shot-times=A,B   when to take screenshots, in seconds
+##   --demo-frame-log=PATH   write every frame time (ms, one per line) to a file
 
 const WARMUP_S: float = 2.0
 const AIM_SPEED_DEG_S: float = 160.0
@@ -36,6 +37,9 @@ var _cycle_power: bool = false
 var _hits: Dictionary = {}   # slot -> hits
 var _kills: Dictionary = {}  # slot -> kills
 var _has_fixed_look: bool = false
+var _frame_log_path: String = ""
+const HITCH_USEC: int = 50000
+var _hitches: PackedStringArray = []
 var _fixed_look: Vector2 = Vector2.ZERO
 var _power_timer_s: float = 0.0
 var _power_direction: int = 1
@@ -58,6 +62,8 @@ func _ready() -> void:
 				_fixed_look = Vector2(angles[0].to_float(), angles[1].to_float())
 		elif argument.begins_with("--demo-stages="):
 			_stop_after_stage = argument.trim_prefix("--demo-stages=").to_int()
+		elif argument.begins_with("--demo-frame-log="):
+			_frame_log_path = argument.trim_prefix("--demo-frame-log=")
 		elif argument.begins_with("--screenshot-dir="):
 			_screenshot_dir = argument.trim_prefix("--screenshot-dir=")
 	turret.player_input_enabled = false
@@ -81,6 +87,8 @@ func _process(delta_s: float) -> void:
 	var now_usec: int = Time.get_ticks_usec()
 	if _time_s >= WARMUP_S:
 		_frame_times_ms.append(float(now_usec - _last_tick_usec) / 1000.0)
+		if now_usec - _last_tick_usec > HITCH_USEC:
+			_hitches.append("%.1fs:%dms" % [_time_s, (now_usec - _last_tick_usec) / 1000])
 	_last_tick_usec = now_usec
 	_time_s += delta_s
 
@@ -228,9 +236,18 @@ func _finish() -> void:
 		var worst_ms: float = 0.0
 		for index: int in range(sorted.size() - worst_count, sorted.size()):
 			worst_ms += sorted[index]
-		print("PERF resolution=%dx%d frames=%d avg_fps=%.1f low1_fps=%.1f max_frame_ms=%.2f" % [
-			window_size.x, window_size.y, sorted.size(),
+		print("PERF resolution=%dx%d preset=%s frames=%d avg_fps=%.1f median_fps=%.1f low1_fps=%.1f max_frame_ms=%.2f" % [
+			window_size.x, window_size.y, Graphics.preset_id, sorted.size(),
 			1000.0 * sorted.size() / total_ms,
+			1000.0 / maxf(sorted[sorted.size() / 2], 0.001),
 			1000.0 * worst_count / worst_ms,
 			sorted[sorted.size() - 1]])
+		if not _frame_log_path.is_empty():
+			# One frame time in milliseconds per line, in the order they happened.
+			var log_file: FileAccess = FileAccess.open(_frame_log_path, FileAccess.WRITE)
+			if log_file != null:
+				for frame_ms: float in _frame_times_ms:
+					log_file.store_line("%.3f" % frame_ms)
+		# Frames longer than 50 ms, as "time:duration" (the first 20).
+		print("HITCHES count=%d %s" % [_hitches.size(), " ".join(_hitches.slice(0, 20))])
 	get_tree().quit()

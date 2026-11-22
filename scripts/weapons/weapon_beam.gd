@@ -127,6 +127,7 @@ func _draw_beam(end: Vector3, first: CombatTarget, block: Dictionary, ramp: floa
 		_context.fx.tracer(_muzzle_position(1), end, _tracer_color, width, 0.035, intensity)
 	if first != null:
 		_context.fx.flash(end, 0.5, 0.5 + float(_visual("impact_radius_m", 2.0)) * 0.5, _tracer_color, 0.05, intensity)
+		_context.fx.sparks(end, muzzle - end)
 	var from: Vector3 = first.get_aim_point() if first != null else end
 	for target: CombatTarget in _chain:
 		var to: Vector3 = target.get_aim_point()

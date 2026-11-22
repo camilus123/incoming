@@ -14,7 +14,8 @@ var _projectiles: Array[EnemyProjectile] = []
 var _turret: Turret
 var _fx: CombatFx
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var _glow_material: ShaderMaterial
+## Glow materials shared by all markers of one look: "tint|intensity" -> material.
+var _glow_materials: Dictionary = {}
 
 
 func _enter_tree() -> void:
@@ -24,8 +25,6 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	_rng.randomize()
 	_fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
-	_glow_material = ShaderMaterial.new()
-	_glow_material.shader = GameData.assets.load_asset("vfx.shader.glow_unlit") as Shader
 
 
 ## Spawns one enemy of the given type. Returns null if the type is unknown.
@@ -102,12 +101,17 @@ func _make_glow_sphere(radius_m: float, tint: Color, intensity: float) -> MeshIn
 	sphere.height = radius_m * 2.0
 	sphere.radial_segments = 16
 	sphere.rings = 8
-	sphere.material = _glow_material
+	var key: String = "%s|%s" % [tint, intensity]
+	if not _glow_materials.has(key):
+		var material: ShaderMaterial = ShaderMaterial.new()
+		material.shader = GameData.assets.load_asset("vfx.shader.glow_static") as Shader
+		material.set_shader_parameter(&"tint", tint)
+		material.set_shader_parameter(&"intensity", intensity)
+		_glow_materials[key] = material
+	sphere.material = _glow_materials[key]
 	var instance: MeshInstance3D = MeshInstance3D.new()
 	instance.mesh = sphere
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	instance.set_instance_shader_parameter(&"tint", tint)
-	instance.set_instance_shader_parameter(&"intensity", intensity)
 	return instance
 
 

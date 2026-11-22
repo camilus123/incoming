@@ -12,7 +12,7 @@ extends Node3D
 const GROUP: StringName = &"projectile_system"
 const POOL_SIZE: int = 160
 const ZONE_TICK_S: float = 0.25
-const SHADER_ASSET: String = "vfx.shader.glow_unlit"
+const WELL_POOL: int = 4
 
 
 class Shot:
@@ -27,7 +27,8 @@ class Shot:
 	var pierce_left: int
 	var info: DamageInfo = DamageInfo.new()
 	var exclude: Array[RID] = []
-	var visual: MeshInstance3D
+	## Slot of the bolt in the bolt batch.
+	var slot: int
 	var color: Color
 
 
@@ -42,14 +43,17 @@ class Zone:
 	var tick_s: float = 0.0
 	var settings: Dictionary = {}
 	var info: DamageInfo = DamageInfo.new()
-	var visual: MeshInstance3D
+	## Slot of the gravity well in the well batch (-1 = none).
+	var slot: int = -1
+	var color: Color
 
 
 var _shots: Array[Shot] = []
 var _zones: Array[Zone] = []
 var _ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 var _fx: CombatFx
-var _well_mesh: SphereMesh
+var _bolts: GlowBatch
+var _wells: GlowBatch
 var _pool_warning_shown: bool = false
 
 
@@ -63,22 +67,18 @@ func _ready() -> void:
 	_ray.collision_mask = Layers.PHYSICS_WORLD | Layers.PHYSICS_ENEMY | Layers.PHYSICS_ENEMY_PROJECTILE
 	_fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
 
-	var material: ShaderMaterial = ShaderMaterial.new()
-	material.shader = GameData.assets.load_asset(SHADER_ASSET) as Shader
 	var bolt: BoxMesh = BoxMesh.new()
 	bolt.size = Vector3.ONE
-	bolt.material = material
-	_well_mesh = SphereMesh.new()
-	_well_mesh.radius = 1.0
-	_well_mesh.height = 2.0
-	_well_mesh.material = material
+	_bolts = GlowBatch.create(bolt, POOL_SIZE, "Bolts")
+	add_child(_bolts)
+	var well: SphereMesh = SphereMesh.new()
+	well.radius = 1.0
+	well.height = 2.0
+	_wells = GlowBatch.create(well, WELL_POOL, "GravityWells")
+	add_child(_wells)
 	for index: int in POOL_SIZE:
 		var shot: Shot = Shot.new()
-		shot.visual = MeshInstance3D.new()
-		shot.visual.mesh = bolt
-		shot.visual.visible = false
-		shot.visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(shot.visual)
+		shot.slot = index
 		_shots.append(shot)
 
 
@@ -103,10 +103,7 @@ func fire(origin: Vector3, direction: Vector3, weapon_data: Dictionary, slot: St
 	var visuals: Dictionary = weapon_data.get("visuals", {})
 	var color: Array = visuals.get("tracer_color", [1.0, 1.0, 1.0])
 	shot.color = Color(color[0], color[1], color[2])
-	shot.visual.set_instance_shader_parameter(&"tint", shot.color)
-	shot.visual.set_instance_shader_parameter(&"intensity", 5.0)
-	_place_visual(shot)
-	shot.visual.visible = true
+	_bolts.show_steady(shot.slot, _bolt_transform(shot), shot.color, 5.0)
 
 
 ## Starts a line of lingering damage (Hyper-Rail trail). `settings` has
@@ -141,8 +138,8 @@ func _process(delta_s: float) -> void:
 			_update_shot(shot, delta_s, space)
 	for index: int in range(_zones.size() - 1, -1, -1):
 		if not _update_zone(_zones[index], delta_s):
-			if _zones[index].visual != null:
-				_zones[index].visual.queue_free()
+			if _zones[index].slot >= 0:
+				_wells.hide_slot(_zones[index].slot)
 			_zones.remove_at(index)
 
 
@@ -214,12 +211,14 @@ func _detonate(shot: Shot, at: Vector3, direct_hit: Hurtbox) -> void:
 					direct_hit.redirect(shot.position, shot.velocity.normalized(), shot.position.distance_to(at)).apply_hit(shot.info)
 				if _fx != null:
 					_fx.flash(at, 0.3, 2.5, shot.color, 0.12, 5.0)
+					if direct_hit != null:
+						_fx.sparks(at, -shot.velocity)
 	_retire(shot)
 
 
 func _retire(shot: Shot) -> void:
 	shot.active = false
-	shot.visual.visible = false
+	_bolts.hide_slot(shot.slot)
 
 
 ## EMP: strips enemy shields and stuns tagged enemies around the impact.
@@ -259,13 +258,9 @@ func _start_well(at: Vector3, shot: Shot) -> void:
 	zone.dps = 0.0
 	zone.info.configure_from_weapon(shot.weapon_data, shot.info.source_slot)
 	zone.info.amount = shot.damage
-	zone.visual = MeshInstance3D.new()
-	zone.visual.mesh = _well_mesh
-	zone.visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(zone.visual)
-	zone.visual.global_position = at
-	zone.visual.set_instance_shader_parameter(&"tint", shot.color)
-	zone.visual.set_instance_shader_parameter(&"intensity", 3.0)
+	zone.slot = _wells.take_slot()
+	zone.color = shot.color
+	_wells.show_steady(zone.slot, Transform3D(Basis.from_scale(Vector3.ONE * 0.01), at), shot.color, 3.0)
 	_zones.append(zone)
 
 
@@ -306,7 +301,7 @@ func _update_well(zone: Zone, delta_s: float) -> bool:
 				enemy.global_position += to_centre / distance * minf(pull_mps * delta_s, distance)
 	# The well pulses while it holds.
 	var pulse: float = 6.0 + 2.0 * sin(zone.time_left_s * 12.0)
-	zone.visual.scale = Vector3.ONE * pulse
+	_wells.move_slot(zone.slot, Transform3D(Basis.from_scale(Vector3.ONE * pulse), zone.from))
 	if zone.time_left_s > 0.0:
 		return true
 	var implode_radius_m: float = settings.get("implode_radius_m", 90.0)
@@ -344,8 +339,12 @@ func _take_free() -> Shot:
 
 
 func _place_visual(shot: Shot) -> void:
+	_bolts.move_slot(shot.slot, _bolt_transform(shot))
+
+
+func _bolt_transform(shot: Shot) -> Transform3D:
 	var direction: Vector3 = shot.velocity.normalized()
 	var up: Vector3 = Vector3.UP if absf(direction.y) < 0.99 else Vector3.RIGHT
 	var width: float = shot.block.get("size_m", 0.3)
 	var length: float = shot.block.get("length_m", 2.0)
-	shot.visual.global_transform = Transform3D(Basis.looking_at(direction, up).scaled_local(Vector3(width, width, length)), shot.position)
+	return Transform3D(Basis.looking_at(direction, up).scaled_local(Vector3(width, width, length)), shot.position)

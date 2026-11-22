@@ -12,6 +12,7 @@ const RECOIL_RECOVER_PER_S: float = 14.0
 const SHAKE_DECAY_PER_S: float = 2.2
 const SHAKE_FREQUENCY_HZ: float = 26.0
 const VIEWMODEL_CANVAS_LAYER: int = 1
+const VIEWMODEL_MSAA: Dictionary = {0: Viewport.MSAA_DISABLED, 2: Viewport.MSAA_2X, 4: Viewport.MSAA_4X, 8: Viewport.MSAA_8X}
 
 var _camera: Camera3D
 var _viewmodel_camera: Camera3D
@@ -31,7 +32,7 @@ func _ready() -> void:
 	_camera = Camera3D.new()
 	_camera.name = "WorldCamera"
 	_camera.near = 0.2
-	_camera.far = 20000.0
+	_camera.far = 30000.0
 	_camera.cull_mask = 0xFFFFF & ~Layers.RENDER_VIEWMODEL
 	add_child(_camera)
 	_camera.make_current()
@@ -66,6 +67,7 @@ func _ready() -> void:
 	get_tree().root.size_changed.connect(_sync_viewport_size)
 	_sync_viewport_size()
 	_setup_viewmodel_environment.call_deferred()
+	EventBus.environment_changed.connect(_setup_viewmodel_environment)
 	UserSettings.changed.connect(_on_setting_changed)
 
 
@@ -142,16 +144,24 @@ func _sync_viewport_size() -> void:
 
 func _setup_viewmodel_environment() -> void:
 	# Light the guns like the world, but keep the background transparent.
-	var world_environment: Environment = get_world_3d().environment
+	_viewmodel_viewport.msaa_3d = VIEWMODEL_MSAA.get(int(Graphics.get_value("viewmodel_msaa", 4)), Viewport.MSAA_4X)
+	var frontier: FrontierEnvironment = get_tree().get_first_node_in_group(FrontierEnvironment.GROUP) as FrontierEnvironment
+	var world_environment: Environment = frontier.get_environment() if frontier != null else get_world_3d().environment
 	if world_environment == null:
 		return
 	var environment: Environment = world_environment.duplicate()
 	environment.background_mode = Environment.BG_CLEAR_COLOR
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+	# Without a sky behind them the guns get a flat ambient light per time of day.
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	environment.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
+	if frontier != null:
+		var ambient: Dictionary = frontier.get_turret_ambient()
+		environment.ambient_light_color = ambient["color"]
+		environment.ambient_light_energy = ambient["energy"]
 	environment.fog_enabled = false
 	environment.volumetric_fog_enabled = false
 	environment.glow_enabled = false
 	environment.ssr_enabled = false
 	environment.sdfgi_enabled = false
+	environment.ssil_enabled = false
 	_viewmodel_camera.environment = environment

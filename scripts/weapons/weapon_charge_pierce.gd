@@ -70,6 +70,7 @@ func _fire(block: Dictionary) -> void:
 		struck.apply_hit(_damage_info)
 		if _context.fx != null:
 			_context.fx.flash(hit["position"], 0.5, _visual("impact_radius_m", 3.0), _tracer_color, 0.15, 6.0)
+			_context.fx.sparks(hit["position"], -direction)
 		if _hit_targets.size() >= limit:
 			end = hit["position"]
 

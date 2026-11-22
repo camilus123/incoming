@@ -1,6 +1,8 @@
 extends Control
-## In-game HUD (M1 version): crosshair, weapon heat, missile status, lock
-## brackets, hit markers, aim-arc indicators and the hull bar.
+## In-game HUD: crosshair, weapon heat, missile status, lock brackets, hit
+## markers, aim-arc indicators, threat markers, shield and hull bars and the
+## power gauge. In debug builds F1 shows the developer read-out (fps, aim,
+## power and weapon numbers).
 ##
 ## Everything is drawn in `_draw()` in UI units. The project's stretch
 ## settings scale it with the resolution and keep it centred on any aspect
@@ -13,6 +15,12 @@ const COLOR_ALERT: Color = Color(1.0, 0.25, 0.2, 0.95)
 const COLOR_LOCK: Color = Color(1.0, 0.3, 0.25, 0.95)
 const COLOR_SHIELD: Color = Color(0.35, 0.75, 1.0, 0.95)
 const COLOR_WEAPON: Color = Color(1.0, 0.6, 0.2, 0.95)
+## Dark backing under panels and a soft shadow under text, so the HUD stays
+## readable against a bright sky or an explosion.
+const COLOR_PANEL: Color = Color(0.02, 0.05, 0.08, 0.45)
+const COLOR_SHADOW: Color = Color(0.0, 0.02, 0.04, 0.6)
+const BAR_SEGMENTS: int = 10
+const LOW_HULL_FRACTION: float = 0.3
 const HEAT_RADIUS: float = 52.0
 const HIT_MARKER_S: float = 0.14
 const KILL_MARKER_S: float = 0.35
@@ -35,6 +43,7 @@ var _kill_left_s: float = 0.0
 var _message: String = ""
 var _message_left_s: float = 0.0
 var _time_s: float = 0.0
+var _show_debug: bool = false
 ## Reload bar of the alternate weapon: it stays on screen, full, once the
 ## weapon is ready again, and "READY" flashes for a moment.
 var _alternate_reloading: bool = false
@@ -51,6 +60,7 @@ func _ready() -> void:
 	EventBus.shield_hit.connect(func(_amount: float, _remaining: float) -> void: _shield_flash = 1.0)
 	EventBus.power_split_changed.connect(func(_share: float) -> void: _power_pulse = 1.0)
 	EventBus.shield_broken.connect(_on_ui_message.bind("SHIELDS DOWN"))
+	_show_debug = OS.get_cmdline_user_args().has("--debug-hud")
 
 
 func _process(delta_s: float) -> void:
@@ -97,7 +107,7 @@ func _draw() -> void:
 	_draw_hull()
 	_draw_power_gauge(centre)
 	_draw_messages(centre)
-	if OS.is_debug_build():
+	if OS.is_debug_build() and _show_debug:
 		_draw_debug()
 
 
@@ -264,17 +274,38 @@ func _draw_edge_warnings(centre: Vector2) -> void:
 func _draw_hull() -> void:
 	var origin: Vector2 = Vector2(48.0, size.y - 64.0)
 	var bar: Vector2 = Vector2(260.0, 12.0)
-	# Shield bar above the hull bar.
 	var shield: ShieldState = _turret.shield
 	var shield_origin: Vector2 = origin + Vector2(0.0, -44.0)
+	_draw_panel(Rect2(shield_origin + Vector2(-14.0, -30.0), Vector2(bar.x + 28.0, 98.0)))
 	var shield_color: Color = COLOR_SHIELD.lerp(Color.WHITE, _shield_flash * 0.7) if shield.is_up() else COLOR_ALERT
-	_text(shield_origin + Vector2(0.0, -8.0), "SHIELD  %d / %d" % [ceili(shield.charge), ceili(shield.capacity)], 14, shield_color, HORIZONTAL_ALIGNMENT_LEFT)
-	draw_rect(Rect2(shield_origin, bar), COLOR_DIM)
-	draw_rect(Rect2(shield_origin, Vector2(bar.x * shield.get_fraction(), bar.y)), shield_color)
+	_text(shield_origin + Vector2(0.0, -8.0), "SHIELD", 14, shield_color, HORIZONTAL_ALIGNMENT_LEFT)
+	_text(shield_origin + Vector2(bar.x, -8.0), "%d / %d" % [ceili(shield.charge), ceili(shield.capacity)], 14, shield_color, HORIZONTAL_ALIGNMENT_RIGHT)
+	_draw_bar(Rect2(shield_origin, bar), shield.get_fraction(), shield_color)
+
 	var fraction: float = _turret.hull / _turret.max_hull if _turret.max_hull > 0.0 else 0.0
-	_text(origin + Vector2(0.0, -8.0), "HULL  %d / %d" % [ceili(_turret.hull), ceili(_turret.max_hull)], 14, COLOR_MAIN, HORIZONTAL_ALIGNMENT_LEFT)
-	draw_rect(Rect2(origin, bar), COLOR_DIM)
-	draw_rect(Rect2(origin, Vector2(bar.x * fraction, bar.y)), COLOR_MAIN if fraction > 0.3 else COLOR_ALERT)
+	var hull_color: Color = COLOR_MAIN
+	if fraction <= LOW_HULL_FRACTION:
+		# A low hull pulses red.
+		hull_color = COLOR_ALERT.lerp(Color.WHITE, 0.35 + 0.35 * sin(_time_s * 9.0))
+	_text(origin + Vector2(0.0, -8.0), "HULL", 14, hull_color, HORIZONTAL_ALIGNMENT_LEFT)
+	_text(origin + Vector2(bar.x, -8.0), "%d / %d" % [ceili(_turret.hull), ceili(_turret.max_hull)], 14, hull_color, HORIZONTAL_ALIGNMENT_RIGHT)
+	_draw_bar(Rect2(origin, bar), fraction, hull_color)
+
+
+## A dark backing plate with a thin bright edge on the left.
+func _draw_panel(rect: Rect2) -> void:
+	draw_rect(rect, COLOR_PANEL)
+	draw_rect(Rect2(rect.position, Vector2(2.0, rect.size.y)), COLOR_DIM)
+
+
+## A framed bar with segment ticks.
+func _draw_bar(rect: Rect2, fraction: float, color: Color) -> void:
+	draw_rect(rect, Color(COLOR_DIM, 0.2))
+	draw_rect(Rect2(rect.position, Vector2(rect.size.x * clampf(fraction, 0.0, 1.0), rect.size.y)), color)
+	for segment: int in range(1, BAR_SEGMENTS):
+		var x: float = rect.position.x + rect.size.x * float(segment) / float(BAR_SEGMENTS)
+		draw_line(Vector2(x, rect.position.y), Vector2(x, rect.position.y + rect.size.y), COLOR_SHADOW, 1.5)
+	draw_rect(rect.grow(2.0), COLOR_DIM, false, 1.0)
 
 
 func _draw_messages(centre: Vector2) -> void:
@@ -295,10 +326,10 @@ func _draw_debug() -> void:
 		"data: " + GameData.last_report.summary(),
 		_power_debug_line(),
 		_weapon_debug_line(),
-		"F5 reload data   Esc pause   wheel: power   middle click: reset",
+		"preset: %s   F1 hide   F3 next preset   F5 reload data" % Graphics.preset_id,
 	]
 	for index: int in lines.size():
-		_text(Vector2(48.0, 48.0 + index * 18.0), lines[index], 13, COLOR_DIM.lightened(0.4), HORIZONTAL_ALIGNMENT_LEFT)
+		_text(Vector2(48.0, 96.0 + index * 18.0), lines[index], 13, COLOR_DIM.lightened(0.4), HORIZONTAL_ALIGNMENT_LEFT)
 
 
 ## Draws text anchored at its baseline; alignment is relative to `at`.
@@ -309,7 +340,14 @@ func _text(at: Vector2, text: String, font_size: int, color: Color, alignment: H
 		origin.x -= text_width * 0.5
 	elif alignment == HORIZONTAL_ALIGNMENT_RIGHT:
 		origin.x -= text_width
+	draw_string(_font, origin + Vector2(1.0, 1.5), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(COLOR_SHADOW, COLOR_SHADOW.a * color.a))
 	draw_string(_font, origin, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, color)
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key: InputEventKey = event as InputEventKey
+	if key != null and key.pressed and not key.echo and key.keycode == KEY_F1 and OS.is_debug_build():
+		_show_debug = not _show_debug
 
 
 func _on_target_hit(_slot: StringName, killed: bool) -> void:
@@ -340,10 +378,19 @@ func _draw_damage_flash() -> void:
 func _draw_stage_info(centre: Vector2) -> void:
 	if _stages.state == StageManager.State.IDLE:
 		return
-	var text: String = "STAGE %d     WAVE %d / %d     HOSTILES %d     BOUNTY %d cr" % [
-		_stages.stage_number, mini(_stages.wave_index + 1, _stages.get_wave_count()), _stages.get_wave_count(),
-		_enemies.get_enemy_count() if _enemies != null else 0, _stages.stats.bounty]
-	_text(Vector2(centre.x, 44.0), text, 15, COLOR_MAIN, HORIZONTAL_ALIGNMENT_CENTER)
+	var fields: Array[Array] = [
+		["STAGE", "%d" % _stages.stage_number],
+		["WAVE", "%d / %d" % [mini(_stages.wave_index + 1, _stages.get_wave_count()), _stages.get_wave_count()]],
+		["HOSTILES", "%d" % (_enemies.get_enemy_count() if _enemies != null else 0)],
+		["BOUNTY", "%d cr" % _stages.stats.bounty],
+	]
+	var cell: float = 150.0
+	var left: float = centre.x - cell * fields.size() * 0.5
+	_draw_panel(Rect2(Vector2(left - 10.0, 18.0), Vector2(cell * fields.size() + 20.0, 50.0)))
+	for index: int in fields.size():
+		var x: float = left + cell * (index + 0.5)
+		_text(Vector2(x, 36.0), fields[index][0], 11, COLOR_DIM.lightened(0.25), HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(x, 58.0), fields[index][1], 18, COLOR_MAIN, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 ## Marks every threat: a small diamond on distant ones that are on screen, an
