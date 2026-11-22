@@ -45,7 +45,7 @@ func get_aim_point() -> Vector3:
 func apply_damage(info: DamageInfo) -> DamageResult:
 	if not is_alive():
 		return null
-	var result: DamageResult = DamageCalc.apply(info.amount, info.damage_type, info.armour_pierce, stats, GameData.loader.get_config("combat"))
+	var result: DamageResult = DamageCalc.apply(info.amount, info.damage_type, info.armour_pierce, stats, GameData.loader.get_config("combat"), info.armour_factor)
 	damaged.emit(result)
 	EventBus.target_hit.emit(info.source_slot, result.killed)
 	if result.killed:

@@ -1,0 +1,44 @@
+{
+  "_comment": "Slow plasma bolts with a small blast. You have to lead moving targets.",
+  "id": "plasma_repeater",
+  "display_name": "Plasma Repeater",
+  "archetype": "projectile",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 30.0,
+  "fire_rate": 4.0,
+  "range_m": 2500.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.05,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.18,
+    "recoil_kick_m": 0.07,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.07
+  },
+  "visuals": {
+    "model": "model.weapon.plasma_repeater",
+    "crosshair": "circle",
+    "tracer_color": [
+      0.45,
+      1.0,
+      0.55
+    ]
+  },
+  "projectile": {
+    "speed_mps": 750.0,
+    "lifetime_s": 3.5,
+    "splash_radius_m": 6.0,
+    "size_m": 0.5,
+    "length_m": 2.5
+  }
+}

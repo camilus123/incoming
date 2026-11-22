@@ -7,6 +7,7 @@ extends PlayScene
 ##   --demo-buy   with --auto-demo: buy every affordable upgrade in each shop
 ##   --demo-shop-seconds=N   with --auto-demo: keep each shop open for N seconds
 ##   --demo-credits=N        with --auto-demo: start the run with N credits
+##   --demo-from-stage=N     with --auto-demo: the run starts in the armoury before stage N
 
 @onready var _stages: StageManager = $StageManager
 
@@ -26,6 +27,8 @@ func _ready() -> void:
 		for argument: String in arguments:
 			if argument.begins_with("--demo-credits="):
 				GameState.credits = argument.trim_prefix("--demo-credits=").to_int()
+			elif argument.begins_with("--demo-from-stage="):
+				GameState.stage = maxi(1, argument.trim_prefix("--demo-from-stage=").to_int())
 	elif arguments.has("--new-run"):
 		GameState.new_run()
 	if direct_stage > 0:

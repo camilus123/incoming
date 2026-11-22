@@ -1,0 +1,45 @@
+{
+  "_comment": "Two autocannon barrels firing in turn.",
+  "id": "twin_autocannon",
+  "display_name": "Twin Autocannon",
+  "archetype": "airburst",
+  "damage_type": "explosive",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 28.0,
+  "fire_rate": 9.0,
+  "range_m": 3000.0,
+  "armour_pierce": 3.0,
+  "spread_deg": 0.2,
+  "heat": {
+    "per_shot": 0.028,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.3,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.25,
+    "recoil_kick_m": 0.1,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.1
+  },
+  "visuals": {
+    "model": "model.weapon.twin_autocannon",
+    "crosshair": "circle",
+    "tracer_color": [
+      1.0,
+      0.6,
+      0.25
+    ]
+  },
+  "projectile": {
+    "speed_mps": 1250.0,
+    "lifetime_s": 2.5,
+    "splash_radius_m": 9.0,
+    "proximity_fuse_m": 7.0,
+    "size_m": 0.25,
+    "length_m": 3.0
+  }
+}

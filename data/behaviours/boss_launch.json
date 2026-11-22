@@ -1,0 +1,13 @@
+{
+  "_comment": "Drone launches, switched on by the boss's last phase.",
+  "id": "boss_launch",
+  "module": "spawn_children",
+  "params": {
+    "enemy": "drone_swarmer",
+    "count": 8,
+    "interval_s": 14.0,
+    "first_delay_s": 2.0,
+    "max_alive": 24,
+    "spread_m": 120.0
+  }
+}

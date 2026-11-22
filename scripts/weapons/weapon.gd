@@ -26,6 +26,7 @@ var _kick_m: float = 0.0
 var _kick_recover_per_s: float = 14.0
 var _damage_info: DamageInfo = DamageInfo.new()
 var _tracer_color: Color = Color.WHITE
+var _ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 
 
 ## Prepares the weapon from its data. Called once before it enters the tree.
@@ -39,6 +40,9 @@ func setup(weapon_data: Dictionary, weapon_slot: StringName, context: WeaponCont
 	_kick_recover_per_s = _feel("recoil_recover_per_s", 14.0)
 	var color: Array = _visual("tracer_color", [1.0, 1.0, 1.0])
 	_tracer_color = Color(color[0], color[1], color[2])
+	_ray.collide_with_areas = true
+	_ray.collide_with_bodies = true
+	_ray.collision_mask = Layers.PHYSICS_WORLD | Layers.PHYSICS_ENEMY | Layers.PHYSICS_ENEMY_PROJECTILE
 	refill_ammo()
 	_build_model()
 	_setup_weapon()
@@ -76,6 +80,11 @@ func get_rate_scale() -> float:
 
 ## 0 when ready, counting down from 1 while reloading. For the HUD.
 func get_reload_fraction() -> float:
+	return 0.0
+
+
+## 0..1 charge of a hold-to-charge weapon (charge weapons only). For the HUD.
+func get_charge_fraction() -> float:
 	return 0.0
 
 
@@ -129,6 +138,68 @@ func _apply_shot_feedback() -> void:
 	if heat.overheated:
 		EventBus.weapon_overheated.emit(slot)
 
+
+func _spend_ammo(amount: int = 1) -> void:
+	if ammo != UNLIMITED_AMMO:
+		ammo = maxi(0, ammo - amount)
+
+
+## The archetype's own block of the data file (e.g. "beam", "projectile").
+func _block(block_name: String) -> Dictionary:
+	return data.get(block_name, {})
+
+
+## Casts the aim ray. Returns the physics hit ({} if nothing was hit).
+## `exclude` lists colliders to ignore (used when piercing).
+func _cast_aim_ray(direction: Vector3, exclude: Array[RID] = []) -> Dictionary:
+	_ray.from = _context.aim_origin
+	_ray.to = _context.aim_origin + direction * float(data.get("range_m", 5000.0))
+	_ray.exclude = exclude
+	return _context.world.direct_space_state.intersect_ray(_ray)
+
+
+## One instant-hit shot along `direction`: damages what it hits and draws the
+## tracer from the next muzzle. Returns the point where the shot ended.
+func _hitscan_shot(direction: Vector3, damage: float, tracer_width_m: float, tracer_intensity: float = 4.0) -> Vector3:
+	var end: Vector3 = _context.aim_origin + direction * float(data.get("range_m", 5000.0))
+	var hit: Dictionary = _cast_aim_ray(direction)
+	if not hit.is_empty():
+		end = hit["position"]
+		var hurtbox: Hurtbox = hit["collider"] as Hurtbox
+		if hurtbox != null:
+			_damage_info.amount = damage
+			_damage_info.hit_position = end
+			hurtbox.redirect(_context.aim_origin, direction, _context.aim_origin.distance_to(end)).apply_hit(_damage_info)
+	var muzzle: Vector3 = _muzzle_position(_take_muzzle())
+	if _context.fx != null:
+		_context.fx.tracer(muzzle, end, _tracer_color, tracer_width_m, _visual("tracer_life_s", 0.07), tracer_intensity)
+		_context.fx.flash(muzzle, 0.05, 0.22, _tracer_color, 0.05, 6.0)
+		if not hit.is_empty():
+			_context.fx.flash(end, 0.3, _visual("impact_radius_m", 2.0), _tracer_color, 0.12, 5.0)
+	return end
+
+
+## Direction from a muzzle to the point the crosshair is on, so projectiles
+## launched from the barrel still go where the player aims.
+func _aim_direction_from(muzzle: Vector3) -> Vector3:
+	var range_m: float = data.get("range_m", 5000.0)
+	var aim_point: Vector3 = _context.aim_origin + _context.aim_direction * minf(range_m, 1500.0)
+	var hit: Dictionary = _cast_aim_ray(_context.aim_direction)
+	if not hit.is_empty():
+		aim_point = hit["position"]
+	return (aim_point - muzzle).normalized()
+
+
+## Returns `direction` deflected by a random angle of up to `spread_deg`.
+func _spread(direction: Vector3, spread_deg: float) -> Vector3:
+	if spread_deg <= 0.0:
+		return direction
+	var side: Vector3 = direction.cross(Vector3.UP)
+	if side.length_squared() < 0.0001:
+		side = direction.cross(Vector3.RIGHT)
+	side = side.normalized()
+	var deflected: Vector3 = direction.rotated(side, deg_to_rad(randf() * spread_deg))
+	return deflected.rotated(direction, randf() * TAU)
 
 func _feel(key: String, fallback: float) -> float:
 	var feel: Dictionary = data.get("feel", {})

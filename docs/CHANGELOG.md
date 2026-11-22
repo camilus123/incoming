@@ -2,6 +2,20 @@
 
 Updated at every merge to `main`.
 
+## M5: Content pass (2026-11-22)
+
+- Six new weapon archetypes: `projectile`, `airburst`, `beam`, `spinup`, `charge_pierce`, `area_pulse`; homing gained auto-distributing salvos and a player-steered torpedo.
+- Changes after the M5 play test: slow launchers (Singularity Charge) show a reload bar and a "READY" flash; the Seeker Torpedo homes on the target under the crosshair and is faster and more agile; the Dreadnought is twice as large and cruises a loop in front of the turret instead of hovering (the carrier too); all projectile weapons fly about twice as fast, so they need much less lead; proximity fuses are checked along the whole flight step.
+- All 20 weapons of Section 4 as data: Beam Laser, Particle Lance, Plasma Repeater and Cannon, Chain Gun, Rotary Cannon, Autocannon, Twin Autocannon, Coilgun, Railgun, Hyper-Rail, Swarm Missiles, Seeker Torpedo, Flak Barrage, EMP Burst, Arc Projector, Rail Lance, Singularity Charge. Every tech tree node is now live.
+- Pooled projectile system with swept collision, proximity fuses, splash, piercing, lingering trails and gravity wells.
+- All 9 enemies of Section 5: Missile Boat, Orbital Drop Pod, Shield Frigate, Gunship, Carrier and the Dreadnought boss join the first three.
+- Enemy systems: weak points and weak point groups, multiple hit shapes, behaviour modules `hover_shoot`, `orbit_drop`, `spawn_children`, `shield_allies`, `phases`, flares, ally shields.
+- Stages 4 to 10 authored, with boss stages at 5 and 10. Endless mode scales enemies and brings a tougher boss every fifth stage.
+- HUD: lead indicators (Targeting Computer), weak point markers, charge and spin-up ring.
+- Armour acts per second on beams and trails; intercept bonus capped per stage.
+- Placeholder models for every weapon, enemy and projectile.
+- 115 tests, including integration tests that fire every weapon and run every enemy.
+
 ## M4: Economy, shop and tech tree (2026-11-22)
 
 - Full loop: armoury, stage, itemised rewards, armoury.

@@ -1,0 +1,12 @@
+{
+  "_comment": "Hovers far out and fires its attacks whenever they are ready.",
+  "id": "standoff_missiles",
+  "module": "hover_shoot",
+  "params": {
+    "hover_distance_m": [
+      1000.0,
+      1400.0
+    ],
+    "sidestep_distance_m": 0.0
+  }
+}

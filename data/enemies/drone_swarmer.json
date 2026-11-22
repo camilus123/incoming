@@ -8,14 +8,43 @@
   "shield": 0.0,
   "speed_mps": 70.0,
   "turn_rate_deg_s": 180.0,
-  "behaviours": ["swarm_weave"],
+  "behaviours": [
+    "swarm_weave"
+  ],
   "attacks": [
-    { "id": "ram", "type": "collision", "damage_type": "kinetic", "damage": 15.0 }
+    {
+      "id": "ram",
+      "type": "collision",
+      "damage_type": "kinetic",
+      "damage": 15.0
+    }
   ],
   "credit_bounty": 5,
   "threat_cost": 2,
   "first_stage": 1,
-  "group_size": [8, 20],
-  "spawn": { "pitch_deg": [6.0, 35.0], "distance_m": [900.0, 1500.0] },
-  "death_effect": { "radius_m": 6.0, "color": [1.0, 0.45, 0.2] }
+  "group_size": [
+    8,
+    20
+  ],
+  "spawn": {
+    "pitch_deg": [
+      6.0,
+      35.0
+    ],
+    "distance_m": [
+      900.0,
+      1500.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 6.0,
+    "color": [
+      1.0,
+      0.45,
+      0.2
+    ]
+  },
+  "tags": [
+    "drone"
+  ]
 }

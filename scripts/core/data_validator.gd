@@ -111,8 +111,12 @@ static func _check_weapons(loader: DataLoader, report: DataReport) -> void:
 		var archetype: String = weapon["archetype"]
 		if not WeaponArchetypes.IMPLEMENTED.has(archetype):
 			report.add_warning(file, "archetype", "archetype \"%s\" is not implemented yet; the weapon cannot be equipped" % archetype)
-		if archetype == "homing" and not weapon.has("homing"):
-			report.add_error(file, "homing", "a homing weapon needs a \"homing\" block")
+		for block: String in WeaponArchetypes.REQUIRED_BLOCKS.get(archetype, []):
+			if not weapon.has(block):
+				report.add_error(file, block, "a weapon of archetype \"%s\" needs a \"%s\" block" % [archetype, block])
+		var on_detonate: String = (weapon.get("projectile", {}) as Dictionary).get("on_detonate", "")
+		if on_detonate == "singularity" and not weapon.has("singularity"):
+			report.add_error(file, "singularity", "on_detonate \"singularity\" needs a \"singularity\" block")
 		var visuals: Dictionary = weapon["visuals"]
 		_check_asset_reference(loader, report, file, "visuals.model", visuals["model"])
 		_check_asset_reference(loader, report, file, "visuals.projectile_model", visuals["projectile_model"])
@@ -161,6 +165,26 @@ static func _check_enemies(loader: DataLoader, report: DataReport) -> void:
 		for index: int in listed.size():
 			if not behaviours.has(listed[index]):
 				report.add_error(file, "behaviours[%d]" % index, "unknown behaviour \"%s\"" % listed[index])
+		var attack_ids: Array[String] = []
+		for attack: Dictionary in enemy["attacks"]:
+			attack_ids.append(attack["id"])
+		var groups: Dictionary = enemy["weak_point_groups"]
+		var used_groups: Array[String] = []
+		var weak_points: Array = enemy["weak_points"]
+		for index: int in weak_points.size():
+			var weak_point: Dictionary = weak_points[index]
+			var group: String = weak_point["group"]
+			if not group.is_empty():
+				used_groups.append(group)
+			_check_weak_point_effect(report, file, "weak_points[%d].effect" % index, weak_point["effect"], attack_ids)
+		for group: String in groups:
+			if not used_groups.has(group):
+				report.add_error(file, "weak_point_groups." + group, "no weak point belongs to this group")
+			_check_weak_point_effect(report, file, "weak_point_groups.%s.when_all_destroyed" % group, groups[group].get("when_all_destroyed", {}), attack_ids)
+		for behaviour_id: String in listed:
+			var behaviour: Dictionary = behaviours.get(behaviour_id, {})
+			if behaviour.get("module", "") == "spawn_children" and not enemies.has((behaviour.get("params", {}) as Dictionary).get("enemy", "")):
+				report.add_error(loader.source_of("behaviours", behaviour_id), "params.enemy", "unknown enemy \"%s\"" % (behaviour.get("params", {}) as Dictionary).get("enemy", ""))
 		var group_size: Array = enemy["group_size"]
 		if group_size[0] > group_size[1]:
 			report.add_error(file, "group_size", "the first value must not be larger than the second")
@@ -199,6 +223,9 @@ static func _check_stages(loader: DataLoader, report: DataReport) -> void:
 			var listed: Array = wave["enemies"]
 			for enemy_index: int in listed.size():
 				_check_stage_enemy(report, file, "%s.enemies[%d]" % [field, enemy_index], listed[enemy_index], number, enemies)
+	var boss_id: String = ((loader.get_config("director").get("procedural", {}) as Dictionary).get("boss", {}) as Dictionary).get("enemy", "")
+	if not boss_id.is_empty() and not enemies.has(boss_id):
+		report.add_error(loader.source_of_config("director"), "procedural.boss.enemy", "unknown enemy \"%s\"" % boss_id)
 	# Authored stages must be numbered 1..N without gaps.
 	for number: int in range(1, seen_numbers.size() + 1):
 		if not seen_numbers.has(number):
@@ -264,3 +291,9 @@ static func _check_tree_weapon(loader: DataLoader, report: DataReport, file: Str
 			report.add_warning(file, "planned_weapons", "\"%s\" exists now and can be removed from planned_weapons" % weapon_id)
 	elif not planned.has(weapon_id):
 		report.add_error(file, field, "unknown weapon \"%s\" (add its data file, or list it under planned_weapons)" % weapon_id)
+
+## A weak point effect may only switch off attacks the enemy actually has.
+static func _check_weak_point_effect(report: DataReport, file: String, field: String, effect: Dictionary, attack_ids: Array[String]) -> void:
+	for attack_id: Variant in effect.get("disable_attacks", []):
+		if not attack_ids.has(str(attack_id)):
+			report.add_error(file, field + ".disable_attacks", "unknown attack \"%s\"" % attack_id)

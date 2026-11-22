@@ -1,0 +1,43 @@
+{
+  "_comment": "A continuous beam. 'damage' is damage per second and 'heat.per_shot' is heat per second. Damage ramps up while the beam stays on one target.",
+  "id": "beam_laser",
+  "display_name": "Beam Laser",
+  "archetype": "beam",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 70.0,
+  "fire_rate": 1.0,
+  "range_m": 3500.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.16,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.4,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.0,
+    "recoil_kick_m": 0.0,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.02
+  },
+  "visuals": {
+    "model": "model.weapon.beam_laser",
+    "crosshair": "dot",
+    "tracer_color": [
+      1.0,
+      0.35,
+      0.35
+    ],
+    "impact_radius_m": 2.0
+  },
+  "beam": {
+    "ramp_time_s": 2.5,
+    "ramp_max_multiplier": 2.2,
+    "width_m": 0.22
+  }
+}

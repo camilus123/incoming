@@ -29,7 +29,10 @@ static func calculate(stats: StageStats, stage_data: Dictionary, economy: Dictio
 	lines.append(_line("speed", "Speed bonus", "%s (par %s)" % [_clock(stats.time_s), _clock(par_s)], speed_bonus(stats.time_s, par_s, economy)))
 
 	var per_intercept: float = economy.get("intercept_bonus", 15.0)
-	lines.append(_line("intercepts", "Intercept bonus", "%d × %s" % [stats.intercepts, _trim(per_intercept)], stats.intercepts * per_intercept))
+	# Capped, so nobody farms a missile boat for credits instead of killing it.
+	var counted: int = mini(stats.intercepts, int(economy.get("intercept_bonus_max_count", 30)))
+	var capped: String = " (max)" if counted < stats.intercepts else ""
+	lines.append(_line("intercepts", "Intercept bonus", "%d × %s%s" % [counted, _trim(per_intercept), capped], counted * per_intercept))
 
 	if not is_equal_approx(reward_multiplier, 1.0):
 		var subtotal: int = total(lines)

@@ -1,36 +1,188 @@
 {
   "type": "object",
   "fields": {
-    "base_budget": { "type": "number", "min": 1.0, "default": 100.0 },
-    "growth": { "type": "number", "min": 1.0, "max": 3.0, "default": 1.18 },
-    "intro_s": { "type": "number", "min": 0.0, "default": 3.0 },
-    "spawn_interval_s": { "type": "number", "min": 0.0, "default": 0.12 },
-    "group_spread_m": { "type": "number", "min": 0.0, "default": 70.0 },
-    "min_spawn_altitude_m": { "type": "number", "min": 0.0, "default": 40.0 },
-    "wave_clear_fraction": { "type": "number", "min": 0.0, "max": 1.0, "default": 0.25 },
-    "wave_timeout_s": { "type": "number", "min": 1.0, "default": 28.0 },
+    "base_budget": {
+      "type": "number",
+      "min": 1.0,
+      "default": 100.0
+    },
+    "growth": {
+      "type": "number",
+      "min": 1.0,
+      "max": 3.0,
+      "default": 1.18
+    },
+    "intro_s": {
+      "type": "number",
+      "min": 0.0,
+      "default": 3.0
+    },
+    "spawn_interval_s": {
+      "type": "number",
+      "min": 0.0,
+      "default": 0.12
+    },
+    "group_spread_m": {
+      "type": "number",
+      "min": 0.0,
+      "default": 70.0
+    },
+    "min_spawn_altitude_m": {
+      "type": "number",
+      "min": 0.0,
+      "default": 40.0
+    },
+    "wave_clear_fraction": {
+      "type": "number",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.25
+    },
+    "wave_timeout_s": {
+      "type": "number",
+      "min": 1.0,
+      "default": 28.0
+    },
     "default_spawn": {
       "type": "object",
       "required": true,
       "fields": {
-        "yaw_deg": { "type": "array", "default": [-60.0, 60.0], "min_items": 2, "items": { "type": "number", "min": -180.0, "max": 180.0 } },
-        "pitch_deg": { "type": "array", "default": [8.0, 40.0], "min_items": 2, "items": { "type": "number", "min": -5.0, "max": 90.0 } },
-        "distance_m": { "type": "array", "default": [1200.0, 2000.0], "min_items": 2, "items": { "type": "number", "min": 50.0 } }
+        "yaw_deg": {
+          "type": "array",
+          "default": [
+            -60.0,
+            60.0
+          ],
+          "min_items": 2,
+          "items": {
+            "type": "number",
+            "min": -180.0,
+            "max": 180.0
+          }
+        },
+        "pitch_deg": {
+          "type": "array",
+          "default": [
+            8.0,
+            40.0
+          ],
+          "min_items": 2,
+          "items": {
+            "type": "number",
+            "min": -5.0,
+            "max": 90.0
+          }
+        },
+        "distance_m": {
+          "type": "array",
+          "default": [
+            1200.0,
+            2000.0
+          ],
+          "min_items": 2,
+          "items": {
+            "type": "number",
+            "min": 50.0
+          }
+        }
       }
     },
     "procedural": {
       "type": "object",
       "required": true,
       "fields": {
-        "waves_base": { "type": "int", "min": 1, "default": 3 },
-        "waves_per_stage": { "type": "number", "min": 0.0, "default": 0.3 },
-        "waves_max": { "type": "int", "min": 1, "default": 8 },
-        "wave_delay_s": { "type": "number", "min": 0.0, "default": 4.0 },
-        "yaw_half_arc_base_deg": { "type": "number", "min": 1.0, "max": 180.0, "default": 30.0 },
-        "yaw_half_arc_per_stage_deg": { "type": "number", "min": 0.0, "default": 7.0 },
-        "yaw_half_arc_max_deg": { "type": "number", "min": 1.0, "max": 180.0, "default": 75.0 },
-        "par_time_base_s": { "type": "number", "min": 1.0, "default": 70.0 },
-        "par_time_per_stage_s": { "type": "number", "min": 0.0, "default": 12.0 }
+        "waves_base": {
+          "type": "int",
+          "min": 1,
+          "default": 3
+        },
+        "waves_per_stage": {
+          "type": "number",
+          "min": 0.0,
+          "default": 0.3
+        },
+        "waves_max": {
+          "type": "int",
+          "min": 1,
+          "default": 8
+        },
+        "wave_delay_s": {
+          "type": "number",
+          "min": 0.0,
+          "default": 4.0
+        },
+        "yaw_half_arc_base_deg": {
+          "type": "number",
+          "min": 1.0,
+          "max": 180.0,
+          "default": 30.0
+        },
+        "yaw_half_arc_per_stage_deg": {
+          "type": "number",
+          "min": 0.0,
+          "default": 7.0
+        },
+        "yaw_half_arc_max_deg": {
+          "type": "number",
+          "min": 1.0,
+          "max": 180.0,
+          "default": 75.0
+        },
+        "par_time_base_s": {
+          "type": "number",
+          "min": 1.0,
+          "default": 70.0
+        },
+        "par_time_per_stage_s": {
+          "type": "number",
+          "min": 0.0,
+          "default": 12.0
+        },
+        "enemy_hp_growth_per_stage": {
+          "type": "number",
+          "default": 0.03,
+          "min": 0.0
+        },
+        "enemy_damage_growth_per_stage": {
+          "type": "number",
+          "default": 0.02,
+          "min": 0.0
+        },
+        "boss": {
+          "type": "object",
+          "default": {},
+          "fields": {
+            "enemy": {
+              "type": "string",
+              "default": ""
+            },
+            "every": {
+              "type": "int",
+              "default": 5,
+              "min": 1
+            },
+            "escort_budget_share": {
+              "type": "number",
+              "default": 0.5,
+              "min": 0.0
+            },
+            "hp_growth_per_boss": {
+              "type": "number",
+              "default": 1.5,
+              "min": 1.0
+            },
+            "damage_growth_per_boss": {
+              "type": "number",
+              "default": 1.25,
+              "min": 1.0
+            },
+            "first_scaled_stage": {
+              "type": "int",
+              "default": 10,
+              "min": 1
+            }
+          }
+        }
       }
     }
   }

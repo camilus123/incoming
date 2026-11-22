@@ -1,0 +1,45 @@
+{
+  "_comment": "Spins up from 6 to 30 rounds per second. Kinetic: reactor power changes its fire rate and cooling, not its damage.",
+  "id": "chain_gun",
+  "display_name": "Chain Gun",
+  "archetype": "spinup",
+  "damage_type": "kinetic",
+  "allowed_slots": [
+    "primary"
+  ],
+  "uses_power": true,
+  "damage": 6.0,
+  "fire_rate": 30.0,
+  "range_m": 4000.0,
+  "armour_pierce": 6.0,
+  "spread_deg": 0.25,
+  "heat": {
+    "per_shot": 0.006,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.4,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.05,
+    "recoil_kick_m": 0.03,
+    "recoil_recover_per_s": 20.0,
+    "shake": 0.04
+  },
+  "visuals": {
+    "model": "model.weapon.chain_gun",
+    "crosshair": "cross",
+    "tracer_color": [
+      1.0,
+      0.85,
+      0.4
+    ],
+    "tracer_width_m": 0.07,
+    "tracer_life_s": 0.05,
+    "impact_radius_m": 1.2
+  },
+  "spinup": {
+    "fire_rate_min": 6.0,
+    "spinup_s": 1.2,
+    "spindown_s": 0.9
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "drop_pod",
+  "display_name": "Orbital Drop Pod",
+  "model": "model.enemy.drop_pod",
+  "tags": [
+    "pod"
+  ],
+  "hitbox_radius_m": 7.0,
+  "hp": 120.0,
+  "armour": 15.0,
+  "shield": 0.0,
+  "speed_mps": 250.0,
+  "turn_rate_deg_s": 30.0,
+  "behaviours": [
+    "orbital_drop"
+  ],
+  "attacks": [
+    {
+      "id": "impact",
+      "type": "collision",
+      "damage_type": "kinetic",
+      "damage": 60.0
+    }
+  ],
+  "credit_bounty": 30,
+  "threat_cost": 12,
+  "first_stage": 5,
+  "group_size": [
+    2,
+    4
+  ],
+  "spawn": {
+    "pitch_deg": [
+      50.0,
+      80.0
+    ],
+    "distance_m": [
+      3200.0,
+      4000.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 12.0,
+    "color": [
+      1.0,
+      0.6,
+      0.25
+    ]
+  }
+}

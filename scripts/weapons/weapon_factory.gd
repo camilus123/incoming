@@ -3,15 +3,22 @@ extends RefCounted
 ## Creates the right weapon script for a weapon data file.
 ##
 ## A new weapon that uses an existing archetype needs no code: its JSON names
-## the archetype. A new archetype is one script plus one line here.
+## the archetype. A new archetype is one script plus one line here (and in
+## [WeaponArchetypes]).
 
 const ARCHETYPES: Dictionary = {
 	"hitscan_pulse": preload("res://scripts/weapons/weapon_hitscan_pulse.gd"),
 	"homing": preload("res://scripts/weapons/weapon_homing.gd"),
+	"projectile": preload("res://scripts/weapons/weapon_projectile.gd"),
+	"airburst": preload("res://scripts/weapons/weapon_projectile.gd"),
+	"beam": preload("res://scripts/weapons/weapon_beam.gd"),
+	"spinup": preload("res://scripts/weapons/weapon_spinup.gd"),
+	"charge_pierce": preload("res://scripts/weapons/weapon_charge_pierce.gd"),
+	"area_pulse": preload("res://scripts/weapons/weapon_area_pulse.gd"),
 }
 
 
-## True if the archetype has an implementation yet.
+## True if the archetype has an implementation.
 static func supports(archetype: String) -> bool:
 	return ARCHETYPES.has(archetype)
 

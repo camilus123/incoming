@@ -1,0 +1,54 @@
+{
+  "_comment": "Fires a shell that strips enemy shields and stuns drones around where it lands.",
+  "id": "emp_burst",
+  "display_name": "EMP Burst",
+  "archetype": "area_pulse",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": true,
+  "damage": 10.0,
+  "fire_rate": 1.0,
+  "range_m": 3000.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.35,
+    "cooling_per_s": 0.2,
+    "cooling_delay_s": 0.5,
+    "overheat_unlock": 0.3
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.3,
+    "recoil_kick_m": 0.1,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.15
+  },
+  "visuals": {
+    "model": "model.weapon.emp_emitter",
+    "crosshair": "circle",
+    "tracer_color": [
+      0.5,
+      0.75,
+      1.0
+    ]
+  },
+  "projectile": {
+    "speed_mps": 900.0,
+    "lifetime_s": 3.3,
+    "proximity_fuse_m": 15.0,
+    "size_m": 0.6,
+    "length_m": 1.5,
+    "on_detonate": "emp"
+  },
+  "area_pulse": {
+    "radius_m": 130.0,
+    "strip_shields": true,
+    "stun_s": 4.0,
+    "stun_tags": [
+      "drone"
+    ],
+    "cooldown_s": 6.0
+  }
+}

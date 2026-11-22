@@ -69,14 +69,14 @@ static func resolve_wave(wave: Dictionary, stage: int, stage_budget: float, enem
 
 
 ## Where a group spawns: `{ yaw_deg, pitch_deg, distance_m }`, each a [min, max]
-## pair. The group's own settings win, then the stage's yaw arc and the enemy
-## type's pitch and distance, then the director defaults.
+## pair. The group's own settings win, then the enemy type's (a boss comes
+## from dead ahead), then the stage's yaw arc, then the director defaults.
 static func spawn_region(group: Dictionary, stage_data: Dictionary, enemy: Dictionary, director: Dictionary) -> Dictionary:
 	var defaults: Dictionary = director.get("default_spawn", {})
 	var group_spawn: Dictionary = group.get("spawn", {})
 	var enemy_spawn: Dictionary = enemy.get("spawn", {})
 	return {
-		"yaw_deg": group_spawn.get("yaw_deg", stage_data.get("spawn_yaw_deg", defaults.get("yaw_deg", [-60.0, 60.0]))),
+		"yaw_deg": group_spawn.get("yaw_deg", enemy_spawn.get("yaw_deg", stage_data.get("spawn_yaw_deg", defaults.get("yaw_deg", [-60.0, 60.0])))),
 		"pitch_deg": group_spawn.get("pitch_deg", enemy_spawn.get("pitch_deg", defaults.get("pitch_deg", [8.0, 40.0]))),
 		"distance_m": group_spawn.get("distance_m", enemy_spawn.get("distance_m", defaults.get("distance_m", [1200.0, 2000.0]))),
 	}
@@ -88,23 +88,45 @@ static func random_point(region: Dictionary, rng: RandomNumberGenerator) -> Vect
 
 
 ## Builds the data of a stage that has no authored file (endless mode).
-static func procedural_stage(stage: int, director: Dictionary, enemies: Dictionary) -> Dictionary:
+## `authored_count` is the number of authored stages: enemies get tougher for
+## every stage beyond them, and every `boss.every`-th stage is a boss stage
+## with a scaled-up boss and a reduced escort.
+static func procedural_stage(stage: int, director: Dictionary, enemies: Dictionary, authored_count: int = 0) -> Dictionary:
 	var rules: Dictionary = director.get("procedural", {})
+	var beyond: int = maxi(0, stage - authored_count)
+	var enemy_scale: Dictionary = {
+		"hp": 1.0 + float(rules.get("enemy_hp_growth_per_stage", 0.0)) * beyond,
+		"damage": 1.0 + float(rules.get("enemy_damage_growth_per_stage", 0.0)) * beyond,
+	}
+	var boss_rules: Dictionary = rules.get("boss", {})
+	var boss_id: String = boss_rules.get("enemy", "")
+	var is_boss_stage: bool = enemies.has(boss_id) and stage % maxi(1, int(boss_rules.get("every", 5))) == 0
 	var wave_count: int = mini(int(rules.get("waves_max", 8)), int(rules.get("waves_base", 3)) + int(floor(float(rules.get("waves_per_stage", 0.3)) * (stage - 1))))
 	var half_arc: float = minf(rules.get("yaw_half_arc_max_deg", 75.0), float(rules.get("yaw_half_arc_base_deg", 30.0)) + float(rules.get("yaw_half_arc_per_stage_deg", 7.0)) * (stage - 1))
 	var pool: Array[String] = enemy_pool(stage, enemies)
 	var waves: Array[Dictionary] = []
+	var total_share: float = float(boss_rules.get("escort_budget_share", 0.5)) if is_boss_stage else 1.0
 	for index: int in wave_count:
 		waves.append({
 			"delay_s": rules.get("wave_delay_s", 4.0),
-			"budget_share": 1.0 / wave_count,
+			"budget_share": total_share / wave_count,
 			"enemies": pool,
 			"groups": [],
 		})
+	if is_boss_stage:
+		# Each boss after the last authored one is tougher than the one before.
+		var first_scaled: int = boss_rules.get("first_scaled_stage", 10)
+		var generation: int = maxi(0, (stage - first_scaled) / maxi(1, int(boss_rules.get("every", 5)))) + 1
+		(waves[0]["groups"] as Array).append({"enemy": boss_id, "count": 1, "spawn": {}, "scale": {
+			"hp": pow(float(boss_rules.get("hp_growth_per_boss", 1.5)), generation),
+			"damage": pow(float(boss_rules.get("damage_growth_per_boss", 1.25)), generation),
+		}})
 	return {
 		"id": "stage_%02d" % stage,
 		"stage": stage,
-		"display_name": "",
+		"boss": is_boss_stage,
+		"enemy_scale": enemy_scale,
+		"display_name": "Dreadnought" if is_boss_stage else "",
 		"briefing": "",
 		"time_of_day": "day",
 		"par_time_s": float(rules.get("par_time_base_s", 70.0)) + float(rules.get("par_time_per_stage_s", 12.0)) * (stage - 1),

@@ -8,7 +8,9 @@
   "shield": 0.0,
   "speed_mps": 45.0,
   "turn_rate_deg_s": 20.0,
-  "behaviours": ["bombing_pass"],
+  "behaviours": [
+    "bombing_pass"
+  ],
   "attacks": [
     {
       "id": "bombs",
@@ -32,7 +34,29 @@
   "credit_bounty": 45,
   "threat_cost": 20,
   "first_stage": 3,
-  "group_size": [1, 2],
-  "spawn": { "pitch_deg": [16.0, 24.0], "distance_m": [1900.0, 2400.0] },
-  "death_effect": { "radius_m": 28.0, "color": [1.0, 0.55, 0.2] }
+  "group_size": [
+    1,
+    2
+  ],
+  "spawn": {
+    "pitch_deg": [
+      16.0,
+      24.0
+    ],
+    "distance_m": [
+      1900.0,
+      2400.0
+    ]
+  },
+  "death_effect": {
+    "radius_m": 28.0,
+    "color": [
+      1.0,
+      0.55,
+      0.2
+    ]
+  },
+  "tags": [
+    "heavy"
+  ]
 }

@@ -69,6 +69,7 @@ func _ready() -> void:
 	_context.world = get_world_3d()
 	_context.fx = get_tree().get_first_node_in_group(CombatFx.GROUP) as CombatFx
 	_context.missiles = get_tree().get_first_node_in_group(MissileSystem.GROUP) as MissileSystem
+	_context.projectiles = get_tree().get_first_node_in_group(ProjectileSystem.GROUP) as ProjectileSystem
 
 	power.configure(GameData.loader.get_config("power"))
 	apply_player_state()

@@ -15,6 +15,7 @@
     "zero_bonus_ratio": 1.2
   },
   "intercept_bonus": 15,
+  "intercept_bonus_max_count": 30,
   "respec_refund_ratio": 1.0,
   "hull_repair": {
     "cost_per_point": 2.0

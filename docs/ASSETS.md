@@ -31,6 +31,7 @@ Sockets are empty nodes inside the model. Code finds them **by name**, so a repl
 | `Mount_Primary`, `Mount_Alternate` | In the turret model, children of `Pivot_Pitch`: where the primary and alternate weapon models are attached |
 | `Muzzle_0`, `Muzzle_1`, ... | Barrel ends; shots, tracers and muzzle flashes start here, −Z points out of the barrel |
 | `Eject_0`, ... | Shell ejection ports for kinetic weapons, −Z is the ejection direction |
+| `Spin_0` | Optional: the rotating barrel cluster of spin-up weapons (turns around its own Z axis) |
 
 ### Enemy models
 

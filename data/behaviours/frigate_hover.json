@@ -1,0 +1,12 @@
+{
+  "_comment": "Holds a position behind the front line and fires its attacks.",
+  "id": "frigate_hover",
+  "module": "hover_shoot",
+  "params": {
+    "hover_distance_m": [
+      1100.0,
+      1500.0
+    ],
+    "sidestep_distance_m": 0.0
+  }
+}

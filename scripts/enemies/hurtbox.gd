@@ -40,6 +40,34 @@ static func create_sphere(owner_target: CombatTarget, radius_m: float, layer: in
 	return hurtbox
 
 
+## A shot along this ray struck this shape. If the shape belongs to an enemy
+## and the ray also passes through one of its weak points, the weak point's
+## shape is returned instead, so weak points can be hit even where the hull's
+## hit shape surrounds them. Only weak points on the near side count: one
+## that lies behind the hull (beyond `hull_distance_m` along the ray) is
+## protected by it.
+func redirect(from: Vector3, direction: Vector3, hull_distance_m: float = INF) -> Hurtbox:
+	var enemy: Enemy = target as Enemy
+	if enemy == null:
+		return self
+	var best: Hurtbox = self
+	var best_along: float = INF
+	for weak_point: WeakPoint in enemy.get_weak_points():
+		if not weak_point.is_alive():
+			continue
+		var to_point: Vector3 = weak_point.global_position - from
+		var along: float = to_point.dot(direction)
+		if along <= 0.0 or along >= best_along:
+			continue
+		var radius: float = weak_point.get_hit_radius()
+		if along - radius > hull_distance_m + radius * 0.5:
+			continue
+		if (to_point - direction * along).length() <= radius:
+			best = weak_point.get_hurtbox()
+			best_along = along
+	return best
+
+
 ## Applies a hit. Returns null if the target is already dead.
 func apply_hit(info: DamageInfo) -> DamageResult:
 	if target == null:

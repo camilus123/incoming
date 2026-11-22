@@ -2,7 +2,7 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **M4 (economy, shop and tech tree)**. The game starts in the armoury before stage 1; stages 1 to 3 are authored and later ones are generated. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **M5 (content pass)**. All 20 weapons and 9 enemies are in. The game starts in the armoury before stage 1; stages 1 to 10 are authored (bosses at 5 and 10) and later ones are generated. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
 
@@ -46,6 +46,7 @@ Useful variants:
 .\tools\godot.ps1 ++ --new-run          # discard the saved run
 .\tools\godot.ps1 ++ --god              # the turret takes no damage
 .\tools\godot.ps1 res://scenes/main/test_range.tscn   # practice targets
+.\tools\godot.ps1 res://scenes/main/test_range.tscn ++ --primary=railgun --alternate=flak_barrage   # try any weapons
 ```
 
 ## Validate the data

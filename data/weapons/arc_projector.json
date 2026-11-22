@@ -1,0 +1,43 @@
+{
+  "_comment": "Lightning that jumps from the first target to up to 5 more nearby. 'damage' is per second, per target.",
+  "id": "arc_projector",
+  "display_name": "Arc Projector",
+  "archetype": "beam",
+  "damage_type": "energy",
+  "allowed_slots": [
+    "alternate"
+  ],
+  "uses_power": true,
+  "damage": 60.0,
+  "fire_rate": 1.0,
+  "range_m": 1800.0,
+  "armour_pierce": 0.0,
+  "spread_deg": 0.0,
+  "heat": {
+    "per_shot": 0.2,
+    "cooling_per_s": 0.3,
+    "cooling_delay_s": 0.4,
+    "overheat_unlock": 0.35
+  },
+  "feel": {
+    "recoil_pitch_deg": 0.0,
+    "recoil_kick_m": 0.0,
+    "recoil_recover_per_s": 14.0,
+    "shake": 0.03
+  },
+  "visuals": {
+    "model": "model.weapon.arc_projector",
+    "crosshair": "dot",
+    "tracer_color": [
+      0.65,
+      0.8,
+      1.0
+    ],
+    "impact_radius_m": 2.0
+  },
+  "beam": {
+    "chain_targets": 5,
+    "chain_range_m": 160.0,
+    "width_m": 0.18
+  }
+}

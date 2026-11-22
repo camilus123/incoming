@@ -4,4 +4,6 @@ extends RefCounted
 ## Kept free of dependencies so the data validator can use it;
 ## [BehaviourRegistry] maps the names to scripts (a unit test compares them).
 
-const IMPLEMENTED: PackedStringArray = ["approach_kamikaze", "strafe", "level_pass"]
+const IMPLEMENTED: PackedStringArray = [
+	"approach_kamikaze", "strafe", "level_pass", "hover_shoot", "orbit_drop", "spawn_children", "shield_allies", "phases",
+]
