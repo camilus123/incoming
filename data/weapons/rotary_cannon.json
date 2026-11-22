@@ -41,5 +41,8 @@
     "fire_rate_min": 4.0,
     "spinup_s": 2.0,
     "spindown_s": 1.2
+  },
+  "audio": {
+    "fire": "audio.weapon.cannon"
   }
 }

@@ -176,6 +176,138 @@
     "vfx.shader.screen_effects": {
       "path": "res://assets/vfx/screen_effects.gdshader",
       "type": "vfx"
+    },
+    "audio.alert.hull_critical": {
+      "path": "res://assets/audio/alert_hull_critical.wav",
+      "type": "audio"
+    },
+    "audio.alert.incoming": {
+      "path": "res://assets/audio/alert_incoming.wav",
+      "type": "audio"
+    },
+    "audio.alert.overheat": {
+      "path": "res://assets/audio/alert_overheat.wav",
+      "type": "audio"
+    },
+    "audio.alert.shields_down": {
+      "path": "res://assets/audio/alert_shields_down.wav",
+      "type": "audio"
+    },
+    "audio.alert.shields_up": {
+      "path": "res://assets/audio/alert_shields_up.wav",
+      "type": "audio"
+    },
+    "audio.enemy.engine": {
+      "path": "res://assets/audio/enemy_engine.wav",
+      "type": "audio"
+    },
+    "audio.enemy.engine_heavy": {
+      "path": "res://assets/audio/enemy_engine_heavy.wav",
+      "type": "audio"
+    },
+    "audio.enemy.hit": {
+      "path": "res://assets/audio/enemy_hit.wav",
+      "type": "audio"
+    },
+    "audio.enemy.laser": {
+      "path": "res://assets/audio/enemy_laser.wav",
+      "type": "audio"
+    },
+    "audio.explosion.large": {
+      "path": "res://assets/audio/explosion_large.wav",
+      "type": "audio"
+    },
+    "audio.explosion.medium": {
+      "path": "res://assets/audio/explosion_medium.wav",
+      "type": "audio"
+    },
+    "audio.explosion.small": {
+      "path": "res://assets/audio/explosion_small.wav",
+      "type": "audio"
+    },
+    "audio.impact.hull": {
+      "path": "res://assets/audio/impact_hull.wav",
+      "type": "audio"
+    },
+    "audio.impact.shield": {
+      "path": "res://assets/audio/impact_shield.wav",
+      "type": "audio"
+    },
+    "audio.music.ambient": {
+      "path": "res://assets/audio/music_ambient.wav",
+      "type": "audio"
+    },
+    "audio.stage.complete": {
+      "path": "res://assets/audio/stage_complete.wav",
+      "type": "audio"
+    },
+    "audio.stage.failed": {
+      "path": "res://assets/audio/stage_failed.wav",
+      "type": "audio"
+    },
+    "audio.ui.buy": {
+      "path": "res://assets/audio/ui_buy.wav",
+      "type": "audio"
+    },
+    "audio.ui.click": {
+      "path": "res://assets/audio/ui_click.wav",
+      "type": "audio"
+    },
+    "audio.ui.deny": {
+      "path": "res://assets/audio/ui_deny.wav",
+      "type": "audio"
+    },
+    "audio.ui.power_tick": {
+      "path": "res://assets/audio/ui_power_tick.wav",
+      "type": "audio"
+    },
+    "audio.weapon.arc": {
+      "path": "res://assets/audio/weapon_arc.wav",
+      "type": "audio"
+    },
+    "audio.weapon.beam": {
+      "path": "res://assets/audio/weapon_beam.wav",
+      "type": "audio"
+    },
+    "audio.weapon.cannon": {
+      "path": "res://assets/audio/weapon_cannon.wav",
+      "type": "audio"
+    },
+    "audio.weapon.emp": {
+      "path": "res://assets/audio/weapon_emp.wav",
+      "type": "audio"
+    },
+    "audio.weapon.flak": {
+      "path": "res://assets/audio/weapon_flak.wav",
+      "type": "audio"
+    },
+    "audio.weapon.kinetic": {
+      "path": "res://assets/audio/weapon_kinetic.wav",
+      "type": "audio"
+    },
+    "audio.weapon.laser": {
+      "path": "res://assets/audio/weapon_laser.wav",
+      "type": "audio"
+    },
+    "audio.weapon.missile": {
+      "path": "res://assets/audio/weapon_missile.wav",
+      "type": "audio"
+    },
+    "audio.weapon.plasma": {
+      "path": "res://assets/audio/weapon_plasma.wav",
+      "type": "audio"
+    },
+    "audio.weapon.plasma_heavy": {
+      "path": "res://assets/audio/weapon_plasma_heavy.wav",
+      "type": "audio"
+    },
+    "audio.weapon.rail": {
+      "path": "res://assets/audio/weapon_rail.wav",
+      "type": "audio"
+    },
+    "audio.weapon.singularity": {
+      "path": "res://assets/audio/weapon_singularity.wav",
+      "type": "audio"
     }
   }
 }

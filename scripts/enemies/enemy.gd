@@ -109,6 +109,10 @@ func setup(enemy_data: Dictionary, manager: EnemyManager, turret: Turret, diffic
 		weak_point.position = socket.position * _visual.scale.x if socket != null else Vector3(offset[0], offset[1], offset[2])
 		_weak_points.append(weak_point)
 
+	var engine: AudioStreamPlayer3D = Audio.make_engine_loop(enemy_data.get("engine_sound", ""))
+	if engine != null:
+		add_child(engine)
+	damaged.connect(_on_damaged)
 	for behaviour_id: String in enemy_data.get("behaviours", []):
 		var behaviour_data: Dictionary = GameData.loader.get_entry("behaviours", behaviour_id)
 		var behaviour: EnemyBehaviour = BehaviourRegistry.create(behaviour_data) if not behaviour_data.is_empty() else null
@@ -392,6 +396,10 @@ func _on_killed() -> void:
 	_manager.notify_enemy_gone(self, true)
 
 
+func _on_damaged(_result: DamageResult) -> void:
+	Audio.play_event("enemy_hit", data.get("hit_sound", ""), global_position)
+
+
 ## Out of the fight but kept for reuse: hidden, unhittable, not processed.
 func retire(now_s: float) -> void:
 	retired_at_s = now_s
@@ -448,6 +456,7 @@ func _perform(attack: Dictionary) -> void:
 				var impact: Vector3 = target_point + (origin - target_point).normalized() * IMPACT_STANDOFF_M
 				var width: float = attack.get("width_m", 0.25)
 				fx.tracer(origin, impact, color, width, 0.09, 5.0)
+				Audio.play_event("enemy_fire", "", origin)
 				# A small spark only: the shield ripple and the damage frame show the hit.
 				fx.flash(impact, 0.1, 0.35 + width * 0.3, color, 0.08, 4.0)
 		"guided_bomb":

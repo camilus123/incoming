@@ -33,6 +33,8 @@ func _ready() -> void:
 	_camera.name = "WorldCamera"
 	_camera.near = 0.2
 	_camera.far = 30000.0
+	# Needed for the Doppler shift of enemy engines flying past.
+	_camera.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	_camera.cull_mask = 0xFFFFF & ~Layers.RENDER_VIEWMODEL
 	add_child(_camera)
 	_camera.make_current()

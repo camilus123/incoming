@@ -4,7 +4,9 @@
   "display_name": "Micro-Missile Pod",
   "archetype": "homing",
   "damage_type": "explosive",
-  "allowed_slots": ["alternate"],
+  "allowed_slots": [
+    "alternate"
+  ],
   "uses_power": false,
   "ammo_per_stage": 32,
   "damage": 45.0,
@@ -26,7 +28,11 @@
     "model": "model.weapon.missile_pod",
     "projectile_model": "model.projectile.micro_missile",
     "crosshair": "cross",
-    "tracer_color": [1.0, 0.6, 0.25],
+    "tracer_color": [
+      1.0,
+      0.6,
+      0.25
+    ],
     "impact_radius_m": 8.0
   },
   "homing": {
@@ -43,5 +49,8 @@
     "lifetime_s": 14.0,
     "proximity_fuse_m": 3.0,
     "splash_radius_m": 10.0
+  },
+  "audio": {
+    "fire": "audio.weapon.missile"
   }
 }

@@ -40,5 +40,8 @@
     "splash_radius_m": 15.0,
     "size_m": 2.6,
     "length_m": 7.0
+  },
+  "audio": {
+    "fire": "audio.weapon.plasma_heavy"
   }
 }

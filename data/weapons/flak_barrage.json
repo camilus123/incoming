@@ -44,5 +44,8 @@
     "cone_deg": 6.0,
     "size_m": 0.2,
     "length_m": 2.0
+  },
+  "audio": {
+    "fire": "audio.weapon.flak"
   }
 }

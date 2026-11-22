@@ -1,0 +1,108 @@
+{
+  "type": "object",
+  "fields": {
+    "buses": {
+      "type": "dict",
+      "required": true,
+      "values": {
+        "type": "number",
+        "min": -80.0,
+        "max": 12.0
+      }
+    },
+    "players_2d": {
+      "type": "int",
+      "min": 1,
+      "default": 20
+    },
+    "players_3d": {
+      "type": "int",
+      "min": 1,
+      "default": 28
+    },
+    "music": {
+      "type": "string",
+      "default": ""
+    },
+    "unit_size_m": {
+      "type": "number",
+      "default": 120.0,
+      "min": 0.1
+    },
+    "max_distance_m": {
+      "type": "number",
+      "default": 6000.0,
+      "min": 1.0
+    },
+    "engine_unit_size_m": {
+      "type": "number",
+      "default": 60.0,
+      "min": 0.1
+    },
+    "engine_max_distance_m": {
+      "type": "number",
+      "default": 2500.0,
+      "min": 1.0
+    },
+    "explosion_sounds": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "fields": {
+          "up_to_radius_m": {
+            "type": "number",
+            "default": 10.0,
+            "min": 0.0
+          },
+          "sound": {
+            "type": "string",
+            "required": true,
+            "non_empty": true
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "dict",
+      "required": true,
+      "values": {
+        "type": "object",
+        "fields": {
+          "sound": {
+            "type": "string",
+            "default": ""
+          },
+          "bus": {
+            "type": "string",
+            "default": "SFX",
+            "non_empty": true
+          },
+          "volume_db": {
+            "type": "number",
+            "default": 0.0,
+            "min": -80.0,
+            "max": 12.0
+          },
+          "pitch_random": {
+            "type": "number",
+            "default": 0.0,
+            "min": 0.0,
+            "max": 1.0
+          },
+          "min_interval_s": {
+            "type": "number",
+            "default": 0.0,
+            "min": 0.0
+          }
+        }
+      }
+    },
+    "hull_critical_fraction": {
+      "type": "number",
+      "default": 0.3,
+      "min": 0.0,
+      "max": 1.0
+    }
+  }
+}

@@ -42,5 +42,8 @@
     "min_charge_fraction": 0.5,
     "max_pierce": 4,
     "cooldown_s": 5.0
+  },
+  "audio": {
+    "fire": "audio.weapon.rail"
   }
 }

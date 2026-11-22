@@ -47,5 +47,8 @@
       "dps": 60.0,
       "radius_m": 6.0
     }
+  },
+  "audio": {
+    "fire": "audio.weapon.rail"
   }
 }

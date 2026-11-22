@@ -46,5 +46,6 @@
       0.6,
       0.25
     ]
-  }
+  },
+  "hit_sound": "audio.enemy.hit"
 }

@@ -41,5 +41,8 @@
     "proximity_fuse_m": 7.0,
     "size_m": 0.25,
     "length_m": 3.0
+  },
+  "audio": {
+    "fire": "audio.weapon.cannon"
   }
 }

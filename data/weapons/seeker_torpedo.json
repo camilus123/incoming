@@ -51,5 +51,8 @@
     "proximity_fuse_m": 20.0,
     "splash_radius_m": 55.0,
     "lock_cone_deg": 5.0
+  },
+  "audio": {
+    "fire": "audio.weapon.missile"
   }
 }
