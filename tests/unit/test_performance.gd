@@ -41,7 +41,8 @@ func _kill(target: CombatTarget) -> void:
 func test_swarm_drones_have_no_model_and_are_drawn_as_one_multimesh() -> void:
 	for index: int in 30:
 		_enemies.spawn_enemy("drone_swarmer", _ahead(1500.0, -30.0 + index * 2.0))
-	await wait_frames(3)
+	# Long enough for at least one rendered frame (wait_frames counts physics frames).
+	await wait_seconds(0.25)
 	assert_eq(_enemies.get_swarm_count(), 30)
 	var renderers: Array[Node] = _enemies.find_children("*", "MultiMeshInstance3D", true, false)
 	assert_eq(renderers.size(), 1, "one MultiMesh for the whole swarm")
