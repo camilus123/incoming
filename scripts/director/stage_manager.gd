@@ -101,11 +101,22 @@ func continue_from_shop() -> void:
 
 ## Starts (or restarts) a stage from a clean field.
 func start_stage(number: int) -> void:
-	stage_number = maxi(1, number)
+	_begin_stage(maxi(1, number), get_stage_data(maxi(1, number)))
+
+
+## Starts a stage from data that is not part of the campaign (the benchmark).
+## `spawn_seed` makes the spawn positions the same on every run.
+func start_custom_stage(custom_data: Dictionary, spawn_seed: int) -> void:
+	_rng.seed = spawn_seed
+	_begin_stage(maxi(1, int(custom_data.get("stage", 1))), custom_data)
+
+
+func _begin_stage(number: int, data: Dictionary) -> void:
+	stage_number = number
 	_director = GameData.loader.get_config("director")
 	var difficulty_config: Dictionary = GameData.loader.get_config("difficulty")
 	_difficulty = (difficulty_config.get("levels", {}) as Dictionary).get(difficulty_config.get("default", "normal"), {})
-	stage_data = get_stage_data(stage_number)
+	stage_data = data
 	_stage_budget = WaveDirector.threat_budget(stage_number, _director, _difficulty.get("threat_budget_mult", 1.0))
 
 	_enemies.clear_all()

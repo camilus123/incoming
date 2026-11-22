@@ -20,7 +20,8 @@ func _ready() -> void:
 	for argument: String in arguments:
 		if argument.begins_with("--stage="):
 			direct_stage = maxi(1, argument.trim_prefix("--stage=").to_int())
-	if arguments.has("--auto-demo") or direct_stage > 0:
+	var benchmark: bool = arguments.has("--benchmark")
+	if arguments.has("--auto-demo") or direct_stage > 0 or benchmark:
 		# Debug and demo runs never touch the player's save.
 		GameState.persistent = false
 		GameState.new_run()
@@ -31,7 +32,12 @@ func _ready() -> void:
 				GameState.stage = maxi(1, argument.trim_prefix("--demo-from-stage=").to_int())
 	elif arguments.has("--new-run"):
 		GameState.new_run()
-	if direct_stage > 0:
+	if benchmark:
+		var settings: Dictionary = GameData.loader.get_config("benchmark")
+		# The same seed gives the same fight on every run.
+		seed(int(settings.get("seed", 1)))
+		_stages.start_custom_stage(GameData.loader.get_config("benchmark_stage"), int(settings.get("seed", 1)))
+	elif direct_stage > 0:
 		GameState.stage = direct_stage
 		_stages.start_stage(direct_stage)
 	else:

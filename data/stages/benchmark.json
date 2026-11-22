@@ -1,0 +1,118 @@
+{
+  "_comment": "The benchmark fight: far more than any real stage throws at once. Not part of the campaign (the file name does not match stage_NN).",
+  "id": "benchmark",
+  "stage": 10,
+  "display_name": "Benchmark",
+  "briefing": "",
+  "time_of_day": "dusk",
+  "par_time_s": 70.0,
+  "spawn_yaw_deg": [
+    -60.0,
+    60.0
+  ],
+  "waves": [
+    {
+      "delay_s": 0.5,
+      "groups": [
+        {
+          "enemy": "drone_swarmer",
+          "count": 40,
+          "spawn": {
+            "yaw_deg": [
+              -50.0,
+              -10.0
+            ]
+          }
+        },
+        {
+          "enemy": "drone_swarmer",
+          "count": 40,
+          "spawn": {
+            "yaw_deg": [
+              10.0,
+              50.0
+            ]
+          }
+        },
+        {
+          "enemy": "interceptor",
+          "count": 8
+        },
+        {
+          "enemy": "bomber",
+          "count": 3
+        },
+        {
+          "enemy": "missile_boat",
+          "count": 2
+        },
+        {
+          "enemy": "shield_frigate",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "delay_s": 4.0,
+      "groups": [
+        {
+          "enemy": "drone_swarmer",
+          "count": 50,
+          "spawn": {
+            "yaw_deg": [
+              -55.0,
+              0.0
+            ]
+          }
+        },
+        {
+          "enemy": "drone_swarmer",
+          "count": 50,
+          "spawn": {
+            "yaw_deg": [
+              0.0,
+              55.0
+            ]
+          }
+        },
+        {
+          "enemy": "gunship",
+          "count": 2
+        },
+        {
+          "enemy": "drop_pod",
+          "count": 6
+        },
+        {
+          "enemy": "carrier",
+          "count": 1
+        },
+        {
+          "enemy": "boss_dreadnought",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "delay_s": 4.0,
+      "groups": [
+        {
+          "enemy": "drone_swarmer",
+          "count": 60
+        },
+        {
+          "enemy": "interceptor",
+          "count": 10
+        },
+        {
+          "enemy": "missile_boat",
+          "count": 3
+        },
+        {
+          "enemy": "drop_pod",
+          "count": 6
+        }
+      ]
+    }
+  ]
+}

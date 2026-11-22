@@ -22,6 +22,9 @@ const DWELL_S: float = 1.3
 var SCREENSHOT_TIMES_S: PackedFloat32Array = [3.0, 6.5, 10.0]
 
 var turret: Turret
+## Benchmark mode: fixed length from config/benchmark.json, no arc-edge test at
+## the end, and the result is written to a file.
+var benchmark: bool = false
 
 var _duration_s: float = 16.0
 var _screenshot_dir: String = ""
@@ -37,6 +40,12 @@ var _cycle_power: bool = false
 var _hits: Dictionary = {}   # slot -> hits
 var _kills: Dictionary = {}  # slot -> kills
 var _has_fixed_look: bool = false
+var _peak_enemies: int = 0
+var _timeline: Array[Dictionary] = []
+var _second_frames: int = 0
+var _second_left_s: float = 1.0
+var _second_script_ms: float = 0.0
+var _enemy_manager: EnemyManager
 var _frame_log_path: String = ""
 const HITCH_USEC: int = 50000
 var _hitches: PackedStringArray = []
@@ -66,6 +75,8 @@ func _ready() -> void:
 			_frame_log_path = argument.trim_prefix("--demo-frame-log=")
 		elif argument.begins_with("--screenshot-dir="):
 			_screenshot_dir = argument.trim_prefix("--screenshot-dir=")
+	if benchmark:
+		_duration_s = GameData.loader.get_config("benchmark").get("duration_s", 70.0)
 	turret.player_input_enabled = false
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -85,12 +96,18 @@ func _process(delta_s: float) -> void:
 	if _finished:
 		return
 	var now_usec: int = Time.get_ticks_usec()
-	if _time_s >= WARMUP_S:
+	if _time_s >= (float(GameData.loader.get_config("benchmark").get("warmup_s", 2.0)) if benchmark else WARMUP_S):
 		_frame_times_ms.append(float(now_usec - _last_tick_usec) / 1000.0)
 		if now_usec - _last_tick_usec > HITCH_USEC:
 			_hitches.append("%.1fs:%dms" % [_time_s, (now_usec - _last_tick_usec) / 1000])
 	_last_tick_usec = now_usec
 	_time_s += delta_s
+	if benchmark:
+		if _enemy_manager == null:
+			_enemy_manager = get_tree().get_first_node_in_group(EnemyManager.GROUP) as EnemyManager
+		if _enemy_manager != null:
+			_peak_enemies = maxi(_peak_enemies, _enemy_manager.get_enemy_count())
+		_sample_timeline(delta_s)
 
 	if _cycle_power:
 		_update_power_cycle(delta_s)
@@ -102,7 +119,7 @@ func _process(delta_s: float) -> void:
 		if _time_s >= _duration_s:
 			_finish()
 		return
-	var edge_phase: bool = _time_s > _duration_s - 3.0
+	var edge_phase: bool = not benchmark and _time_s > _duration_s - 3.0
 	if edge_phase:
 		# Push into the right-hand yaw limit and the lower pitch limit to exercise the arc clamp.
 		turret.aim.apply_input(AIM_SPEED_DEG_S * delta_s, -AIM_SPEED_DEG_S * delta_s)
@@ -201,7 +218,8 @@ func _on_stage_ended(stage: int, result: String) -> void:
 	print("STAGE_RESULT stage=%d result=%s time_s=%.1f kills=%d intercepts=%d accuracy=%d hull=%d" % [
 		stages.stage_number, result, stats.time_s, stats.kills, stats.intercepts,
 		roundi(stats.accuracy_percent()), roundi(turret.hull)])
-	if result == "COMPLETE" and _stop_after_stage > 0 and stage >= _stop_after_stage:
+	if benchmark or (result == "COMPLETE" and _stop_after_stage > 0 and stage >= _stop_after_stage):
+		# A benchmark ends with its stage, even if the gunner clears it early.
 		_finish()
 	elif not _screenshot_dir.is_empty():
 		# Capture the result screen once it has faded in.
@@ -236,12 +254,14 @@ func _finish() -> void:
 		var worst_ms: float = 0.0
 		for index: int in range(sorted.size() - worst_count, sorted.size()):
 			worst_ms += sorted[index]
+		var average_fps: float = 1000.0 * sorted.size() / total_ms
+		var median_fps: float = 1000.0 / maxf(sorted[sorted.size() / 2], 0.001)
+		var low1_fps: float = 1000.0 * worst_count / worst_ms
 		print("PERF resolution=%dx%d preset=%s frames=%d avg_fps=%.1f median_fps=%.1f low1_fps=%.1f max_frame_ms=%.2f" % [
 			window_size.x, window_size.y, Graphics.preset_id, sorted.size(),
-			1000.0 * sorted.size() / total_ms,
-			1000.0 / maxf(sorted[sorted.size() / 2], 0.001),
-			1000.0 * worst_count / worst_ms,
-			sorted[sorted.size() - 1]])
+			average_fps, median_fps, low1_fps, sorted[sorted.size() - 1]])
+		if benchmark:
+			_write_benchmark_result(window_size, average_fps, median_fps, low1_fps, sorted[sorted.size() - 1], total_ms)
 		if not _frame_log_path.is_empty():
 			# One frame time in milliseconds per line, in the order they happened.
 			var log_file: FileAccess = FileAccess.open(_frame_log_path, FileAccess.WRITE)
@@ -251,3 +271,67 @@ func _finish() -> void:
 		# Frames longer than 50 ms, as "time:duration" (the first 20).
 		print("HITCHES count=%d %s" % [_hitches.size(), " ".join(_hitches.slice(0, 20))])
 	get_tree().quit()
+
+
+## One line per second of the benchmark: what was on the field and what a
+## frame cost. Shows which part of the fight the slow frames come from.
+func _sample_timeline(delta_s: float) -> void:
+	_second_frames += 1
+	_second_left_s -= delta_s
+	_second_script_ms += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+	if _second_left_s > 0.0:
+		return
+	var entry: Dictionary = {
+		"t": roundi(_time_s),
+		"fps": _second_frames,
+		"enemies": _enemy_manager.get_enemy_count() if _enemy_manager != null else 0,
+		"enemy_projectiles": _enemy_manager.get_projectile_count() if _enemy_manager != null else 0,
+		"frame_ms": snappedf(_second_script_ms / maxi(_second_frames, 1), 0.01),
+		"draw_calls": int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
+		"objects": int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)),
+		"nodes": int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)),
+	}
+	_timeline.append(entry)
+	if OS.get_cmdline_user_args().has("--benchmark-timeline"):
+		print("TIMELINE ", JSON.stringify(entry))
+	_second_frames = 0
+	_second_left_s = 1.0
+	_second_script_ms = 0.0
+
+
+## Writes the benchmark result as JSON: the summary plus every frame time in
+## order (the data for a frame-time graph). Prints where it went.
+func _write_benchmark_result(window_size: Vector2i, average_fps: float, median_fps: float, low1_fps: float, worst_ms: float, total_ms: float) -> void:
+	var directory: String = GameData.loader.get_config("benchmark").get("results_dir", "user://benchmarks")
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--benchmark-out="):
+			directory = argument.trim_prefix("--benchmark-out=")
+	DirAccess.make_dir_recursive_absolute(directory)
+	var stamp: String = Time.get_datetime_string_from_system().replace(":", "-")
+	var path: String = directory.path_join("benchmark_%s_%s.json" % [Graphics.preset_id, stamp])
+	var times: Array[float] = []
+	for frame_ms: float in _frame_times_ms:
+		times.append(snappedf(frame_ms, 0.001))
+	var result: Dictionary = {
+		"date": Time.get_datetime_string_from_system(),
+		"engine": Engine.get_version_info().get("string", ""),
+		"rendering_driver": RenderingServer.get_current_rendering_driver_name(),
+		"video_adapter": RenderingServer.get_video_adapter_name(),
+		"resolution": [window_size.x, window_size.y],
+		"preset": Graphics.preset_id,
+		"measured_s": snappedf(total_ms / 1000.0, 0.01),
+		"frames": _frame_times_ms.size(),
+		"average_fps": snappedf(average_fps, 0.1),
+		"median_fps": snappedf(median_fps, 0.1),
+		"low_1_percent_fps": snappedf(low1_fps, 0.1),
+		"worst_frame_ms": snappedf(worst_ms, 0.01),
+		"peak_enemies": _peak_enemies,
+		"timeline": _timeline,
+		"frame_times_ms": times,
+	}
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_warning("Benchmark: cannot write %s" % path)
+		return
+	file.store_string(JSON.stringify(result))
+	print("BENCHMARK_RESULT file=%s peak_enemies=%d" % [ProjectSettings.globalize_path(path), _peak_enemies])

@@ -1,0 +1,7 @@
+{
+  "_comment": "Benchmark mode (--benchmark or tools/run_benchmark.ps1): plays the heavy stage in stages/benchmark.json with the automatic gunner and writes the result to a file. Same seed, same fight every run.",
+  "duration_s": 70.0,
+  "warmup_s": 2.0,
+  "seed": 20261122,
+  "results_dir": "user://benchmarks"
+}
