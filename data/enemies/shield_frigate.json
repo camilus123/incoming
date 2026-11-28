@@ -72,5 +72,7 @@
       0.8,
       1.0
     ]
-  }
+  },
+  "hit_sound": "audio.enemy.hit",
+  "engine_sound": "audio.enemy.engine_heavy"
 }

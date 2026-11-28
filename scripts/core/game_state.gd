@@ -24,6 +24,8 @@ var loadout: Dictionary = {}
 var hull: float = -1.0
 ## Run totals for the game-over screen and later achievements.
 var statistics: Dictionary = {}
+## Id of the difficulty level this run was started on (difficulty.json).
+var difficulty_id: String = ""
 ## When false nothing is written to disk (test range, automated demo, debug starts).
 var persistent: bool = true
 var save_path: String = SaveSystem.DEFAULT_PATH
@@ -48,6 +50,7 @@ func new_run() -> void:
 	var economy: Dictionary = GameData.loader.get_config("economy")
 	credits = economy.get("starting_credits", 1500)
 	stage = 1
+	difficulty_id = chosen_difficulty_id()
 	purchased = tree.get_start_nodes()
 	hull = -1.0
 	statistics = {"stages_cleared": 0, "kills": 0, "credits_earned": 0}
@@ -56,6 +59,21 @@ func new_run() -> void:
 	for slot: String in SLOTS:
 		loadout[slot] = defaults.get(slot, "")
 	_touch()
+
+
+## The difficulty a new run would start on: the player's choice in the main
+## menu, or the default of difficulty.json.
+func chosen_difficulty_id() -> String:
+	var config: Dictionary = GameData.loader.get_config("difficulty")
+	var chosen: String = str(UserSettings.get_value(UserSettings.DIFFICULTY))
+	return chosen if (config.get("levels", {}) as Dictionary).has(chosen) else str(config.get("default", "normal"))
+
+
+## The multipliers of this run's difficulty level.
+func get_difficulty() -> Dictionary:
+	var config: Dictionary = GameData.loader.get_config("difficulty")
+	var levels: Dictionary = config.get("levels", {})
+	return levels.get(difficulty_id, levels.get(config.get("default", "normal"), {}))
 
 
 func has_save() -> bool:
@@ -83,6 +101,7 @@ func load_run() -> bool:
 func to_save_data() -> Dictionary:
 	return {
 		"stage": stage,
+		"difficulty": difficulty_id,
 		"credits": credits,
 		"purchased": purchased.duplicate(),
 		"loadout": loadout.duplicate(),
@@ -95,6 +114,11 @@ func to_save_data() -> Dictionary:
 ## the data files are dropped, so an old save survives content changes.
 func apply_save_data(data: Dictionary) -> void:
 	stage = maxi(1, int(data.get("stage", 1)))
+	# Saves from before difficulty selection were played on the default level.
+	var levels: Dictionary = GameData.loader.get_config("difficulty").get("levels", {})
+	difficulty_id = str(data.get("difficulty", ""))
+	if not levels.has(difficulty_id):
+		difficulty_id = GameData.loader.get_config("difficulty").get("default", "normal")
 	credits = maxi(0, int(data.get("credits", 0)))
 	hull = float(data.get("hull", -1.0))
 	statistics = (data.get("statistics", {}) as Dictionary).duplicate(true)

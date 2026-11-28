@@ -50,5 +50,8 @@
       "drone"
     ],
     "cooldown_s": 6.0
+  },
+  "audio": {
+    "fire": "audio.weapon.emp"
   }
 }

@@ -39,5 +39,8 @@
     "lifetime_s": 2.4,
     "size_m": 0.18,
     "length_m": 8.0
+  },
+  "audio": {
+    "fire": "audio.weapon.kinetic"
   }
 }

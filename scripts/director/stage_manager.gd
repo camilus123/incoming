@@ -114,8 +114,7 @@ func start_custom_stage(custom_data: Dictionary, spawn_seed: int) -> void:
 func _begin_stage(number: int, data: Dictionary) -> void:
 	stage_number = number
 	_director = GameData.loader.get_config("director")
-	var difficulty_config: Dictionary = GameData.loader.get_config("difficulty")
-	_difficulty = (difficulty_config.get("levels", {}) as Dictionary).get(difficulty_config.get("default", "normal"), {})
+	_difficulty = GameState.get_difficulty()
 	stage_data = data
 	_stage_budget = WaveDirector.threat_budget(stage_number, _director, _difficulty.get("threat_budget_mult", 1.0))
 
@@ -237,6 +236,18 @@ func _update_waves(delta_s: float) -> void:
 		wave_index += 1
 		_wave_started = false
 		_wave_delay_left_s = float((stage_data["waves"] as Array)[wave_index].get("delay_s", 0.0))
+
+
+## Debug menu: ends the running stage as if everything had been destroyed
+## (no bounties for what was skipped).
+func debug_skip_stage() -> void:
+	if state != State.INTRO and state != State.RUNNING:
+		return
+	_enemies.clear_all()
+	_spawn_queue.clear()
+	if state == State.INTRO:
+		_set_state(State.RUNNING)
+	_complete_stage()
 
 
 func _begin_wave() -> void:

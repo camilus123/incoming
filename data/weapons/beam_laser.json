@@ -39,5 +39,8 @@
     "ramp_time_s": 2.5,
     "ramp_max_multiplier": 2.2,
     "width_m": 0.22
+  },
+  "audio": {
+    "fire": "audio.weapon.beam"
   }
 }

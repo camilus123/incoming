@@ -1,0 +1,130 @@
+{
+  "_comment": "Sound setup (spec 10). Buses and their default volumes in dB, the sound played for each game event, and how far 3D sounds carry. Sounds are asset ids from the manifest; weapons and enemies name their own in their data files. 'min_interval_s' stops a sound from stacking when it is asked for many times a second.",
+  "buses": {
+    "Master": 0.0,
+    "Music": -4.0,
+    "SFX": -2.0,
+    "Weapons": -5.0,
+    "UI": -6.0,
+    "Alerts": -3.0
+  },
+  "players_2d": 20,
+  "players_3d": 28,
+  "music": "audio.music.ambient",
+  "unit_size_m": 120.0,
+  "max_distance_m": 6000.0,
+  "engine_unit_size_m": 60.0,
+  "engine_max_distance_m": 2500.0,
+  "explosion_sounds": [
+    {
+      "up_to_radius_m": 9.0,
+      "sound": "audio.explosion.small"
+    },
+    {
+      "up_to_radius_m": 40.0,
+      "sound": "audio.explosion.medium"
+    },
+    {
+      "up_to_radius_m": 100000.0,
+      "sound": "audio.explosion.large"
+    }
+  ],
+  "events": {
+    "weapon_fire": {
+      "bus": "Weapons",
+      "volume_db": 0.0,
+      "pitch_random": 0.06,
+      "min_interval_s": 0.03
+    },
+    "explosion": {
+      "bus": "SFX",
+      "volume_db": 2.0,
+      "pitch_random": 0.15,
+      "min_interval_s": 0.04
+    },
+    "enemy_hit": {
+      "bus": "SFX",
+      "volume_db": -8.0,
+      "pitch_random": 0.2,
+      "min_interval_s": 0.06
+    },
+    "enemy_fire": {
+      "sound": "audio.enemy.laser",
+      "bus": "SFX",
+      "volume_db": -6.0,
+      "pitch_random": 0.1,
+      "min_interval_s": 0.05
+    },
+    "shield_hit": {
+      "sound": "audio.impact.shield",
+      "bus": "SFX",
+      "volume_db": -4.0,
+      "pitch_random": 0.12,
+      "min_interval_s": 0.08
+    },
+    "hull_hit": {
+      "sound": "audio.impact.hull",
+      "bus": "SFX",
+      "volume_db": 0.0,
+      "pitch_random": 0.1,
+      "min_interval_s": 0.1
+    },
+    "shields_down": {
+      "sound": "audio.alert.shields_down",
+      "bus": "Alerts",
+      "min_interval_s": 2.0
+    },
+    "shields_up": {
+      "sound": "audio.alert.shields_up",
+      "bus": "Alerts",
+      "min_interval_s": 2.0
+    },
+    "hull_critical": {
+      "sound": "audio.alert.hull_critical",
+      "bus": "Alerts",
+      "min_interval_s": 8.0
+    },
+    "overheat": {
+      "sound": "audio.alert.overheat",
+      "bus": "Alerts",
+      "min_interval_s": 1.0
+    },
+    "incoming": {
+      "sound": "audio.alert.incoming",
+      "bus": "Alerts",
+      "volume_db": -4.0,
+      "min_interval_s": 5.0
+    },
+    "power_tick": {
+      "sound": "audio.ui.power_tick",
+      "bus": "UI",
+      "min_interval_s": 0.02
+    },
+    "ui_click": {
+      "sound": "audio.ui.click",
+      "bus": "UI",
+      "min_interval_s": 0.02
+    },
+    "ui_buy": {
+      "sound": "audio.ui.buy",
+      "bus": "UI",
+      "min_interval_s": 0.05
+    },
+    "ui_deny": {
+      "sound": "audio.ui.deny",
+      "bus": "UI",
+      "min_interval_s": 0.1
+    },
+    "stage_complete": {
+      "sound": "audio.stage.complete",
+      "bus": "UI",
+      "min_interval_s": 1.0
+    },
+    "stage_failed": {
+      "sound": "audio.stage.failed",
+      "bus": "UI",
+      "min_interval_s": 1.0
+    }
+  },
+  "hull_critical_fraction": 0.3
+}

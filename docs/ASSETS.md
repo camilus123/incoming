@@ -62,3 +62,7 @@ The turret and guns are drawn by a second camera with its own field of view (`ca
 ## Mod overrides (not built yet)
 
 `AssetResolver.add_override_root()` is the hook for a future `mods/` folder next to the executable: a file at the same relative path under an override root wins over the built-in one. Runtime loading of external glTF and images is on the roadmap.
+
+## Placeholder audio
+
+`tools/build_placeholder_audio.py` writes every sound in `assets/audio/` (16-bit mono WAV). Asset ids follow the file names: `weapon_laser.wav` is `audio.weapon.laser`. Loops (`enemy_engine*`, `music_ambient`) are generated with a whole number of cycles so they repeat without a click; the game switches looping on when it loads them. See `docs/DATA_FORMAT.md` (config/audio.json) for where each sound is used.

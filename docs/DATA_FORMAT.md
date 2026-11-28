@@ -567,6 +567,32 @@ Benchmark mode (`--benchmark`, `tools/run_benchmark.ps1`). `config/benchmark.jso
 
 `"swarm": true` in an enemy file (the Swarm Drone has it) makes the type cheap in large numbers: it has no model node of its own, all of its kind are drawn as one MultiMesh, the enemy manager advances them in one loop, and destroyed ones are pooled and reused. Behaviours, attacks and hit shapes work as for any enemy. Limits: the model is drawn as one rigid mesh (no moving parts, no per-enemy effects attached to it), and a weak point on a swarm enemy needs an `offset` instead of a `socket`.
 
+## config/audio.json
+
+Sound setup. Sounds are asset ids of type `audio` in the manifest.
+
+| Field | Meaning |
+|---|---|
+| `buses` | bus name -> default level in dB. The six buses of the spec: `Master`, `Music`, `SFX`, `Weapons`, `UI`, `Alerts`. The player's volume sliders scale these |
+| `players_2d`, `players_3d` | sizes of the two player pools (plain sounds; sounds placed in the world) |
+| `music` | the looping music track |
+| `unit_size_m`, `max_distance_m` | how far 3D sounds (explosions, hits, enemy fire) carry |
+| `engine_unit_size_m`, `engine_max_distance_m` | the same for enemy engine loops |
+| `explosion_sounds` | list of `{ up_to_radius_m, sound }`: the first entry whose radius fits is played |
+| `events` | event name -> `{ sound, bus, volume_db, pitch_random, min_interval_s }`. `min_interval_s` stops a sound from stacking when it is asked for many times a second. `weapon_fire`, `explosion` and `enemy_hit` have no sound of their own: the weapon, the explosion size or the enemy supplies it |
+| `hull_critical_fraction` | hull share below which the hull alert sounds |
+
+Where the sounds of content are named:
+
+- a weapon: `"audio": { "fire": "audio.weapon.laser" }`
+- an enemy: `"hit_sound": "audio.enemy.hit"` and optionally `"engine_sound": "audio.enemy.engine"` (a loop that follows the enemy, with Doppler shift)
+
+To replace a sound, overwrite its file in `assets/audio/` or point its asset id at another file in the manifest. To add one, add the file, add a manifest entry of type `audio`, and name its id where it is used.
+
+## Player settings (not a data file)
+
+`user://settings.cfg` holds the player's own choices, written by the settings menu: mouse sensitivity, invert Y, turret weight, bindings (in the format of `config/input.json`, only for actions the player changed), FOV, graphics preset, fullscreen, V-Sync, frame rate limit, renderer, lens effects, screen shake, the six volumes and the difficulty for new runs. A value of -1 means "use the data default".
+
 ## Planned formats
 
 Added in the milestone that first uses them:

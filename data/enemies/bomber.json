@@ -58,5 +58,7 @@
   },
   "tags": [
     "heavy"
-  ]
+  ],
+  "hit_sound": "audio.enemy.hit",
+  "engine_sound": "audio.enemy.engine_heavy"
 }

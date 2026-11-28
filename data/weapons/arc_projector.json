@@ -39,5 +39,8 @@
     "chain_targets": 5,
     "chain_range_m": 160.0,
     "width_m": 0.18
+  },
+  "audio": {
+    "fire": "audio.weapon.arc"
   }
 }

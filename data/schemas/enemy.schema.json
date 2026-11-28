@@ -480,6 +480,10 @@
     "swarm": {
       "type": "bool",
       "default": false
+    },
+    "engine_sound": {
+      "type": "string",
+      "default": ""
     }
   }
 }

@@ -52,6 +52,17 @@ func _on_demo_started() -> void:
 			$StageManager.auto_shop_s = argument.trim_prefix("--demo-shop-seconds=").to_float()
 
 
+func _can_restart() -> bool:
+	return _stages.state in [StageManager.State.INTRO, StageManager.State.RUNNING, StageManager.State.COMPLETE, StageManager.State.GAME_OVER]
+
+
+## Back to the armoury autosave and into the same stage again.
+func _restart_stage() -> void:
+	if GameState.persistent:
+		GameState.load_run()
+	_stages.start_stage(GameState.stage)
+
+
 func _can_pause() -> bool:
 	return _stages.state != StageManager.State.SHOP
 

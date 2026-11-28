@@ -48,5 +48,8 @@
     "pull_speed_mps": 45.0,
     "max_pull_hp": 1000.0,
     "implode_radius_m": 100.0
+  },
+  "audio": {
+    "fire": "audio.weapon.singularity"
   }
 }

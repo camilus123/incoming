@@ -84,6 +84,7 @@ func spawn_projectile(attack: Dictionary, at: Vector3, start_velocity: Vector3, 
 		add_child(projectile)
 	projectile.global_position = at
 	_projectiles.append(projectile)
+	EventBus.enemy_projectile_launched.emit()
 	return projectile
 
 

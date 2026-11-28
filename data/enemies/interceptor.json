@@ -55,5 +55,7 @@
   },
   "tags": [
     "fighter"
-  ]
+  ],
+  "hit_sound": "audio.enemy.hit",
+  "engine_sound": "audio.enemy.engine"
 }

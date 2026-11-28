@@ -23,8 +23,31 @@ static func validate(loader: DataLoader, report: DataReport) -> void:
 	_check_enemies(loader, report)
 	_check_stages(loader, report)
 	_check_tech_tree(loader, report)
+	_check_audio(loader, report)
 	_check_asset_reference(loader, report, loader.source_of_config("turret"), "model", loader.get_config("turret").get("model", ""))
 	_check_asset_reference(loader, report, loader.source_of_config("test_range"), "model", loader.get_config("test_range").get("model", ""))
+
+
+## Every sound named in audio.json and in enemy files must be in the manifest.
+static func _check_audio(loader: DataLoader, report: DataReport) -> void:
+	var audio: Dictionary = loader.get_config("audio")
+	var file: String = loader.source_of_config("audio")
+	_check_asset_reference(loader, report, file, "music", audio.get("music", ""))
+	var buses: Dictionary = audio.get("buses", {})
+	var events: Dictionary = audio.get("events", {})
+	for event_name: String in events:
+		var event: Dictionary = events[event_name]
+		_check_asset_reference(loader, report, file, "events.%s.sound" % event_name, event.get("sound", ""))
+		if not buses.has(event.get("bus", "SFX")):
+			report.add_error(file, "events.%s.bus" % event_name, "unknown bus \"%s\"" % event.get("bus", ""))
+	var entries: Array = audio.get("explosion_sounds", [])
+	for index: int in entries.size():
+		_check_asset_reference(loader, report, file, "explosion_sounds[%d].sound" % index, (entries[index] as Dictionary).get("sound", ""))
+	var enemies: Dictionary = loader.get_category("enemies")
+	for enemy_id: String in enemies:
+		var enemy_file: String = loader.source_of("enemies", enemy_id)
+		_check_asset_reference(loader, report, enemy_file, "hit_sound", enemies[enemy_id].get("hit_sound", ""))
+		_check_asset_reference(loader, report, enemy_file, "engine_sound", enemies[enemy_id].get("engine_sound", ""))
 
 
 static func _check_power(loader: DataLoader, report: DataReport) -> void:

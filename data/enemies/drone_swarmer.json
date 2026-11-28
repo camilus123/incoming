@@ -47,5 +47,6 @@
   "tags": [
     "drone"
   ],
-  "swarm": true
+  "swarm": true,
+  "hit_sound": "audio.enemy.hit"
 }

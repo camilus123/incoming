@@ -15,6 +15,8 @@ extends Node
 ##   --demo-look=YAW,PITCH   hold this aim instead of tracking targets (for screenshots)
 ##   --demo-shot-times=A,B   when to take screenshots, in seconds
 ##   --demo-frame-log=PATH   write every frame time (ms, one per line) to a file
+##   --demo-ui-shots         with --screenshot-dir: also save the stage intel
+##                           overlay, the debug menu and the pause menu at 8 s
 
 const WARMUP_S: float = 2.0
 const AIM_SPEED_DEG_S: float = 160.0
@@ -40,6 +42,7 @@ var _cycle_power: bool = false
 var _hits: Dictionary = {}   # slot -> hits
 var _kills: Dictionary = {}  # slot -> kills
 var _has_fixed_look: bool = false
+var _ui_shots_done: bool = false
 var _peak_enemies: int = 0
 var _timeline: Array[Dictionary] = []
 var _second_frames: int = 0
@@ -135,6 +138,32 @@ func _process(delta_s: float) -> void:
 		_next_screenshot += 1
 	if _time_s >= _duration_s:
 		_finish()
+	if not _ui_shots_done and _time_s >= 8.0 and OS.get_cmdline_user_args().has("--demo-ui-shots"):
+		_ui_shots_done = true
+		_save_ui_shots()
+
+
+## Screenshots of the overlays a player opens by hand.
+func _save_ui_shots() -> void:
+	Input.action_press(&"show_intel")
+	await get_tree().create_timer(0.2).timeout
+	await _save_screenshot("ui_intel")
+	Input.action_release(&"show_intel")
+	var debug_menu: DebugMenu = get_parent().get_node_or_null("DebugMenu") as DebugMenu
+	if debug_menu != null and debug_menu.get_child_count() > 0:
+		(debug_menu.get_child(0) as Control).visible = true
+		DebugMenu.show_hitboxes = true
+		await get_tree().create_timer(0.3).timeout
+		await _save_screenshot("ui_debug_menu")
+		(debug_menu.get_child(0) as Control).visible = false
+		DebugMenu.show_hitboxes = false
+	var play_scene: PlayScene = get_parent() as PlayScene
+	if play_scene != null:
+		play_scene._set_paused(true)
+		await get_tree().create_timer(0.3, true, false, true).timeout
+		await _save_screenshot("ui_pause_menu")
+		play_scene._set_paused(false)
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _track_targets(delta_s: float) -> void:

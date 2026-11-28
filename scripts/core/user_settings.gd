@@ -19,6 +19,24 @@ const SCREEN_SHAKE: String = "accessibility/screen_shake"
 const GRAPHICS_PRESET: String = "video/graphics_preset"
 ## Chromatic aberration, lens dirt and shield distortion (also needs the preset to allow them).
 const SCREEN_EFFECTS: String = "video/screen_effects"
+const FULLSCREEN: String = "video/fullscreen"
+const VSYNC: String = "video/vsync"
+## Frames per second limit; 0 = none.
+const MAX_FPS: String = "video/max_fps"
+## "vulkan" or "d3d12". Applied at the next start (see RendererChoice).
+const RENDERING_DRIVER: String = "video/rendering_driver"
+## Bus volumes, 0..1.
+const VOLUME_MASTER: String = "audio/master"
+const VOLUME_MUSIC: String = "audio/music"
+const VOLUME_SFX: String = "audio/sfx"
+const VOLUME_WEAPONS: String = "audio/weapons"
+const VOLUME_UI: String = "audio/ui"
+const VOLUME_ALERTS: String = "audio/alerts"
+## Id of a difficulty level; empty = the default of difficulty.json.
+const DIFFICULTY: String = "game/difficulty"
+## Player's key and button choices: action name -> list of event entries in
+## the format of input.json. Actions not listed keep the data defaults.
+const BINDINGS: String = "controls/bindings"
 
 const DEFAULTS: Dictionary = {
 	MOUSE_SENSITIVITY: 1.0,
@@ -29,9 +47,24 @@ const DEFAULTS: Dictionary = {
 	SCREEN_SHAKE: 1.0,
 	GRAPHICS_PRESET: "",
 	SCREEN_EFFECTS: true,
+	FULLSCREEN: true,
+	VSYNC: true,
+	MAX_FPS: 0,
+	RENDERING_DRIVER: "vulkan",
+	VOLUME_MASTER: 1.0,
+	VOLUME_MUSIC: 1.0,
+	VOLUME_SFX: 1.0,
+	VOLUME_WEAPONS: 1.0,
+	VOLUME_UI: 1.0,
+	VOLUME_ALERTS: 1.0,
+	DIFFICULTY: "",
+	BINDINGS: {},
 }
 
-var _values: Dictionary = DEFAULTS.duplicate()
+## While true nothing is written to disk (automated tests).
+var read_only: bool = false
+
+var _values: Dictionary = DEFAULTS.duplicate(true)
 
 
 func _ready() -> void:
@@ -66,6 +99,8 @@ func load_settings() -> void:
 
 
 func save_settings() -> void:
+	if read_only:
+		return
 	var file: ConfigFile = ConfigFile.new()
 	for key: String in _values:
 		var parts: PackedStringArray = key.split("/")

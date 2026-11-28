@@ -44,5 +44,7 @@ signal credits_changed(total: int)
 signal environment_changed()
 ## Any explosion (for lens effects and, later, sound).
 signal explosion(at: Vector3, radius_m: float)
+## An enemy released a bomb or missile at the turret.
+signal enemy_projectile_launched()
 
 @warning_ignore_restore("unused_signal")

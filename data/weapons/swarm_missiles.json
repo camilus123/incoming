@@ -52,5 +52,8 @@
     "lifetime_s": 12.0,
     "proximity_fuse_m": 3.0,
     "splash_radius_m": 6.0
+  },
+  "audio": {
+    "fire": "audio.weapon.missile"
   }
 }
