@@ -12,7 +12,7 @@
 | M5 Content pass | All weapons and enemies, stages 1 to 10, bosses, endless | Done |
 | M6 Graphics pass | Environment, lighting, VFX, presets, upscaling, HUD polish | Done |
 | M7 Performance pass | Pooling, MultiMesh swarms, LOD, benchmark mode | Done |
-| M8 Polish | Audio, settings, menus, Windows export | In progress |
+| M8 Polish | Audio, settings, menus, Windows export | Done |
 
 ## Later (designed for, not built)
 
@@ -23,4 +23,4 @@
 - **Audio:** recorded voice alerts, composed music, real sound effects in place of the generated ones.
 - **Gamepad support.**
 - **Graphics left over from M6:** heat distortion on beams, orbital debris, decals, real PBR texture sets for terrain and hulls.
-- **OptiScaler / FSR 4:** the renderer option exists (Settings, Video). Whether OptiScaler can hook the game on DirectX 12 is untested; Godot builds FSR 2 in and has no separate upscaler library.
+- **FSR 4 (parked by Marko on 2026-11-28, to pick up later):** tested with OptiScaler 0.9.5 on DirectX 12. It loads (the game already uses the system `d3d12.dll` and `dxgi.dll`, and the export is exe plus pck) but reports "FSR Hooks: Don't Exist": Godot's FSR 2 is compiled into the exe and never calls an upscaler library, so there is nothing to take over. Splitting the export into more DLLs would not change that. Untested: OptiScaler's "Use Fsr2 Pattern Matching" option (expected not to work, because Godot feeds FSR 2 through its own renderer layer). Ways forward, in order of effort: (1) a native C++ plugin that calls AMD's FSR 3.1 library on DirectX 12, which the Radeon driver can upgrade to FSR 4 and OptiScaler can hook; needs a C++ compiler and AMD's SDK, and may only reach native-resolution anti-aliasing because plugins work at the final resolution; (2) a custom Godot build with FSR 3.1 inside; (3) wait for a Godot version with FSR 3 or 4.

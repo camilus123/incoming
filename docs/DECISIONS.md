@@ -229,3 +229,7 @@ Checked with the self-playing demo, which is only a rough guide (it never misses
 - **Separate X and Y sensitivity** is a single sensitivity plus a vertical factor. Raw mouse input is whatever Godot gives on Windows (relative motion events, unaccelerated); there is no separate switch.
 - **Rebinding takes one key or button per action.** Actions with several defaults (confirm: Enter, numpad Enter, Space) keep them until rebound.
 - **Gamepad** is not supported (not in the spec).
+
+## 2026-11-28: FSR 4 parked (Marko)
+
+- Marko tried OptiScaler on the DirectX 12 build; it found no upscaler to take over (details and options in `docs/ROADMAP.md`). He chose to note it and deal with it later. M8 was merged with FSR 2 as the upscaler.
