@@ -2,6 +2,10 @@
 
 Updated at every merge to `main`.
 
+## Version 1.0 (2026-11-28)
+
+First release: milestones M0 to M8 as listed below. Tagged `v1.0`; the Windows build is attached to the GitHub release.
+
 ## M8: Polish (2026-11-22)
 
 - Sound: six buses (Master, Music, SFX, Weapons, UI, Alerts), 37 generated placeholder sounds, a fire sound per weapon family, sized explosions and hits placed in the world, engine loops with Doppler shift on larger enemies, alert tones (shields down and up, hull critical, overheat, incoming ordnance), interface clicks and an ambient music loop. All named by asset id in data.

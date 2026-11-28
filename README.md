@@ -2,7 +2,7 @@
 
 A single-player, first-person ground turret defence game. You are a gun turret on a frontier world, shooting down waves of enemies attacking from the sky and from orbit, and spending credits on a tech tree between stages.
 
-Status: **all eight milestones are built (M8, polish).** 20 weapons, 9 enemies, stages 1 to 10 with bosses at 5 and 10 and generated stages after that, a tech tree of 79 upgrades, four graphics presets, sound, menus and a Windows build. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
+Status: **version 1.0.** All eight milestones are built. 20 weapons, 9 enemies, stages 1 to 10 with bosses at 5 and 10 and generated stages after that, a tech tree of 79 upgrades, four graphics presets, sound, menus and a Windows build. The run is saved automatically every time the armoury opens. See `docs/CHANGELOG.md` and `docs/ROADMAP.md`.
 
 ## Controls
 
